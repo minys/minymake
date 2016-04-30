@@ -1,0 +1,9 @@
+TODO add support for exporting interfaces to rest of the project during
+     build
+
+TODO make it possible to enable/disable parts of the project?
+
+FIXME distclean does not do anymore than clean does at the moment, maybe that
+      is fine.
+
+TODO improve error handling

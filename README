@@ -1,0 +1,20 @@
+minymake
+========
+Small build enginge inspired by Robert Miller's "Recursive Make Considered
+Harmful".
+
+A module *must* declare the following variables:
+
+ target : Name of the executable or library that this module is responsible
+          for. Only one executable or library is allowed per module file and
+          type is deducted from the precense of the suffix '.so'.
+ src    : Whitespace separated list of source files used to build 'target'.
+
+A module *might* declare the following variables:
+
+ cflags        : Target specific CFLAGS.
+ cxxflags      : Target specific CXXFLAGS.
+ ldflags       : Target specific LDFLAGS.
+
+Modules cannot include other modules, everything needs to be orchestrated
+from one top level makefile (or several separate ones).
