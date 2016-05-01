@@ -39,11 +39,6 @@ CXX := $(shell which $(CXX))
 RM  := rm -rf
 SED ?= sed
 
-DEPS    :=
-GCNO    :=
-OBJS    :=
-TARGETS :=
-
 DEBUG_CFLAGS     ?= -g
 DEBUG_CXXFLAGS   ?= -g
 GCOV_CFLAGS      ?= -fprofile-arcs -ftest-coverage
@@ -189,6 +184,11 @@ $(BUILD_DIR)/%.d: $(SRC_DIR)/%.cc
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc $(CHECKSUM_CXX)
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
+
+DEPS    := # List of all dependency files
+GCNO    := # List of all gcov notes
+OBJS    := # List of all objects
+TARGETS := # List of all executables/libraries
 
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
