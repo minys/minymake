@@ -109,24 +109,24 @@ define include_module
         $$(error src not defined by $(1))
     endif
 
-    path               := $(dir $(1))
-    output             := $$(BUILD_DIR)/$$(path)
-    target             := $$(abspath $$(output)/$$(target))
-    $$(target)_src     := $$(abspath $$(addprefix $$(path)/,$$(src)))
-    $$(target)_obj     := $$(addsuffix .o,$$(basename $$(src)))
-    $$(target)_obj     := $$(abspath $$(addprefix $$(output)/,$$($$(target)_obj)))
-    $$(target)_dep     := $$(patsubst %.o,%.d,$$($$(target)_obj))
-    $$(target)_ldflags := $$(ldflags)
-    $$(target)_module  := $$(abspath $(1))
+    path                := $(dir $(1))
+    output              := $$(BUILD_DIR)/$$(path)
+    target              := $$(abspath $$(output)/$$(target))
+    $$(target)_src      := $$(abspath $$(addprefix $$(path)/,$$(src)))
+    $$(target)_obj      := $$(addsuffix .o,$$(basename $$(src)))
+    $$(target)_obj      := $$(abspath $$(addprefix $$(output)/,$$($$(target)_obj)))
+    $$(target)_dep      := $$(patsubst %.o,%.d,$$($$(target)_obj))
+    $$(target)_cflags   := $$(cflags)
+    $$(target)_cxxflags := $$(cxxflags)
+    $$(target)_ldflags  := $$(ldflags)
+    $$(target)_module   := $$(abspath $(1))
 
     ifeq (.c,$$(sort $$(suffix $$($$(target)_src))))
         $$(target)_ld         := $$(CC)
         $$(target)_input_sha1 := $$(CHECKSUM_CC)
-        $$(target)_cflags     := $$(cflags)
     else
         $$(target)_ld         := $$(CXX)
         $$(target)_input_sha1 := $$(CHECKSUM_CXX)
-        $$(target)_cxxflags   := $$(cxxflags)
     endif
 
     ifeq (.so,$$(suffix $$(target)))
