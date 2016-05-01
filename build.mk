@@ -29,6 +29,9 @@
 
 .DELETE_ON_ERROR:
 
+MAKEFLAGS += --no-builtin-rules
+MAKEFLAGS += --no-builtin-variables
+
 CC  ?= gcc
 CC  := $(shell which $(CC))
 CXX ?= g++
