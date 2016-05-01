@@ -32,12 +32,15 @@
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --no-builtin-variables
 
-CC  ?= gcc
-CC  := $(shell which $(CC))
-CXX ?= g++
-CXX := $(shell which $(CXX))
-RM  := rm -rf
-SED ?= sed
+CC      ?= gcc
+CC      := $(shell which $(CC))
+CXX     ?= g++
+CXX     := $(shell which $(CXX))
+RM      := rm -rf
+SED     ?= sed
+SED     := $(shell which $(SED))
+SHA1SUM ?= sha1sum
+SHA1SUM := $(shell which $(SHA1SUM))
 
 DEBUG_CFLAGS     ?= -g
 DEBUG_CXXFLAGS   ?= -g
@@ -56,8 +59,8 @@ SRC_DIR   := $(CURDIR)
 
 CHECKSUM_CC  := $(BUILD_DIR)/.c.sha1
 CHECKSUM_CXX := $(BUILD_DIR)/.cxx.sha1
-CC_SHA1      := $(shell echo $$(sha1sum $(CC)) $(CFLAGS) | sha1sum | awk '{print $$1}')
-CXX_SHA1     := $(shell echo $$(sha1sum $(CXX)) $(CXXFLAGS) | sha1sum | awk '{print $$1}')
+CC_SHA1      := $(shell echo $$($(SHA1SUM) $(CC)) $(CFLAGS) | $(SHA1SUM) | awk '{print $$1}')
+CXX_SHA1     := $(shell echo $$($(SHA1SUM) $(CXX)) $(CXXFLAGS) | $(SHA1SUM) | awk '{print $$1}')
 
 ifdef VERBOSE
     define run_cmd
