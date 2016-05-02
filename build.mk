@@ -33,13 +33,14 @@ MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --no-builtin-variables
 
 CC      ?= gcc
-CC      := $(shell which $(CC))
 CXX     ?= g++
-CXX     := $(shell which $(CXX))
 RM      := rm -rf
 SED     ?= sed
-SED     := $(shell which $(SED))
 SHA1SUM ?= sha1sum
+
+CC      := $(shell which $(CC))
+CXX     := $(shell which $(CXX))
+SED     := $(shell which $(SED))
 SHA1SUM := $(shell which $(SHA1SUM))
 
 DEBUG_CFLAGS     ?= -g
@@ -57,10 +58,15 @@ BUILD_DIR ?= $(CURDIR)
 BUILD_DIR := $(abspath $(BUILD_DIR))
 SRC_DIR   := $(CURDIR)
 
-CHECKSUM_CC  := $(BUILD_DIR)/.c.sha1
-CHECKSUM_CXX := $(BUILD_DIR)/.cxx.sha1
-CC_SHA1      := $(shell echo $$($(SHA1SUM) $(CC)) $(CFLAGS) | $(SHA1SUM) | awk '{print $$1}')
-CXX_SHA1     := $(shell echo $$($(SHA1SUM) $(CXX)) $(CXXFLAGS) | $(SHA1SUM) | awk '{print $$1}')
+CC_SHA1     := $(shell echo $$($(SHA1SUM) $(CC)) $(CFLAGS) | $(SHA1SUM) | awk '{print $$1}')
+CXX_SHA1    := $(shell echo $$($(SHA1SUM) $(CXX)) $(CXXFLAGS) | $(SHA1SUM) | awk '{print $$1}')
+LD_CC_SHA1  := $(shell echo $$($(SHA1SUM) $(CC)) $(LDFLAGS) | $(SHA1SUM) | awk '{print $$1}')
+LD_CXX_SHA1 := $(shell echo $$($(SHA1SUM) $(CXX)) $(LDFLAGS) | $(SHA1SUM) | awk '{print $$1}')
+
+CHECKSUM_CC     := $(BUILD_DIR)/.c.sha1
+CHECKSUM_CXX    := $(BUILD_DIR)/.cxx.sha1
+CHECKSUM_LD_CC  := $(BUILD_DIR)/.ld.cc.sha1
+CHECKSUM_LD_CXX := $(BUILD_DIR)/.ld.cxx.sha1
 
 ifdef VERBOSE
     define run_cmd
@@ -124,11 +130,13 @@ define include_module
     $$(target)_module   := $$(abspath $(1))
 
     ifeq (.c,$$(sort $$(suffix $$($$(target)_src))))
-        $$(target)_ld         := $$(CC)
-        $$(target)_input_sha1 := $$(CHECKSUM_CC)
+        $$(target)_ld           := $$(CC)
+        $$(target)_compile_sha1 := $$(CHECKSUM_CC)
+        $$(target)_link_sha1    := $$(CHECKSUM_LD_CC)
     else
-        $$(target)_ld         := $$(CXX)
-        $$(target)_input_sha1 := $$(CHECKSUM_CXX)
+        $$(target)_ld           := $$(CXX)
+        $$(target)_compile_sha1 := $$(CHECKSUM_CXX)
+        $$(target)_link_sha1    := $$(CHECKSUM_LD_CXX)
     endif
 
     ifeq (.so,$$(suffix $$(target)))
@@ -141,10 +149,10 @@ define include_module
     CLEAN   += $$($$(target)_obj)
     CLEAN   += $$($$(target)_dep)
     CLEAN   += $$($$(target)_gcno)
-    TARGETS += $$(target)
-    OBJS    += $$($$(target)_obj)
     DEPS    += $$($$(target)_dep)
     GCNO    += $$($$(target)_gcno)
+    OBJS    += $$($$(target)_obj)
+    TARGETS += $$(target)
 endef
 
 define clean_rule
@@ -158,11 +166,12 @@ define target_rule
 $$($(1)_obj): override CFLAGS += $$($(1)_cflags)
 $$($(1)_obj): override CXXFLAGS += $$($(1)_cxxflags)
 $$($(1)_obj): $$($(1)_module)
-$$($(1)_obj): $$($(1)_input_sha1)
+$$($(1)_obj): $$($(1)_compile_sha1)
 $$($(1)_dep): $$($(1)_module)
 $(1): override LD := $$($(1)_ld)
 $(1): override LDFLAGS += $$($(1)_ldflags)
 $(1): $$($(1)_module)
+$(1): $$($(1)_link_sha1)
 $(1): $$($(1)_obj)
 	$$(call run_cmd_green,LD,$(1),$$($(1)_ld) $$(LDFLAGS) -o $(1) $$($(1)_obj))
 endef
@@ -199,9 +208,6 @@ GCNO    := # List of all gcov notes
 OBJS    := # List of all objects
 TARGETS := # List of all executables/libraries
 
-CLEAN += $(CHECKSUM_CC)
-CLEAN += $(CHECKSUM_CXX)
-
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
@@ -211,6 +217,15 @@ $(CHECKSUM_CC): FORCE
 
 $(CHECKSUM_CXX): FORCE
 	$(if $(filter-out $(shell cat $@ 2>/dev/null),$(CXX_SHA1)),$(file >$@,$(CXX_SHA1)),)
+
+$(CHECKSUM_LD_CC): FORCE
+	$(if $(filter-out $(shell cat $@ 2>/dev/null),$(LD_CC_SHA1)),$(file >$@,$(LD_CC_SHA1)),)
+
+$(CHECKSUM_LD_CXX): FORCE
+	$(if $(filter-out $(shell cat $@ 2>/dev/null),$(LD_CXX_SHA1)),$(file >$@,$(LD_CXX_SHA1)),)
+
+CLEAN += $(CHECKSUM_CC)
+CLEAN += $(CHECKSUM_CXX)
 
 .PHONY: all
 all: $(TARGETS)
