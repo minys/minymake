@@ -208,6 +208,11 @@ GCNO    := # List of all gcov notes
 OBJS    := # List of all objects
 TARGETS := # List of all executables/libraries
 
+CLEAN += $(CHECKSUM_CC)
+CLEAN += $(CHECKSUM_CXX)
+CLEAN += $(CHECKSUM_LD_CC)
+CLEAN += $(CHECKSUM_LD_CXX)
+
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
@@ -223,9 +228,6 @@ $(CHECKSUM_LD_CC): FORCE
 
 $(CHECKSUM_LD_CXX): FORCE
 	$(if $(filter-out $(shell cat $@ 2>/dev/null),$(LD_CXX_SHA1)),$(file >$@,$(LD_CXX_SHA1)),)
-
-CLEAN += $(CHECKSUM_CC)
-CLEAN += $(CHECKSUM_CXX)
 
 .PHONY: all
 all: $(TARGETS)
