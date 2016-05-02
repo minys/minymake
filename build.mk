@@ -116,6 +116,8 @@ define include_module
     $$(target)_obj      := $$(addsuffix .o,$$(basename $$(src)))
     $$(target)_obj      := $$(abspath $$(addprefix $$(output)/,$$($$(target)_obj)))
     $$(target)_dep      := $$(patsubst %.o,%.d,$$($$(target)_obj))
+    $$(target)_gcno     := $$(patsubst %.o,%.gcno,$$($$(target)_obj))
+    $$(target)_gcno     += $$(addsuffix .gcno,$$(target))
     $$(target)_cflags   := $$(cflags)
     $$(target)_cxxflags := $$(cxxflags)
     $$(target)_ldflags  := $$(ldflags)
@@ -135,11 +137,14 @@ define include_module
         $$(target)_ldflags  += -fpic
     endif
 
+    CLEAN   += $$(target)
+    CLEAN   += $$($$(target)_obj)
+    CLEAN   += $$($$(target)_dep)
+    CLEAN   += $$($$(target)_gcno)
     TARGETS += $$(target)
     OBJS    += $$($$(target)_obj)
     DEPS    += $$($$(target)_dep)
-    GCNO    += $$(patsubst %.o,%.gcno,$$($$(target)_obj))
-    GCNO    += $$(addsuffix .gcno,$$(target))
+    GCNO    += $$($$(target)_gcno)
 endef
 
 define clean_rule
@@ -188,18 +193,18 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc $(CHECKSUM_CXX)
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
 
+CLEAN   := # List of all generated objects to be removed
 DEPS    := # List of all dependency files
 GCNO    := # List of all gcov notes
 OBJS    := # List of all objects
 TARGETS := # List of all executables/libraries
 
+CLEAN += $(CHECKSUM_CC)
+CLEAN += $(CHECKSUM_CXX)
+
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
-$(foreach file,$(wildcard $(sort $(TARGETS))),$(eval $(call clean_rule,$(file))))
-$(foreach file,$(wildcard $(sort $(OBJS))),$(eval $(call clean_rule,$(file))))
-$(foreach file,$(wildcard $(sort $(DEPS))),$(eval $(call clean_rule,$(file))))
-$(foreach file,$(wildcard $(sort $(GCNO))),$(eval $(call clean_rule,$(file))))
-$(foreach file,$(wildcard $(sort $(CHECKSUM_CC) $(CHECKSUM_CXX))),$(eval $(call clean_rule,$(file))))
+$(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
 $(CHECKSUM_CC): FORCE
 	$(if $(filter-out $(shell cat $@ 2>/dev/null),$(CC_SHA1)),$(file >$@,$(CC_SHA1)),)
