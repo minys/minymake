@@ -63,10 +63,10 @@ CXX_SHA1    := $(shell echo $$($(SHA1SUM) $(CXX)) $(CXXFLAGS) | $(SHA1SUM) | awk
 LD_CC_SHA1  := $(shell echo $$($(SHA1SUM) $(CC)) $(LDFLAGS) | $(SHA1SUM) | awk '{print $$1}')
 LD_CXX_SHA1 := $(shell echo $$($(SHA1SUM) $(CXX)) $(LDFLAGS) | $(SHA1SUM) | awk '{print $$1}')
 
-CHECKSUM_CC     := $(BUILD_DIR)/.c.sha1
-CHECKSUM_CXX    := $(BUILD_DIR)/.cxx.sha1
-CHECKSUM_LD_CC  := $(BUILD_DIR)/.ld.cc.sha1
-CHECKSUM_LD_CXX := $(BUILD_DIR)/.ld.cxx.sha1
+CHECKSUM_CC     := $(BUILD_DIR)/.sha1.compile.cc
+CHECKSUM_CXX    := $(BUILD_DIR)/.sha1.compile.cxx
+CHECKSUM_LD_CC  := $(BUILD_DIR)/.sha1.link.cc
+CHECKSUM_LD_CXX := $(BUILD_DIR)/.sha1.link.cxx
 
 ifdef VERBOSE
     define run_cmd
@@ -184,6 +184,10 @@ define depends
     $(call run_cmd,DEP,$(1),$(strip $(2) $(3) -MT "$(patsubst %.d,%.o,$(1))" -M $(4) | $(SED) 's,\(^.*.o:\),$@ \1,' > $(1)))
 endef
 
+define verify_input
+    $(if $(filter-out $(shell cat $(1) 2>/dev/null),$(2)),$(file >$(1),$(2)),)
+endef
+
 default: release
 
 $(BUILD_DIR)/%.d: $(SRC_DIR)/%.c
@@ -218,16 +222,16 @@ $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
 $(CHECKSUM_CC): FORCE
-	$(if $(filter-out $(shell cat $@ 2>/dev/null),$(CC_SHA1)),$(file >$@,$(CC_SHA1)),)
+	$(call verify_input,$@,$(CC_SHA1))
 
 $(CHECKSUM_CXX): FORCE
-	$(if $(filter-out $(shell cat $@ 2>/dev/null),$(CXX_SHA1)),$(file >$@,$(CXX_SHA1)),)
+	$(call verify_input,$@,$(CXX_SHA1))
 
 $(CHECKSUM_LD_CC): FORCE
-	$(if $(filter-out $(shell cat $@ 2>/dev/null),$(LD_CC_SHA1)),$(file >$@,$(LD_CC_SHA1)),)
+	$(call verify_input,$@,$(LD_CC_SHA1))
 
 $(CHECKSUM_LD_CXX): FORCE
-	$(if $(filter-out $(shell cat $@ 2>/dev/null),$(LD_CXX_SHA1)),$(file >$@,$(LD_CXX_SHA1)),)
+	$(call verify_input,$@,$(LD_CXX_SHA1))
 
 .PHONY: all
 all: $(TARGETS)
