@@ -283,8 +283,6 @@ distclean: clean
 .PHONY: FORCE
 FORCE:
 
-ifneq (clean,$(filter $(MAKECMDGOALS),distclean))
-    ifneq (clean,$(filter $(MAKECMDGOALS),clean))
-        -include $(DEPS)
-    endif
+ifeq (,$(or $(filter clean,$(MAKECMDGOALS)),$(filter distclean,$(MAKECMDGOALS))))
+    -include $(DEPS)
 endif
