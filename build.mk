@@ -64,20 +64,22 @@ GCNO    := # List of all gcov notes
 OBJS    := # List of all objects
 TARGETS := # List of all executables/libraries
 
-CC_SHA1     := $(shell echo $$($(SHA1SUM) $(CC)) $(CFLAGS) | $(SHA1SUM) | awk '{print $$1}')
-CXX_SHA1    := $(shell echo $$($(SHA1SUM) $(CXX)) $(CXXFLAGS) | $(SHA1SUM) | awk '{print $$1}')
-LD_CC_SHA1  := $(shell echo $$($(SHA1SUM) $(CC)) $(LDFLAGS) | $(SHA1SUM) | awk '{print $$1}')
-LD_CXX_SHA1 := $(shell echo $$($(SHA1SUM) $(CXX)) $(LDFLAGS) | $(SHA1SUM) | awk '{print $$1}')
+CC_SHA1          := $(shell $(SHA1SUM) $(CC))
+CXX_SHA1         := $(shell $(SHA1SUM) $(CXX))
+COMPILE_CC_SHA1  := $(shell echo $(CC_SHA1) $(CFLAGS) | $(SHA1SUM) | awk '{print $$1}')
+COMPILE_CXX_SHA1 := $(shell echo $(CXX_SHA1) $(CXXFLAGS) | $(SHA1SUM) | awk '{print $$1}')
+LINK_CC_SHA1     := $(shell echo $(CC_SHA1) $(LDFLAGS) | $(SHA1SUM) | awk '{print $$1}')
+LINK_CXX_SHA1    := $(shell echo $(CXX_SHA1) $(LDFLAGS) | $(SHA1SUM) | awk '{print $$1}')
 
-CHECKSUM_CC     := $(BUILD_DIR)/.compile.cc.sha1
-CHECKSUM_CXX    := $(BUILD_DIR)/.compile.cxx.sha1
-CHECKSUM_LD_CC  := $(BUILD_DIR)/.link.cc.sha1
-CHECKSUM_LD_CXX := $(BUILD_DIR)/.link.cxx.sha1
+COMPILE_CC_SHA1_FILE  := $(BUILD_DIR)/.compile.cc.sha1
+COMPILE_CXX_SHA1_FILE := $(BUILD_DIR)/.compile.cxx.sha1
+LINK_CC_SHA1_FILE     := $(BUILD_DIR)/.link.cc.sha1
+LINK_CXX_SHA1_FILE    := $(BUILD_DIR)/.link.cxx.sha1
 
-CLEAN += $(CHECKSUM_CC)
-CLEAN += $(CHECKSUM_CXX)
-CLEAN += $(CHECKSUM_LD_CC)
-CLEAN += $(CHECKSUM_LD_CXX)
+CLEAN += $(COMPILE_CC_SHA1_FILE)
+CLEAN += $(COMPILE_CXX_SHA1_FILE)
+CLEAN += $(LINK_CC_SHA1_FILE)
+CLEAN += $(LINK_CXX_SHA1_FILE)
 
 ifdef VERBOSE
     define run_cmd
@@ -142,12 +144,12 @@ define include_module
 
     ifeq (.c,$$(sort $$(suffix $$($$(target)_src))))
         $$(target)_ld           := $$(CC)
-        $$(target)_compile_sha1 := $$(CHECKSUM_CC)
-        $$(target)_link_sha1    := $$(CHECKSUM_LD_CC)
+        $$(target)_compile_sha1 := $$(COMPILE_CC_SHA1_FILE)
+        $$(target)_link_sha1    := $$(LINK_CC_SHA1_FILE)
     else
         $$(target)_ld           := $$(CXX)
-        $$(target)_compile_sha1 := $$(CHECKSUM_CXX)
-        $$(target)_link_sha1    := $$(CHECKSUM_LD_CXX)
+        $$(target)_compile_sha1 := $$(COMPILE_CXX_SHA1_FILE)
+        $$(target)_link_sha1    := $$(LINK_CXX_SHA1_FILE)
     endif
 
     ifeq (.so,$$(suffix $$(target)))
@@ -259,16 +261,16 @@ distclean: clean
 .PHONY: FORCE
 FORCE:
 
-$(CHECKSUM_CC): SHA1 := $(CC_SHA1)
-$(CHECKSUM_CXX): SHA1 := $(CXX_SHA1)
-$(CHECKSUM_LD_CC): SHA1 := $(LD_CC_SHA1)
-$(CHECKSUM_LD_CXX): SHA1 := $(LD_CXX_SHA1)
+$(COMPILE_CC_SHA1_FILE): SHA1 := $(COMPILE_CC_SHA1)
+$(COMPILE_CXX_SHA1_FILE): SHA1 := $(COMPILE_CXX_SHA1)
+$(LINK_CC_SHA1_FILE): SHA1 := $(LINK_CC_SHA1)
+$(LINK_CXX_SHA1_FILE): SHA1 := $(LINK_CXX_SHA1)
 
 $(BUILD_DIR)/%.d: $(SRC_DIR)/%.c
 	$(call mkdir,$(dir $@))
 	$(call depends,$@,$(CC),$(CFLAGS),$<)
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(CHECKSUM_C)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CC,$@,$(CC) $(CFLAGS) -o $@ -c $<)
 
@@ -276,7 +278,7 @@ $(BUILD_DIR)/%.d: $(SRC_DIR)/%.cc
 	$(call mkdir,$(dir $@))
 	$(call depends,$@,$(CXX),$(CXXFLAGS),$<)
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc $(CHECKSUM_CXX)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
 
