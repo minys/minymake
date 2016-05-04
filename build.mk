@@ -190,25 +190,6 @@ endef
 
 default: release
 
-$(BUILD_DIR)/%.d: $(SRC_DIR)/%.c
-	$(call mkdir,$(dir $@))
-	$(call depends,$@,$(CC),$(CFLAGS),$<)
-
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(CHECKSUM_C)
-	$(call mkdir,$(dir $@))
-	$(call run_cmd,CC,$@,$(CC) $(CFLAGS) -o $@ -c $<)
-
-$(BUILD_DIR)/%.d: $(SRC_DIR)/%.cc
-	$(call mkdir,$(dir $@))
-	$(call depends,$@,$(CXX),$(CXXFLAGS),$<)
-
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc $(CHECKSUM_CXX)
-	$(call mkdir,$(dir $@))
-	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
-
-%.sha1: FORCE
-	$(call verify_input,$@,$(SHA1))
-
 CLEAN   := # List of all generated objects to be removed
 DEPS    := # List of all dependency files
 GCNO    := # List of all gcov notes
@@ -282,6 +263,25 @@ distclean: clean
 
 .PHONY: FORCE
 FORCE:
+
+$(BUILD_DIR)/%.d: $(SRC_DIR)/%.c
+	$(call mkdir,$(dir $@))
+	$(call depends,$@,$(CC),$(CFLAGS),$<)
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(CHECKSUM_C)
+	$(call mkdir,$(dir $@))
+	$(call run_cmd,CC,$@,$(CC) $(CFLAGS) -o $@ -c $<)
+
+$(BUILD_DIR)/%.d: $(SRC_DIR)/%.cc
+	$(call mkdir,$(dir $@))
+	$(call depends,$@,$(CXX),$(CXXFLAGS),$<)
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc $(CHECKSUM_CXX)
+	$(call mkdir,$(dir $@))
+	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
+
+%.sha1: FORCE
+	$(call verify_input,$@,$(SHA1))
 
 ifeq (,$(or $(filter clean,$(MAKECMDGOALS)),$(filter distclean,$(MAKECMDGOALS))))
     -include $(DEPS)
