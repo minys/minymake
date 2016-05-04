@@ -58,6 +58,12 @@ BUILD_DIR ?= $(CURDIR)
 BUILD_DIR := $(abspath $(BUILD_DIR))
 SRC_DIR   := $(CURDIR)
 
+CLEAN   := # List of all generated objects to be removed
+DEPS    := # List of all dependency files
+GCNO    := # List of all gcov notes
+OBJS    := # List of all objects
+TARGETS := # List of all executables/libraries
+
 CC_SHA1     := $(shell echo $$($(SHA1SUM) $(CC)) $(CFLAGS) | $(SHA1SUM) | awk '{print $$1}')
 CXX_SHA1    := $(shell echo $$($(SHA1SUM) $(CXX)) $(CXXFLAGS) | $(SHA1SUM) | awk '{print $$1}')
 LD_CC_SHA1  := $(shell echo $$($(SHA1SUM) $(CC)) $(LDFLAGS) | $(SHA1SUM) | awk '{print $$1}')
@@ -67,6 +73,11 @@ CHECKSUM_CC     := $(BUILD_DIR)/.compile.cc.sha1
 CHECKSUM_CXX    := $(BUILD_DIR)/.compile.cxx.sha1
 CHECKSUM_LD_CC  := $(BUILD_DIR)/.link.cc.sha1
 CHECKSUM_LD_CXX := $(BUILD_DIR)/.link.cxx.sha1
+
+CLEAN += $(CHECKSUM_CC)
+CLEAN += $(CHECKSUM_CXX)
+CLEAN += $(CHECKSUM_LD_CC)
+CLEAN += $(CHECKSUM_LD_CXX)
 
 ifdef VERBOSE
     define run_cmd
@@ -190,25 +201,9 @@ endef
 
 default: release
 
-CLEAN   := # List of all generated objects to be removed
-DEPS    := # List of all dependency files
-GCNO    := # List of all gcov notes
-OBJS    := # List of all objects
-TARGETS := # List of all executables/libraries
-
-CLEAN += $(CHECKSUM_CC)
-CLEAN += $(CHECKSUM_CXX)
-CLEAN += $(CHECKSUM_LD_CC)
-CLEAN += $(CHECKSUM_LD_CXX)
-
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
-
-$(CHECKSUM_CC): SHA1 :=$(CC_SHA1)
-$(CHECKSUM_CXX): SHA1 :=$(CXX_SHA1)
-$(CHECKSUM_LD_CC): SHA1 := $(LD_CC_SHA1)
-$(CHECKSUM_LD_CXX): SHA1 := $(LD_CXX_SHA1)
 
 .PHONY: all
 all: $(TARGETS)
@@ -263,6 +258,11 @@ distclean: clean
 
 .PHONY: FORCE
 FORCE:
+
+$(CHECKSUM_CC): SHA1 := $(CC_SHA1)
+$(CHECKSUM_CXX): SHA1 := $(CXX_SHA1)
+$(CHECKSUM_LD_CC): SHA1 := $(LD_CC_SHA1)
+$(CHECKSUM_LD_CXX): SHA1 := $(LD_CXX_SHA1)
 
 $(BUILD_DIR)/%.d: $(SRC_DIR)/%.c
 	$(call mkdir,$(dir $@))
