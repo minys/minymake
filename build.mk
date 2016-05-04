@@ -25,8 +25,6 @@
 #
 
 .SUFFIXES:
-.SUFFIXES: .c .cc .h .o
-
 .DELETE_ON_ERROR:
 
 MAKEFLAGS += --no-builtin-rules
