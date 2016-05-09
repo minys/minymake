@@ -32,14 +32,13 @@ MAKEFLAGS += --no-builtin-variables
 
 CC      ?= gcc
 CXX     ?= g++
-RM      := rm -rf
 SED     ?= sed
 SHA1SUM ?= sha1sum
 
-CC      := $(shell which $(CC))
-CXX     := $(shell which $(CXX))
-SED     := $(shell which $(SED))
-SHA1SUM := $(shell which $(SHA1SUM))
+CC      := $(shell which $(CC) 2>/dev/null)
+CXX     := $(shell which $(CXX) 2>/dev/null)
+SED     := $(shell which $(SED) 2>/dev/null)
+SHA1SUM := $(shell which $(SHA1SUM) 2>/dev/null)
 
 DEBUG_CFLAGS     ?= -g
 DEBUG_CXXFLAGS   ?= -g
@@ -170,7 +169,7 @@ define clean_rule
 clean: $(1)_clean
 .PHONY: $(1)_clean
 $(1)_clean:
-	$$(call run_cmd,RM,$(1),$$(RM) $(1))
+	$$(call run_cmd,RM,$(1),$(RM) $(1))
 endef
 
 define target_rule
