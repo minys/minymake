@@ -290,10 +290,10 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
 
-%.run:
+$(BUILD_DIR)/%.run:
 	$(call run_cmd,TEST,$<,$< && touch $@)
 
-%.sha1: FORCE
+$(BUILD_DIR)/%.sha1: FORCE
 	$(call verify_input,$@,$(SHA1))
 
 ifeq (,$(or $(filter clean,$(MAKECMDGOALS)),$(filter distclean,$(MAKECMDGOALS))))
