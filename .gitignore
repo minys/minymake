@@ -5,6 +5,7 @@
 *.so
 *.guard
 *.sha1
+*.run
 
 test/a/main
 test/b/main

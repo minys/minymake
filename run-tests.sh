@@ -91,7 +91,7 @@ for file in ${obj} ${dep} ${notes}; do
 	test ! -e ${tmpdir}/${file}
 done
 
-test_caption "target 'gcov'"
+test_caption "make gcov"
 make gcov
 for file in ${obj} ${dep} ${notes}; do
 	test -e ${file}
@@ -103,11 +103,11 @@ for file in ${obj} ${dep} ${notes}; do
 	test ! -e ${file}
 done
 
-#test_caption "make check"
-#make check
-#for file in c/test_cc c/c.o c/c.d c/.test.sh.guard; do
-#	test -e ${file}
-#done
+test_caption "make check"
+make check
+for file in c/test_cc c/c.o c/c.d c/.test.sh.guard; do
+	test -e ${file}
+done
 
 test_caption "make debug"
 make debug

@@ -14,5 +14,6 @@ MODULES += b/module.mk
 MODULES += c/module.mk
 MODULES += d/module.mk
 MODULES += e/module.mk
+MODULES += e/test.mk
 
 include build.mk

@@ -12,6 +12,7 @@ A module *must* declare the following variables:
 
 A module *might* declare the following variables:
 
+ test          : Target test which will be invoked whenever target is rebuilt.
  cflags        : Target specific CFLAGS.
  cxxflags      : Target specific CXXFLAGS.
  ldflags       : Target specific LDFLAGS.
@@ -20,6 +21,10 @@ Modules cannot include other modules, everything needs to be orchestrated
 from one top level makefile (or several separate ones).
 
 Flags that can be declared outside of build.mk and used for different targets:
+
+VERBOSE   - If defined, echo commands as they are executed.
+BUILD_DIR - If defined, files are generated rooted at BUILD_DIR using the same
+            directory structure as they appear in the source tree.
 
 Used by all targets:
  CFLAGS

@@ -55,11 +55,12 @@ BUILD_DIR ?= $(CURDIR)
 BUILD_DIR := $(abspath $(BUILD_DIR))
 SRC_DIR   := $(CURDIR)
 
-CLEAN   := # List of all generated objects to be removed
-DEPS    := # List of all dependency files
-GCNO    := # List of all gcov notes
-OBJS    := # List of all objects
-TARGETS := # List of all executables/libraries
+CLEAN   := # list of all generated objects to be removed
+DEPS    := # list of all dependency files
+GCNO    := # list of all gcov notes
+OBJS    := # list of all objects
+TARGETS := # list of all executables/libraries
+TESTS   := # list of all tests
 
 CC_SHA1          := $(shell $(SHA1SUM) $(CC))
 CXX_SHA1         := $(shell $(SHA1SUM) $(CXX))
@@ -112,6 +113,7 @@ endif
 define include_module
     target   := # target executable/library (mandatory)
     src      := # target executable/library source (mandatory)
+    test     := # target executable/library test (optional)
     cflags   := # target specific CFLAGS (optional)
     cxxflags := # target specific CXXFLAGS (optional)
     ldflags  := # target specific LDFLAGS (optional)
@@ -129,6 +131,9 @@ define include_module
     output              := $$(BUILD_DIR)/$$(path)
     target              := $$(abspath $$(output)/$$(target))
     $$(target)_src      := $$(abspath $$(addprefix $$(path)/,$$(src)))
+    $$(target)_test     := $$(abspath $$(addprefix $$(path)/,$$(test)))
+    $$(target)_test     := $$(if $$(wildcard $$($$(target)_test)),$$($$(target)_test),$$(abspath $$(addprefix $$(output)/,$$(test))))
+    $$(target)_run_test := $$(if $$(test),$$(abspath $$(output)/.$$(notdir $$(test)).run),)
     $$(target)_obj      := $$(addsuffix .o,$$(basename $$(src)))
     $$(target)_obj      := $$(abspath $$(addprefix $$(output)/,$$($$(target)_obj)))
     $$(target)_dep      := $$(patsubst %.o,%.d,$$($$(target)_obj))
@@ -159,10 +164,12 @@ define include_module
     CLEAN   += $$($$(target)_obj)
     CLEAN   += $$($$(target)_dep)
     CLEAN   += $$($$(target)_gcno)
+    CLEAN   += $$($$(target)_run_test)
     DEPS    += $$($$(target)_dep)
     GCNO    += $$($$(target)_gcno)
     OBJS    += $$($$(target)_obj)
     TARGETS += $$(target)
+    TESTS   += $$($$(target)_run_test)
 endef
 
 define clean_rule
@@ -178,6 +185,8 @@ $$($(1)_obj): override CXXFLAGS += $$($(1)_cxxflags)
 $$($(1)_obj): $$($(1)_module)
 $$($(1)_obj): $$($(1)_compile_sha1)
 $$($(1)_dep): $$($(1)_module)
+$$($(1)_test): $$(1)
+$$($(1)_run_test): $$($(1)_test)
 $(1): override LD := $$($(1)_ld)
 $(1): override LDFLAGS += $$($(1)_ldflags)
 $(1): $$($(1)_module)
@@ -253,7 +262,9 @@ distclean: clean
 #.PHONY: pdf
 #.PHONY: ps
 #.PHONY: dist
-#.PHONY: check
+
+.PHONY: check
+check: $(TESTS)
 
 .PHONY: FORCE
 FORCE:
@@ -278,6 +289,9 @@ $(BUILD_DIR)/%.d: $(SRC_DIR)/%.cc
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
+
+%.run:
+	$(call run_cmd,TEST,$<,$< && touch $@)
 
 %.sha1: FORCE
 	$(call verify_input,$@,$(SHA1))
