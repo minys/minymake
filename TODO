@@ -7,3 +7,7 @@ FIXME distclean does not do anymore than clean does at the moment, maybe that
       is fine.
 
 TODO improve error handling
+
+TODO hooks for post build?
+
+TODO compiler/linker tests?
