@@ -1,1 +1,2 @@
-CFLAGS += -march=broadwell
+CFLAGS += -mtune=native 
+CFLAGS += -march=native 
