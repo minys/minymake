@@ -30,55 +30,54 @@
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --no-builtin-variables
 
-# -- TOOLS ---------------------------------------------------------------------
+CC      ?= gcc
+CXX     ?= g++
+SED     ?= sed
+SHA1SUM ?= sha1sum
 
-CC                    ?= gcc
-CXX                   ?= g++
-SED                   ?= sed
-SHA1SUM               ?= sha1sum
+CC      := $(shell which $(CC) 2>/dev/null)
+CXX     := $(shell which $(CXX) 2>/dev/null)
+SED     := $(shell which $(SED) 2>/dev/null)
+SHA1SUM := $(shell which $(SHA1SUM) 2>/dev/null)
 
-CC                    := $(shell which $(CC) 2>/dev/null)
-CXX                   := $(shell which $(CXX) 2>/dev/null)
-SED                   := $(shell which $(SED) 2>/dev/null)
-SHA1SUM               := $(shell which $(SHA1SUM) 2>/dev/null)
+DEBUG_CFLAGS     ?= -g
+DEBUG_CXXFLAGS   ?= -g
+GCOV_CFLAGS      ?= -fprofile-arcs -ftest-coverage
+GCOV_CXXFLAGS    ?= -fprofile-arcs -ftest-coverage
+GCOV_LDFLAGS     ?= -fprofile-arcs
+RELEASE_CFLAGS   ?= -O2
+RELEASE_CXXFLAGS ?= -O2
+STATIC_CFLAGS    ?= -static
+STATIC_CXXFLAGS  ?= -static
+STATIC_LDFLAGS   ?= -static
 
-CC_SHA1               := $(shell $(SHA1SUM) $(CC))
-CXX_SHA1              := $(shell $(SHA1SUM) $(CXX))
-COMPILE_CC_SHA1       := $(shell echo $(CC_SHA1) $(CFLAGS) | $(SHA1SUM) | awk '{print $$1}')
-COMPILE_CXX_SHA1      := $(shell echo $(CXX_SHA1) $(CXXFLAGS) | $(SHA1SUM) | awk '{print $$1}')
-LINK_CC_SHA1          := $(shell echo $(CC_SHA1) $(LDFLAGS) | $(SHA1SUM) | awk '{print $$1}')
-LINK_CXX_SHA1         := $(shell echo $(CXX_SHA1) $(LDFLAGS) | $(SHA1SUM) | awk '{print $$1}')
+BUILD_DIR ?= $(CURDIR)
+BUILD_DIR := $(abspath $(BUILD_DIR))
+SRC_DIR   := $(CURDIR)
+
+CLEAN   := # list of all generated objects to be removed
+DEPS    := # list of all dependency files
+GCNO    := # list of all gcov notes
+OBJS    := # list of all objects
+TARGETS := # list of all executables/libraries
+TESTS   := # list of all tests
+
+CC_SHA1          := $(shell $(SHA1SUM) $(CC))
+CXX_SHA1         := $(shell $(SHA1SUM) $(CXX))
+COMPILE_CC_SHA1  := $(shell echo $(CC_SHA1) $(CFLAGS) | $(SHA1SUM) | awk '{print $$1}')
+COMPILE_CXX_SHA1 := $(shell echo $(CXX_SHA1) $(CXXFLAGS) | $(SHA1SUM) | awk '{print $$1}')
+LINK_CC_SHA1     := $(shell echo $(CC_SHA1) $(LDFLAGS) | $(SHA1SUM) | awk '{print $$1}')
+LINK_CXX_SHA1    := $(shell echo $(CXX_SHA1) $(LDFLAGS) | $(SHA1SUM) | awk '{print $$1}')
 
 COMPILE_CC_SHA1_FILE  := $(BUILD_DIR)/.compile.cc.sha1
 COMPILE_CXX_SHA1_FILE := $(BUILD_DIR)/.compile.cxx.sha1
 LINK_CC_SHA1_FILE     := $(BUILD_DIR)/.link.cc.sha1
 LINK_CXX_SHA1_FILE    := $(BUILD_DIR)/.link.cxx.sha1
 
-DEBUG_CFLAGS          ?= -g
-DEBUG_CXXFLAGS        ?= -g
-GCOV_CFLAGS           ?= -fprofile-arcs -ftest-coverage
-GCOV_CXXFLAGS         ?= -fprofile-arcs -ftest-coverage
-GCOV_LDFLAGS          ?= -fprofile-arcs
-RELEASE_CFLAGS        ?= -O2
-RELEASE_CXXFLAGS      ?= -O2
-STATIC_CFLAGS         ?= -static
-STATIC_CXXFLAGS       ?= -static
-STATIC_LDFLAGS        ?= -static
-
-# -- VARIABLES -----------------------------------------------------------------
-
-BUILD_DIR ?= $(CURDIR)
-BUILD_DIR := $(abspath $(BUILD_DIR))
-SRC_DIR   := $(CURDIR)
-
-CLEAN     := # list of all generated objects to be removed
-DEPS      := # list of all dependency files
-GCNO      := # list of all gcov notes
-OBJS      := # list of all objects
-TARGETS   := # list of all executables/libraries
-TESTS     := # list of all tests
-
-# -- MACROS --------------------------------------------------------------------
+CLEAN += $(COMPILE_CC_SHA1_FILE)
+CLEAN += $(COMPILE_CXX_SHA1_FILE)
+CLEAN += $(LINK_CC_SHA1_FILE)
+CLEAN += $(LINK_CXX_SHA1_FILE)
 
 ifdef VERBOSE
     define run_cmd
@@ -208,8 +207,6 @@ define verify_input
     $(if $(filter-out $(shell cat $(1) 2>/dev/null),$(2)),$(file >$(1),$(2)),)
 endef
 
-# -- RULES ---------------------------------------------------------------------
-
 default: release
 
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
@@ -276,11 +273,6 @@ $(COMPILE_CC_SHA1_FILE): SHA1 := $(COMPILE_CC_SHA1)
 $(COMPILE_CXX_SHA1_FILE): SHA1 := $(COMPILE_CXX_SHA1)
 $(LINK_CC_SHA1_FILE): SHA1 := $(LINK_CC_SHA1)
 $(LINK_CXX_SHA1_FILE): SHA1 := $(LINK_CXX_SHA1)
-
-CLEAN += $(COMPILE_CC_SHA1_FILE)
-CLEAN += $(COMPILE_CXX_SHA1_FILE)
-CLEAN += $(LINK_CC_SHA1_FILE)
-CLEAN += $(LINK_CXX_SHA1_FILE)
 
 $(BUILD_DIR)/%.d: $(SRC_DIR)/%.c
 	$(call mkdir,$(dir $@))
