@@ -1,0 +1,44 @@
+#!/bin/bash
+
+test_start ()
+{
+	printf '\n\e[1;34m%s\e[0m %s\n\n' TEST "${@}"
+}
+
+assert_exist ()
+{
+	local object=$(readlink -f ${1})
+
+	set +o errexit
+	test -e ${object}
+	result=$?
+	[ "${result}" -ne 0 ] &&
+		FAILURE="should exist but does not: ${object}"
+	set -o errexit
+
+	return ${result}
+}
+
+assert_not_exist ()
+{
+	local object=$(readlink -f ${1})
+
+	set +o errexit
+	test ! -e ${object}
+	result=$?
+	[ "${result}" -ne 0 ] &&
+		FAILURE="should not exist but does: ${object}"
+	set -o errexit
+
+	return ${result}
+}
+
+assert_newer_than ()
+{
+	return 0
+}
+
+assert_older_than ()
+{
+	return 0
+}

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+CURDIR=${CURDIR:-$(dirname $(readlink -f $_))}
+
+source ${CURDIR}/setup
+source ${CURDIR}/common
+
+test_start "make clean"
+make clean
+for file in ${all}; do
+	assert_not_exist ${file}
+done

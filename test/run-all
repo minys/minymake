@@ -1,0 +1,19 @@
+#!/bin/bash
+
+CURDIR=$(dirname $(readlink -f $_))
+
+source ${CURDIR}/setup
+
+source ${CURDIR}/test_default_target
+source ${CURDIR}/test_clean
+source ${CURDIR}/test_gcov
+source ${CURDIR}/test_clean
+source ${CURDIR}/test_build_dir
+source ${CURDIR}/test_distclean
+source ${CURDIR}/test_release
+source ${CURDIR}/test_clean
+#source ${CURDIR}/test_static
+source ${CURDIR}/test_clean
+source ${CURDIR}/test_verbose
+
+exit 0
