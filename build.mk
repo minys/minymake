@@ -36,6 +36,7 @@ MAKEFLAGS += --no-builtin-variables
 CLEAN                 := # list of all generated objects to be removed
 DEPS                  := # list of all dependency files
 GCNO                  := # list of all gcov notes
+INSTALL_ALL           := # list of all things to install
 OBJS                  := # list of all objects
 TARGETS               := # list of all executables/libraries
 TESTS                 := # list of all tests
@@ -43,14 +44,27 @@ TESTS                 := # list of all tests
 BUILD_DIR             ?= $(CURDIR)
 BUILD_DIR             := $(abspath $(BUILD_DIR))
 SRC_DIR               := $(CURDIR)
+DESTDIR               ?= /usr/local
+BINDIR                ?= bin
+LIBDIR                ?= lib
+DATADIR               ?= etc
+INFODIR               ?= info
+MANDIR                ?= man
+BIN_PERM              ?= 755
+LIB_PERM              ?= 644
+DATA_PERM             ?= 644
+INFO_PERM             ?= 644
+MAN_PERM              ?= 644
 
 CC                    ?= gcc
 CXX                   ?= g++
+INSTALL               ?= install
 SED                   ?= sed
 SHA1SUM               ?= sha1sum
 
 CC                    := $(shell which $(CC) 2>/dev/null)
 CXX                   := $(shell which $(CXX) 2>/dev/null)
+INSTALL               := $(shell which $(INSTALL) 2>/dev/null)
 SED                   := $(shell which $(SED) 2>/dev/null)
 SHA1SUM               := $(shell which $(SHA1SUM) 2>/dev/null)
 
@@ -100,15 +114,15 @@ ifdef VERBOSE
     endef
 else
     define run_cmd
-        @printf ' %-6s \e[0;20m%s\e[0m\n' "$(1)" "$(2)"
+        @printf ' %-8s \e[0;20m%s\e[0m\n' "$(1)" "$(2)"
         @$(strip $(3))
     endef
     define run_cmd_red
-        @printf ' %-6s \e[1;31m%s\e[0m\n' "$(1)" "$(2)"
+        @printf ' %-8s \e[1;31m%s\e[0m\n' "$(1)" "$(2)"
         @$(strip $(3))
     endef
     define run_cmd_green
-        @printf ' %-6s \e[1;32m%s\e[0m\n' "$(1)" "$(2)"
+        @printf ' %-8s \e[1;32m%s\e[0m\n' "$(1)" "$(2)"
         @$(strip $(3))
     endef
     define run_cmd_silent
@@ -164,18 +178,24 @@ define include_module
         $$(target)_cflags   += -fpic
         $$(target)_cxxflags += -fpic
         $$(target)_ldflags  += -fpic
+        $$(target)_install  := $$(abspath $(DESTDIR)/$(LIBDIR)/$$(notdir $$(target)))
+        $$(target)_perm     := $(LIB_PERM)
+    else
+        $$(target)_install := $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$(target)))
+        $$(target)_perm    := $(BIN_PERM)
     endif
 
-    CLEAN   += $$(target)
-    CLEAN   += $$($$(target)_obj)
-    CLEAN   += $$($$(target)_dep)
-    CLEAN   += $$($$(target)_gcno)
-    CLEAN   += $$($$(target)_run_test)
-    DEPS    += $$($$(target)_dep)
-    GCNO    += $$($$(target)_gcno)
-    OBJS    += $$($$(target)_obj)
-    TARGETS += $$(target)
-    TESTS   += $$($$(target)_run_test)
+    CLEAN       += $$(target)
+    CLEAN       += $$($$(target)_obj)
+    CLEAN       += $$($$(target)_dep)
+    CLEAN       += $$($$(target)_gcno)
+    CLEAN       += $$($$(target)_run_test)
+    DEPS        += $$($$(target)_dep)
+    GCNO        += $$($$(target)_gcno)
+    OBJS        += $$($$(target)_obj)
+    TARGETS     += $$(target)
+    TESTS       += $$($$(target)_run_test)
+    INSTALL_ALL += $$($$(target)_install)
 endef
 
 define clean_rule
@@ -201,6 +221,12 @@ $(1): $$($(1)_obj)
 	$$(call run_cmd_green,LD,$(1),$$($(1)_ld) $$(LDFLAGS) -o $(1) $$($(1)_obj))
 endef
 
+define install_rule
+$$($(1)_install): PERM := $$($(1)_perm)
+$$($(1)_install): FROM := $(1)
+$$($(1)_install): $(1)
+endef
+
 define mkdir
     $(call run_cmd_silent,test -d $(1) || mkdir -p $(1))
 endef
@@ -220,6 +246,7 @@ default: release
 
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
+$(foreach target,$(TARGETS),$(eval $(call install_rule,$(target))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
 .PHONY: all
@@ -255,9 +282,23 @@ distclean: clean
 
 #.PHONY: mostlyclean
 #.PHONY: maintainer-clean
-#.PHONY: install
+
+.PHONY: install
+install: $(INSTALL_ALL)
+
+$(INSTALL_ALL): | installdirs
+	$(call run_cmd,INSTALL,$@,$(INSTALL) -m $(PERM) $(FROM) $@)
+
 #.PHONY: installcheck
-#.PHONY: installdirs
+
+.PHONY: installdirs
+installdirs:
+	$(call mkdir,$(DESTDIR)/$(BINDIR))
+	$(call mkdir,$(DESTDIR)/$(LIBDIR))
+	$(call mkdir,$(DESTDIR)/$(DATADIR))
+	$(call mkdir,$(DESTDIR)/$(INFODIR))
+	$(call mkdir,$(DESTDIR)/$(MANDIR))
+
 #.PHONY: install-html
 #.PHONY: install-dvi
 #.PHONY: install-pdf
