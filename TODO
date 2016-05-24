@@ -11,3 +11,5 @@ TODO improve error handling
 TODO hooks for post build?
 
 TODO compiler/linker tests?
+
+FIXME default value of LIBDIR detect 64/32 bit location?
