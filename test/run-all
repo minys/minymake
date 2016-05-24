@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CURDIR=$(dirname $(readlink -f $_))
+CURDIR=$(dirname $(readlink -f $0))
 
 source ${CURDIR}/setup
 
