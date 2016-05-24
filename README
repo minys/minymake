@@ -23,7 +23,7 @@ from one top level makefile (or several separate ones).
 Flags that can be declared outside of build.mk and used for different targets:
 
 VERBOSE   - If defined, echo commands as they are executed.
-BUILD_DIR - If defined, files are generated rooted at BUILD_DIR using the same
+BUILDDIR  - If defined, files are generated rooted at BUILD_DIR using the same
             directory structure as they appear in the source tree.
 
 Used by all targets:

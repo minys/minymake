@@ -6,8 +6,8 @@ source ${CURDIR}/setup
 source ${CURDIR}/common
 
 tmpdir=$(mktemp -d)
-test_start "make BUILD_DIR=${tmpdir}"
-make BUILD_DIR=${tmpdir}
+test_start "make BUILDDIR=${tmpdir}"
+make BUILDDIR=${tmpdir}
 for file in ${targets} ${obj} ${dep} ${sha1}; do
 	assert_exist ${tmpdir}/${file}
 done
@@ -15,8 +15,8 @@ for file in ${notes}; do
 	assert_not_exist ${tmpdir}/${file}
 done
 
-test_start "make BUILD_DIR=${tmpdir} clean"
-make BUILD_DIR=${tmpdir} clean
+test_start "make BUILDDIR=${tmpdir} clean"
+make BUILDDIR=${tmpdir} clean
 for file in ${all}; do
 	assert_not_exist ${tmpdir}/${file}
 done

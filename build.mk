@@ -41,8 +41,8 @@ OBJS                  := # list of all objects
 TARGETS               := # list of all executables/libraries
 TESTS                 := # list of all tests
 
-BUILD_DIR             ?= $(CURDIR)
-BUILD_DIR             := $(abspath $(BUILD_DIR))
+BUILDDIR              ?= $(CURDIR)
+BUILDDIR              := $(abspath $(BUILDDIR))
 SRC_DIR               := $(CURDIR)
 DESTDIR               ?= /usr/local
 BINDIR                ?= bin
@@ -88,10 +88,10 @@ COMPILE_CXX_SHA1      := $(shell echo $(CXX_SHA1) $(CXXFLAGS) | $(SHA1SUM) | $(A
 LINK_CC_SHA1          := $(shell echo $(CC_SHA1) $(LDFLAGS) | $(SHA1SUM) | $(AWK) '{print $$1}')
 LINK_CXX_SHA1         := $(shell echo $(CXX_SHA1) $(LDFLAGS) | $(SHA1SUM) | $(AWK) '{print $$1}')
 
-COMPILE_CC_SHA1_FILE  := $(BUILD_DIR)/.compile.cc.sha1
-COMPILE_CXX_SHA1_FILE := $(BUILD_DIR)/.compile.cxx.sha1
-LINK_CC_SHA1_FILE     := $(BUILD_DIR)/.link.cc.sha1
-LINK_CXX_SHA1_FILE    := $(BUILD_DIR)/.link.cxx.sha1
+COMPILE_CC_SHA1_FILE  := $(BUILDDIR)/.compile.cc.sha1
+COMPILE_CXX_SHA1_FILE := $(BUILDDIR)/.compile.cxx.sha1
+LINK_CC_SHA1_FILE     := $(BUILDDIR)/.link.cc.sha1
+LINK_CXX_SHA1_FILE    := $(BUILDDIR)/.link.cxx.sha1
 
 CLEAN                 += $(COMPILE_CC_SHA1_FILE)
 CLEAN                 += $(COMPILE_CXX_SHA1_FILE)
@@ -150,7 +150,7 @@ define include_module
     endif
 
     path                := $(dir $(1))
-    output              := $$(BUILD_DIR)/$$(path)
+    output              := $$(BUILDDIR)/$$(path)
     target              := $$(abspath $$(output)/$$(target))
     $$(target)_src      := $$(abspath $$(addprefix $$(path)/,$$(src)))
     $$(target)_test     := $$(abspath $$(addprefix $$(path)/,$$(test)))
@@ -326,26 +326,26 @@ $(COMPILE_CXX_SHA1_FILE): SHA1 := $(COMPILE_CXX_SHA1)
 $(LINK_CC_SHA1_FILE): SHA1 := $(LINK_CC_SHA1)
 $(LINK_CXX_SHA1_FILE): SHA1 := $(LINK_CXX_SHA1)
 
-$(BUILD_DIR)/%.d: $(SRC_DIR)/%.c
+$(BUILDDIR)/%.d: $(SRC_DIR)/%.c
 	$(call mkdir,$(dir $@))
 	$(call depends,$@,$(CC),$(CFLAGS),$<)
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+$(BUILDDIR)/%.o: $(SRC_DIR)/%.c
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CC,$@,$(CC) $(CFLAGS) -o $@ -c $<)
 
-$(BUILD_DIR)/%.d: $(SRC_DIR)/%.cc
+$(BUILDDIR)/%.d: $(SRC_DIR)/%.cc
 	$(call mkdir,$(dir $@))
 	$(call depends,$@,$(CXX),$(CXXFLAGS),$<)
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc
+$(BUILDDIR)/%.o: $(SRC_DIR)/%.cc
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
 
-$(BUILD_DIR)/%.run:
+$(BUILDDIR)/%.run:
 	$(call run_cmd,TEST,$<,$< && touch $@)
 
-$(BUILD_DIR)/%.sha1: FORCE
+$(BUILDDIR)/%.sha1: FORCE
 	$(call verify_input,$@,$(SHA1))
 
 ifeq (,$(or $(filter clean,$(MAKECMDGOALS)),$(filter distclean,$(MAKECMDGOALS))))
