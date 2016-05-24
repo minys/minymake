@@ -321,11 +321,6 @@ check: $(TESTS)
 .PHONY: FORCE
 FORCE:
 
-$(COMPILE_CC_SHA1_FILE): SHA1 := $(COMPILE_CC_SHA1)
-$(COMPILE_CXX_SHA1_FILE): SHA1 := $(COMPILE_CXX_SHA1)
-$(LINK_CC_SHA1_FILE): SHA1 := $(LINK_CC_SHA1)
-$(LINK_CXX_SHA1_FILE): SHA1 := $(LINK_CXX_SHA1)
-
 $(BUILDDIR)/%.d: $(SRCDIR)/%.c
 	$(call mkdir,$(dir $@))
 	$(call depends,$@,$(CC),$(CFLAGS),$<)
@@ -344,6 +339,11 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cc
 
 $(BUILDDIR)/%.run:
 	$(call run_cmd,TEST,$<,$< && touch $@)
+
+$(COMPILE_CC_SHA1_FILE): SHA1 := $(COMPILE_CC_SHA1)
+$(COMPILE_CXX_SHA1_FILE): SHA1 := $(COMPILE_CXX_SHA1)
+$(LINK_CC_SHA1_FILE): SHA1 := $(LINK_CC_SHA1)
+$(LINK_CXX_SHA1_FILE): SHA1 := $(LINK_CXX_SHA1)
 
 $(BUILDDIR)/%.sha1: FORCE
 	$(call verify_input,$@,$(SHA1))
