@@ -43,7 +43,7 @@ TESTS                 := # list of all tests
 
 BUILDDIR              ?= $(CURDIR)
 BUILDDIR              := $(abspath $(BUILDDIR))
-SRC_DIR               := $(CURDIR)
+SRCDIR               := $(CURDIR)
 DESTDIR               ?= /usr/local
 BINDIR                ?= bin
 LIBDIR                ?= lib
@@ -326,19 +326,19 @@ $(COMPILE_CXX_SHA1_FILE): SHA1 := $(COMPILE_CXX_SHA1)
 $(LINK_CC_SHA1_FILE): SHA1 := $(LINK_CC_SHA1)
 $(LINK_CXX_SHA1_FILE): SHA1 := $(LINK_CXX_SHA1)
 
-$(BUILDDIR)/%.d: $(SRC_DIR)/%.c
+$(BUILDDIR)/%.d: $(SRCDIR)/%.c
 	$(call mkdir,$(dir $@))
 	$(call depends,$@,$(CC),$(CFLAGS),$<)
 
-$(BUILDDIR)/%.o: $(SRC_DIR)/%.c
+$(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CC,$@,$(CC) $(CFLAGS) -o $@ -c $<)
 
-$(BUILDDIR)/%.d: $(SRC_DIR)/%.cc
+$(BUILDDIR)/%.d: $(SRCDIR)/%.cc
 	$(call mkdir,$(dir $@))
 	$(call depends,$@,$(CXX),$(CXXFLAGS),$<)
 
-$(BUILDDIR)/%.o: $(SRC_DIR)/%.cc
+$(BUILDDIR)/%.o: $(SRCDIR)/%.cc
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
 
