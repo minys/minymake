@@ -7,15 +7,10 @@
 *.sha1
 *.run
 
-test/a/main
-test/b/main
-test/c/test_cc
-test/main
-test/e/program
-test/e/test_program
-test/a/program_a
-test/a/test_dupl
-test/a/test_main
-test/b/program_b
-test/e/program_e
-test/program
+test/project/a/program_a
+test/project/a/test_dupl
+test/project/b/program_b
+test/project/c/test_cc
+test/project/e/program_e
+test/project/e/test_program
+test/project/program
