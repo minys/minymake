@@ -56,12 +56,14 @@ DATA_PERM             ?= 644
 INFO_PERM             ?= 644
 MAN_PERM              ?= 644
 
+AWK                   ?= awk
 CC                    ?= gcc
 CXX                   ?= g++
 INSTALL               ?= install
 SED                   ?= sed
 SHA1SUM               ?= sha1sum
 
+AWK                   := $(shell which $(AWK) 2>/dev/null)
 CC                    := $(shell which $(CC) 2>/dev/null)
 CXX                   := $(shell which $(CXX) 2>/dev/null)
 INSTALL               := $(shell which $(INSTALL) 2>/dev/null)
@@ -81,10 +83,10 @@ STATIC_LDFLAGS        ?= -static
 
 CC_SHA1               := $(shell $(SHA1SUM) $(CC))
 CXX_SHA1              := $(shell $(SHA1SUM) $(CXX))
-COMPILE_CC_SHA1       := $(shell echo $(CC_SHA1) $(CFLAGS) | $(SHA1SUM) | awk '{print $$1}')
-COMPILE_CXX_SHA1      := $(shell echo $(CXX_SHA1) $(CXXFLAGS) | $(SHA1SUM) | awk '{print $$1}')
-LINK_CC_SHA1          := $(shell echo $(CC_SHA1) $(LDFLAGS) | $(SHA1SUM) | awk '{print $$1}')
-LINK_CXX_SHA1         := $(shell echo $(CXX_SHA1) $(LDFLAGS) | $(SHA1SUM) | awk '{print $$1}')
+COMPILE_CC_SHA1       := $(shell echo $(CC_SHA1) $(CFLAGS) | $(SHA1SUM) | $(AWK) '{print $$1}')
+COMPILE_CXX_SHA1      := $(shell echo $(CXX_SHA1) $(CXXFLAGS) | $(SHA1SUM) | $(AWK) '{print $$1}')
+LINK_CC_SHA1          := $(shell echo $(CC_SHA1) $(LDFLAGS) | $(SHA1SUM) | $(AWK) '{print $$1}')
+LINK_CXX_SHA1         := $(shell echo $(CXX_SHA1) $(LDFLAGS) | $(SHA1SUM) | $(AWK) '{print $$1}')
 
 COMPILE_CC_SHA1_FILE  := $(BUILD_DIR)/.compile.cc.sha1
 COMPILE_CXX_SHA1_FILE := $(BUILD_DIR)/.compile.cxx.sha1
