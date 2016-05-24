@@ -43,7 +43,7 @@ TESTS                 := # list of all tests
 
 BUILDDIR              ?= $(CURDIR)
 BUILDDIR              := $(abspath $(BUILDDIR))
-SRCDIR               := $(CURDIR)
+SRCDIR                := $(CURDIR)
 DESTDIR               ?= /usr/local
 BINDIR                ?= bin
 LIBDIR                ?= lib
