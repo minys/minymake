@@ -42,6 +42,7 @@ TARGETS               := # list of all executables/libraries
 TESTS                 := # list of all tests
 
 # Standard GNU variables for installation directories
+#
 BUILDDIR              ?= $(CURDIR)
 BUILDDIR              := $(abspath $(BUILDDIR))
 SRCDIR                := $(CURDIR)
@@ -65,6 +66,7 @@ PSDIR                 ?= $(DOCDIR)
 MANDIR                ?= $(DATAROOTDIR)/man
 
 # Default permissions when installing files
+#
 BIN_PERM              ?= 755
 LIB_PERM              ?= 644
 DATA_PERM             ?= 644
@@ -72,11 +74,10 @@ INFO_PERM             ?= 644
 MAN_PERM              ?= 644
 
 CC                    ?= gcc
-CXX                   ?= g++
-INSTALL               ?= install
-
 CC                    := $(shell which $(CC) 2>/dev/null)
+CXX                   ?= g++
 CXX                   := $(shell which $(CXX) 2>/dev/null)
+INSTALL               ?= install
 INSTALL               := $(shell which $(INSTALL) 2>/dev/null)
 
 DEBUG_CFLAGS          ?= -g
@@ -90,6 +91,10 @@ STATIC_CFLAGS         ?= -static
 STATIC_CXXFLAGS       ?= -static
 STATIC_LDFLAGS        ?= -static
 
+# Input data is hashed and stored between builds in order to detect changes to
+# compiler and/or compiler flags passed on the command line. In case a change
+# is detected, affected targets will be rebuilt.
+#
 CC_SHA1               := $(shell sha1sum $(CC))
 CXX_SHA1              := $(shell sha1sum $(CXX))
 COMPILE_CC_SHA1       := $(shell echo $(CC_SHA1) $(CFLAGS) | sha1sum | awk '{print $$1}')
