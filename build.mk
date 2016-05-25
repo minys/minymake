@@ -56,19 +56,13 @@ DATA_PERM             ?= 644
 INFO_PERM             ?= 644
 MAN_PERM              ?= 644
 
-AWK                   ?= awk
 CC                    ?= gcc
 CXX                   ?= g++
 INSTALL               ?= install
-SED                   ?= sed
-SHA1SUM               ?= sha1sum
 
-AWK                   := $(shell which $(AWK) 2>/dev/null)
 CC                    := $(shell which $(CC) 2>/dev/null)
 CXX                   := $(shell which $(CXX) 2>/dev/null)
 INSTALL               := $(shell which $(INSTALL) 2>/dev/null)
-SED                   := $(shell which $(SED) 2>/dev/null)
-SHA1SUM               := $(shell which $(SHA1SUM) 2>/dev/null)
 
 DEBUG_CFLAGS          ?= -g
 DEBUG_CXXFLAGS        ?= -g
@@ -81,12 +75,12 @@ STATIC_CFLAGS         ?= -static
 STATIC_CXXFLAGS       ?= -static
 STATIC_LDFLAGS        ?= -static
 
-CC_SHA1               := $(shell $(SHA1SUM) $(CC))
-CXX_SHA1              := $(shell $(SHA1SUM) $(CXX))
-COMPILE_CC_SHA1       := $(shell echo $(CC_SHA1) $(CFLAGS) | $(SHA1SUM) | $(AWK) '{print $$1}')
-COMPILE_CXX_SHA1      := $(shell echo $(CXX_SHA1) $(CXXFLAGS) | $(SHA1SUM) | $(AWK) '{print $$1}')
-LINK_CC_SHA1          := $(shell echo $(CC_SHA1) $(LDFLAGS) | $(SHA1SUM) | $(AWK) '{print $$1}')
-LINK_CXX_SHA1         := $(shell echo $(CXX_SHA1) $(LDFLAGS) | $(SHA1SUM) | $(AWK) '{print $$1}')
+CC_SHA1               := $(shell sha1sum $(CC))
+CXX_SHA1              := $(shell sha1sum $(CXX))
+COMPILE_CC_SHA1       := $(shell echo $(CC_SHA1) $(CFLAGS) | sha1sum | awk '{print $$1}')
+COMPILE_CXX_SHA1      := $(shell echo $(CXX_SHA1) $(CXXFLAGS) | sha1sum | awk '{print $$1}')
+LINK_CC_SHA1          := $(shell echo $(CC_SHA1) $(LDFLAGS) | sha1sum | awk '{print $$1}')
+LINK_CXX_SHA1         := $(shell echo $(CXX_SHA1) $(LDFLAGS) | sha1sum | awk '{print $$1}')
 
 COMPILE_CC_SHA1_FILE  := $(BUILDDIR)/.compile.cc.sha1
 COMPILE_CXX_SHA1_FILE := $(BUILDDIR)/.compile.cxx.sha1
@@ -234,7 +228,7 @@ define mkdir
 endef
 
 define depends
-    $(call run_cmd,DEP,$(1),$(strip $(2) $(3) -MT "$(patsubst %.d,%.o,$(1))" -M $(4) | $(SED) 's,\(^.*.o:\),$@ \1,' > $(1)))
+    $(call run_cmd,DEP,$(1),$(strip $(2) $(3) -MT "$(patsubst %.d,%.o,$(1))" -M $(4) | sed 's,\(^.*.o:\),$@ \1,' > $(1)))
 endef
 
 define verify_input
