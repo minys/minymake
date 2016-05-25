@@ -41,14 +41,30 @@ OBJS                  := # list of all objects
 TARGETS               := # list of all executables/libraries
 TESTS                 := # list of all tests
 
+# Standard GNU variables for installation directories
 BUILDDIR              ?= $(CURDIR)
 BUILDDIR              := $(abspath $(BUILDDIR))
 SRCDIR                := $(CURDIR)
-BINDIR                ?= /bin
-LIBDIR                ?= /lib
-DATADIR               ?= /etc
-INFODIR               ?= /info
-MANDIR                ?= /man
+BINDIR                ?= bin
+SBINDIR               ?= sbin
+LIBEXECDIR            ?= libexec
+LIBDIR                ?= lib
+DATAROOTDIR           ?= share
+DATADIR               ?= share
+INFODIR               ?= $(DATAROOTDIR)/info
+INCLUDEDIR            ?= include
+SYSCONFDIR            ?= etc
+SHAREDSTATEDIR        ?= com
+LOCALSTATEDIR         ?= var
+RUNSTATEDIR           ?= run
+DOCDIR                ?= doc
+HTMLDIR               ?= $(DOCDIR)
+DVIDIR                ?= $(DOCDIR)
+PDFDIR                ?= $(DOCDIR)
+PSDIR                 ?= $(DOCDIR)
+MANDIR                ?= $(DATAROOTDIR)/man
+
+# Default permissions when installing files
 BIN_PERM              ?= 755
 LIB_PERM              ?= 644
 DATA_PERM             ?= 644
