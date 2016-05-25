@@ -44,12 +44,11 @@ TESTS                 := # list of all tests
 BUILDDIR              ?= $(CURDIR)
 BUILDDIR              := $(abspath $(BUILDDIR))
 SRCDIR                := $(CURDIR)
-DESTDIR               ?= /usr/local
-BINDIR                ?= bin
-LIBDIR                ?= lib
-DATADIR               ?= etc
-INFODIR               ?= info
-MANDIR                ?= man
+BINDIR                ?= /bin
+LIBDIR                ?= /lib
+DATADIR               ?= /etc
+INFODIR               ?= /info
+MANDIR                ?= /man
 BIN_PERM              ?= 755
 LIB_PERM              ?= 644
 DATA_PERM             ?= 644
@@ -174,10 +173,10 @@ define include_module
         $$(target)_cflags   += -fpic
         $$(target)_cxxflags += -fpic
         $$(target)_ldflags  += -fpic
-        $$(target)_install  := $$(abspath $(DESTDIR)/$(LIBDIR)/$$(notdir $$(target)))
+        $$(target)_install  := $$(abspath $(DESTDIR)$(LIBDIR)/$$(notdir $$(target)))
         $$(target)_perm     := $(LIB_PERM)
     else
-        $$(target)_install := $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$(target)))
+        $$(target)_install := $$(abspath $(DESTDIR)$(BINDIR)/$$(notdir $$(target)))
         $$(target)_perm    := $(BIN_PERM)
     endif
 
@@ -289,11 +288,11 @@ $(INSTALL_ALL): | installdirs
 
 .PHONY: installdirs
 installdirs:
-	$(call mkdir,$(DESTDIR)/$(BINDIR))
-	$(call mkdir,$(DESTDIR)/$(LIBDIR))
-	$(call mkdir,$(DESTDIR)/$(DATADIR))
-	$(call mkdir,$(DESTDIR)/$(INFODIR))
-	$(call mkdir,$(DESTDIR)/$(MANDIR))
+	$(call mkdir,$(DESTDIR)$(BINDIR))
+	$(call mkdir,$(DESTDIR)$(LIBDIR))
+	$(call mkdir,$(DESTDIR)$(DATADIR))
+	$(call mkdir,$(DESTDIR)$(INFODIR))
+	$(call mkdir,$(DESTDIR)$(MANDIR))
 
 #.PHONY: install-html
 #.PHONY: install-dvi
