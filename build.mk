@@ -200,14 +200,21 @@ $(1)_clean:
 	$$(call run_cmd,RM,$(1),$(RM) $(1))
 endef
 
-define target_rule
+define install_rule
+$$($(1)_install): PERM := $$($(1)_perm)
+$$($(1)_install): FROM := $(1)
+$$($(1)_install): $(1)
+endef
+
+define object_rule
 $$($(1)_obj): override CFLAGS += $$($(1)_cflags)
 $$($(1)_obj): override CXXFLAGS += $$($(1)_cxxflags)
 $$($(1)_obj): $$($(1)_module)
 $$($(1)_obj): $$($(1)_compile_sha1)
+endef
+
+define target_rule
 $$($(1)_dep): $$($(1)_module)
-$$($(1)_test): $$(1)
-$$($(1)_run_test): $$($(1)_test)
 $(1): override LD := $$($(1)_ld)
 $(1): override LDFLAGS += $$($(1)_ldflags)
 $(1): $$($(1)_module)
@@ -216,10 +223,9 @@ $(1): $$($(1)_obj)
 	$$(call run_cmd_green,LD,$(1),$$($(1)_ld) $$(LDFLAGS) -o $(1) $$($(1)_obj))
 endef
 
-define install_rule
-$$($(1)_install): PERM := $$($(1)_perm)
-$$($(1)_install): FROM := $(1)
-$$($(1)_install): $(1)
+define test_rule
+$$($(1)_test): $$(1)
+$$($(1)_run_test): $$($(1)_test)
 endef
 
 define mkdir
@@ -241,6 +247,8 @@ default: release
 
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
+$(foreach target,$(TARGETS),$(eval $(call object_rule,$(target))))
+$(foreach target,$(TARGETS),$(eval $(call test_rule,$(target))))
 $(foreach target,$(TARGETS),$(eval $(call install_rule,$(target))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
