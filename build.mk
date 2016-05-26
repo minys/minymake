@@ -42,7 +42,6 @@ TARGETS               := # list of all executables/libraries
 TESTS                 := # list of all tests
 
 # Standard GNU variables for installation directories
-#
 BUILDDIR              ?= $(CURDIR)
 BUILDDIR              := $(abspath $(BUILDDIR))
 SRCDIR                := $(CURDIR)
@@ -66,7 +65,6 @@ PSDIR                 ?= $(DOCDIR)
 MANDIR                ?= $(DATAROOTDIR)/man
 
 # Default permissions when installing files
-#
 BIN_PERM              ?= 755
 LIB_PERM              ?= 644
 DATA_PERM             ?= 644
@@ -194,10 +192,10 @@ define include_module
         $$(target)_cflags   += -fpic
         $$(target)_cxxflags += -fpic
         $$(target)_ldflags  += -fpic
-        $$(target)_install  := $$(abspath $(DESTDIR)$(LIBDIR)/$$(notdir $$(target)))
+        $$(target)_install  := $$(abspath $(DESTDIR)/$(LIBDIR)/$$(notdir $$(target)))
         $$(target)_perm     := $(LIB_PERM)
     else
-        $$(target)_install := $$(abspath $(DESTDIR)$(BINDIR)/$$(notdir $$(target)))
+        $$(target)_install := $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$(target)))
         $$(target)_perm    := $(BIN_PERM)
     endif
 
@@ -304,38 +302,60 @@ clean:
 .PHONY: distclean
 distclean: clean
 
-#.PHONY: mostlyclean
-#.PHONY: maintainer-clean
+.PHONY: mostlyclean
+mostlyclean: not-implemented
+
+.PHONY: maintainer-clean
+maintainer-clean: not-implemented
 
 .PHONY: install
 install: $(INSTALL_ALL)
 
-$(INSTALL_ALL): | installdirs
+$(INSTALL_ALL):
+	$(call mkdir,$(dir $@))
 	$(call run_cmd,INSTALL,$@,$(INSTALL) -m $(PERM) $(FROM) $@)
 
-#.PHONY: installcheck
+.PHONY: installcheck
+installcheck: not-implemented
 
-.PHONY: installdirs
-installdirs:
-	$(call mkdir,$(DESTDIR)$(BINDIR))
-	$(call mkdir,$(DESTDIR)$(LIBDIR))
-	$(call mkdir,$(DESTDIR)$(DATADIR))
-	$(call mkdir,$(DESTDIR)$(INFODIR))
-	$(call mkdir,$(DESTDIR)$(MANDIR))
+.PHONY: install-html
+install-html: not-implemented
 
-#.PHONY: install-html
-#.PHONY: install-dvi
-#.PHONY: install-pdf
-#.PHONY: install-ps
-#.PHONY: install-strip
-#.PHONY: uninstall
-#.PHONY: TAGS
-#.PHONY: info
-#.PHONY: dvi
-#.PHONY: html
-#.PHONY: pdf
-#.PHONY: ps
-#.PHONY: dist
+.PHONY: install-dvi
+install-dvi: not-implemented
+
+.PHONY: install-pdf
+install-pdf: not-implemented
+
+.PHONY: install-ps
+install-ps: not-implemented
+
+.PHONY: install-strip
+install-strip: not-implemented
+
+.PHONY: uninstall
+uninstall: not-implemented
+
+.PHONY: TAGS
+TAGS: not-implemented
+
+.PHONY: info
+info: not-implemented
+
+.PHONY: dvi
+dvi: not-implemented
+
+.PHONY: html
+html: not-implemented
+
+.PHONY: pdf
+pdf: not-implemented
+
+.PHONY: ps
+ps: not-implemented
+
+.PHONY: dist
+dist: not-implemented
 
 .PHONY: check
 check: $(TESTS)
@@ -369,6 +389,10 @@ $(LINK_CXX_SHA1_FILE): SHA1 := $(LINK_CXX_SHA1)
 
 $(BUILDDIR)/%.sha1: FORCE
 	$(call verify_input,$@,$(SHA1))
+
+.PHONY: not-implemented
+not-implemented:
+	$(error this target is not yet implemented)
 
 ifeq (,$(or $(filter clean,$(MAKECMDGOALS)),$(filter distclean,$(MAKECMDGOALS))))
     -include $(DEPS)
