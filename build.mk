@@ -36,7 +36,10 @@ MAKEFLAGS += --no-builtin-variables
 CLEAN                 := # list of all generated objects to be removed
 DEPS                  := # list of all dependency files
 GCNO                  := # list of all gcov notes
-INSTALL_ALL           := # list of all things to install
+INSTALL_BIN           := # list of all binaries to install
+INSTALL_LIB           := # list of all libraries to install
+INSTALL_DATA          := # list of all data files to install
+INSTALL_MAN           := # list of all man files to install
 OBJS                  := # list of all objects
 TARGETS               := # list of all executables/libraries
 TESTS                 := # list of all tests
@@ -144,7 +147,13 @@ else
     endef
 endif
 
+# This is the most complex part in this engine, it tries to provide a simple
+# and robust interface for the modules. Parsing a module will generate target
+# specific data, which later is used to generate rules.
+#
 define include_module
+    data     := # target data
+    man      := # target manual
     target   := # target executable/library (mandatory)
     src      := # target executable/library source (mandatory)
     test     := # target executable/library test (optional)
@@ -192,11 +201,43 @@ define include_module
         $$(target)_cflags   += -fpic
         $$(target)_cxxflags += -fpic
         $$(target)_ldflags  += -fpic
-        $$(target)_install  := $$(abspath $(DESTDIR)/$(LIBDIR)/$$(notdir $$(target)))
-        $$(target)_perm     := $(LIB_PERM)
+        target_lib          := $$(abspath $(DESTDIR)/$(LIBDIR)/$$(notdir $$(target)))
+        $$(target_lib)_to   := $$(target_lib)
+        $$(target_lib)_from := $$(target)
+        $$(target_lib)_perm := $(LIB_PERM)
+        INSTALL_LIB         += $$($$(target_lib)_to)
     else
-        $$(target)_install := $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$(target)))
-        $$(target)_perm    := $(BIN_PERM)
+        target_bin          := $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$(target)))
+        $$(target_bin)_to   := $$(target_bin)
+        $$(target_bin)_from := $$(target)
+        $$(target_bin)_perm := $(BIN_PERM)
+        INSTALL_BIN         += $$($$(target_bin)_to)
+    endif
+
+    ifneq (,$$(strip $(data)))
+        target_data          := $$(abspath $(DESTDIR)/$(DATADIR)/$(data))
+        $$(target_data)_to   := $$(target_data)
+        $$(target_data)_from := $$(abspath $$(addprefix $$(path)/,$(data)))
+        $$(target_data)_perm := $(DATA_PERM)
+
+        ifneq (,$(filter $$($$(target_data)_to),$$(INSTALL_DATA)))
+            $$(error $$($$(target_data)_to) declared in $(1) will overwrite data from another module)
+        endif
+
+        INSTALL_DATA += $$(target_data)
+    endif
+
+    ifneq (,$$(strip $(man)))
+        target_man          := $$(abspath $(DESTDIR)/$(MANDIR)/$(man))
+        $$(target_man)_to   := $$(target_man)
+        $$(target_man)_from := $$(abspath $$(addprefix $$(path)/,$(man)))
+        $$(target_man)_perm := $(MAN_PERM)
+
+        ifneq (,$(filter $$($$(target_man)_to),$$(INSTALL_MAN)))
+            $$(error $$($$(target_man)_to) declared in $(1) will overwrite manual from another module)
+        endif
+
+        INSTALL_MAN += $$(target_man)
     endif
 
     CLEAN       += $$(target)
@@ -209,7 +250,6 @@ define include_module
     OBJS        += $$($$(target)_obj)
     TARGETS     += $$(target)
     TESTS       += $$($$(target)_run_test)
-    INSTALL_ALL += $$($$(target)_install)
 endef
 
 define clean_rule
@@ -220,9 +260,20 @@ $(1)_clean:
 endef
 
 define install_rule
-$$($(1)_install): PERM := $$($(1)_perm)
-$$($(1)_install): FROM := $(1)
-$$($(1)_install): $(1)
+install: $$($(1)_to)
+$$($(1)_to): $$($(1)_from)
+ifdef FORCE_INSTALL
+$$($(1)_to): FORCE
+endif
+$$($(1)_to): $$($(1)_from)
+	$$(call mkdir,$$(dir $$($(1)_to)))
+	$$(call run_cmd,INSTALL,$(1),$(INSTALL) -m $$($(1)_perm) $$($(1)_from) $$($(1)_to))
+endef
+
+define uninstall_rule
+uninstall: $(1)_uninstall
+$(1)_uninstall:
+	$$(call run_cmd,RM,$$($(1)_install),$(RM) $$($(1)_install))
 endef
 
 define object_rule
@@ -247,12 +298,12 @@ $$($(1)_test): $$(1)
 $$($(1)_run_test): $$($(1)_test)
 endef
 
-define mkdir
-    $(call run_cmd_silent,test -d $(1) || mkdir -p $(1))
-endef
-
 define depends
     $(call run_cmd,DEP,$(1),$(strip $(2) $(3) -MT "$(patsubst %.d,%.o,$(1))" -M $(4) | sed 's,\(^.*.o:\),$@ \1,' > $(1)))
+endef
+
+define mkdir
+    $(call run_cmd_silent,test -d $(1) || mkdir -p $(1))
 endef
 
 define verify_input
@@ -268,7 +319,11 @@ $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
 $(foreach target,$(TARGETS),$(eval $(call object_rule,$(target))))
 $(foreach target,$(TARGETS),$(eval $(call test_rule,$(target))))
-$(foreach target,$(TARGETS),$(eval $(call install_rule,$(target))))
+$(foreach file,$(INSTALL_BIN),$(eval $(call install_rule,$(file))))
+$(foreach file,$(INSTALL_LIB),$(eval $(call install_rule,$(file))))
+$(foreach file,$(INSTALL_DATA),$(eval $(call install_rule,$(file))))
+$(foreach file,$(INSTALL_MAN),$(eval $(call install_rule,$(file))))
+$(foreach target,$(TARGETS),$(eval $(call uninstall_rule,$(target))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
 .PHONY: all
@@ -309,11 +364,7 @@ mostlyclean: not-implemented
 maintainer-clean: not-implemented
 
 .PHONY: install
-install: $(INSTALL_ALL)
-
-$(INSTALL_ALL):
-	$(call mkdir,$(dir $@))
-	$(call run_cmd,INSTALL,$@,$(INSTALL) -m $(PERM) $(FROM) $@)
+install:
 
 .PHONY: installcheck
 installcheck: not-implemented
@@ -334,7 +385,7 @@ install-ps: not-implemented
 install-strip: not-implemented
 
 .PHONY: uninstall
-uninstall: not-implemented
+uninstall:
 
 .PHONY: TAGS
 TAGS: not-implemented
