@@ -228,7 +228,7 @@ define include_module
         endif
 
         INSTALL_DATA += $$($$(target_data)_to)
-        UNINSTALL    += $$($$(target_bin)_to)
+        UNINSTALL    += $$($$(target_data)_to)
     endif
 
     ifneq (,$$(strip $(man)))
@@ -265,6 +265,17 @@ $(1)_clean:
 endef
 
 define install_rule
+install: $$($(1)_to)
+$$($(1)_to): $$($(1)_from)
+ifdef FORCE_INSTALL
+$$($(1)_to): FORCE
+endif
+$$($(1)_to): $$($(1)_from)
+	$$(call mkdir,$$(dir $$($(1)_to)))
+	$$(call run_cmd,INSTALL,$(1),$(INSTALL) $$(STRIP_FLAG) -m $$($(1)_perm) $$($(1)_from) $$($(1)_to))
+endef
+
+define install_nostrip_rule
 install: $$($(1)_to)
 $$($(1)_to): $$($(1)_from)
 ifdef FORCE_INSTALL
@@ -326,8 +337,8 @@ $(foreach target,$(TARGETS),$(eval $(call object_rule,$(target))))
 $(foreach target,$(TARGETS),$(eval $(call test_rule,$(target))))
 $(foreach file,$(INSTALL_BIN),$(eval $(call install_rule,$(file))))
 $(foreach file,$(INSTALL_LIB),$(eval $(call install_rule,$(file))))
-$(foreach file,$(INSTALL_DATA),$(eval $(call install_rule,$(file))))
-$(foreach file,$(INSTALL_MAN),$(eval $(call install_rule,$(file))))
+$(foreach file,$(INSTALL_DATA),$(eval $(call install_nostrip_rule,$(file))))
+$(foreach file,$(INSTALL_MAN),$(eval $(call install_nostrip_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(UNINSTALL))),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
@@ -414,7 +425,8 @@ install-pdf: not-implemented
 install-ps: not-implemented
 
 .PHONY: install-strip
-install-strip: not-implemented
+install-strip: STRIP_FLAG := -s
+install-strip: install
 
 .PHONY: uninstall
 uninstall:
