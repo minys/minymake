@@ -40,6 +40,7 @@ INSTALL_BIN           := # list of all binaries to install
 INSTALL_LIB           := # list of all libraries to install
 INSTALL_DATA          := # list of all data files to install
 INSTALL_MAN           := # list of all man files to install
+UNINSTALL             := # list of all things to uninstall
 OBJS                  := # list of all objects
 TARGETS               := # list of all executables/libraries
 TESTS                 := # list of all tests
@@ -206,12 +207,14 @@ define include_module
         $$(target_lib)_from := $$(target)
         $$(target_lib)_perm := $(LIB_PERM)
         INSTALL_LIB         += $$($$(target_lib)_to)
+        UNINSTALL           += $$($$(target_lib)_to)
     else
         target_bin          := $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$(target)))
         $$(target_bin)_to   := $$(target_bin)
         $$(target_bin)_from := $$(target)
         $$(target_bin)_perm := $(BIN_PERM)
         INSTALL_BIN         += $$($$(target_bin)_to)
+        UNINSTALL           += $$($$(target_bin)_to)
     endif
 
     ifneq (,$$(strip $(data)))
@@ -224,7 +227,8 @@ define include_module
             $$(error $$($$(target_data)_to) declared in $(1) will overwrite data from another module)
         endif
 
-        INSTALL_DATA += $$(target_data)
+        INSTALL_DATA += $$($$(target_data)_to)
+        UNINSTALL    += $$($$(target_bin)_to)
     endif
 
     ifneq (,$$(strip $(man)))
@@ -237,7 +241,8 @@ define include_module
             $$(error $$($$(target_man)_to) declared in $(1) will overwrite manual from another module)
         endif
 
-        INSTALL_MAN += $$(target_man)
+        INSTALL_MAN += $$($$(target_man)_to)
+        UNINSTALL   += $$($$(target_man)_to)
     endif
 
     CLEAN       += $$(target)
@@ -273,7 +278,7 @@ endef
 define uninstall_rule
 uninstall: $(1)_uninstall
 $(1)_uninstall:
-	$$(call run_cmd,RM,$$($(1)_install),$(RM) $$($(1)_install))
+	$$(call run_cmd,RM,$(1),$(RM) $(1))
 endef
 
 define object_rule
@@ -323,7 +328,7 @@ $(foreach file,$(INSTALL_BIN),$(eval $(call install_rule,$(file))))
 $(foreach file,$(INSTALL_LIB),$(eval $(call install_rule,$(file))))
 $(foreach file,$(INSTALL_DATA),$(eval $(call install_rule,$(file))))
 $(foreach file,$(INSTALL_MAN),$(eval $(call install_rule,$(file))))
-$(foreach target,$(TARGETS),$(eval $(call uninstall_rule,$(target))))
+$(foreach file,$(wildcard $(sort $(UNINSTALL))),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
 .PHONY: all
