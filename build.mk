@@ -331,6 +331,33 @@ $(foreach file,$(INSTALL_MAN),$(eval $(call install_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(UNINSTALL))),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
+$(BUILDDIR)/%.d: $(SRCDIR)/%.c
+	$(call mkdir,$(dir $@))
+	$(call depends,$@,$(CC),$(CFLAGS),$<)
+
+$(BUILDDIR)/%.o: $(SRCDIR)/%.c
+	$(call mkdir,$(dir $@))
+	$(call run_cmd,CC,$@,$(CC) $(CFLAGS) -o $@ -c $<)
+
+$(BUILDDIR)/%.d: $(SRCDIR)/%.cc
+	$(call mkdir,$(dir $@))
+	$(call depends,$@,$(CXX),$(CXXFLAGS),$<)
+
+$(BUILDDIR)/%.o: $(SRCDIR)/%.cc
+	$(call mkdir,$(dir $@))
+	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
+
+$(BUILDDIR)/%.run:
+	$(call run_cmd,TEST,$<,$< && touch $@)
+
+$(COMPILE_CC_SHA1_FILE): SHA1 := $(COMPILE_CC_SHA1)
+$(COMPILE_CXX_SHA1_FILE): SHA1 := $(COMPILE_CXX_SHA1)
+$(LINK_CC_SHA1_FILE): SHA1 := $(LINK_CC_SHA1)
+$(LINK_CXX_SHA1_FILE): SHA1 := $(LINK_CXX_SHA1)
+
+$(BUILDDIR)/%.sha1: FORCE
+	$(call verify_input,$@,$(SHA1))
+
 .PHONY: all
 all: $(TARGETS)
 
@@ -419,36 +446,9 @@ check: $(TESTS)
 .PHONY: FORCE
 FORCE:
 
-$(BUILDDIR)/%.d: $(SRCDIR)/%.c
-	$(call mkdir,$(dir $@))
-	$(call depends,$@,$(CC),$(CFLAGS),$<)
-
-$(BUILDDIR)/%.o: $(SRCDIR)/%.c
-	$(call mkdir,$(dir $@))
-	$(call run_cmd,CC,$@,$(CC) $(CFLAGS) -o $@ -c $<)
-
-$(BUILDDIR)/%.d: $(SRCDIR)/%.cc
-	$(call mkdir,$(dir $@))
-	$(call depends,$@,$(CXX),$(CXXFLAGS),$<)
-
-$(BUILDDIR)/%.o: $(SRCDIR)/%.cc
-	$(call mkdir,$(dir $@))
-	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
-
-$(BUILDDIR)/%.run:
-	$(call run_cmd,TEST,$<,$< && touch $@)
-
-$(COMPILE_CC_SHA1_FILE): SHA1 := $(COMPILE_CC_SHA1)
-$(COMPILE_CXX_SHA1_FILE): SHA1 := $(COMPILE_CXX_SHA1)
-$(LINK_CC_SHA1_FILE): SHA1 := $(LINK_CC_SHA1)
-$(LINK_CXX_SHA1_FILE): SHA1 := $(LINK_CXX_SHA1)
-
-$(BUILDDIR)/%.sha1: FORCE
-	$(call verify_input,$@,$(SHA1))
-
 .PHONY: not-implemented
 not-implemented:
-	$(error this target is not yet implemented)
+	$(error this target is not implemented)
 
 ifeq (,$(or $(filter clean,$(MAKECMDGOALS)),$(filter distclean,$(MAKECMDGOALS))))
     -include $(DEPS)
