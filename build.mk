@@ -208,6 +208,10 @@ define include_module
         $$(target_lib)_perm := $(LIB_PERM)
         INSTALL_LIB         += $$($$(target_lib)_to)
         UNINSTALL           += $$($$(target_lib)_to)
+
+        ifneq (,$(filter $$($$(target_lib)_to),$$(INSTALL_LIB)))
+            $$(error $$($$(target_lib)_to) declared in $(1) will overwrite binary from another module)
+        endif
     else
         target_bin          := $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$(target)))
         $$(target_bin)_to   := $$(target_bin)
@@ -215,6 +219,10 @@ define include_module
         $$(target_bin)_perm := $(BIN_PERM)
         INSTALL_BIN         += $$($$(target_bin)_to)
         UNINSTALL           += $$($$(target_bin)_to)
+
+        ifneq (,$(filter $$($$(target_bin)_to),$$(INSTALL_BIN)))
+            $$(error $$($$(target_bin)_to) declared in $(1) will overwrite binary from another module)
+        endif
     endif
 
     ifneq (,$$(strip $(data)))
@@ -222,13 +230,12 @@ define include_module
         $$(target_data)_to   := $$(target_data)
         $$(target_data)_from := $$(abspath $$(addprefix $$(path)/,$(data)))
         $$(target_data)_perm := $(DATA_PERM)
+        INSTALL_DATA         += $$($$(target_data)_to)
+        UNINSTALL            += $$($$(target_data)_to)
 
         ifneq (,$(filter $$($$(target_data)_to),$$(INSTALL_DATA)))
             $$(error $$($$(target_data)_to) declared in $(1) will overwrite data from another module)
         endif
-
-        INSTALL_DATA += $$($$(target_data)_to)
-        UNINSTALL    += $$($$(target_data)_to)
     endif
 
     ifneq (,$$(strip $(man)))
@@ -236,13 +243,12 @@ define include_module
         $$(target_man)_to   := $$(target_man)
         $$(target_man)_from := $$(abspath $$(addprefix $$(path)/,$(man)))
         $$(target_man)_perm := $(MAN_PERM)
+        INSTALL_MAN         += $$($$(target_man)_to)
+        UNINSTALL           += $$($$(target_man)_to)
 
         ifneq (,$(filter $$($$(target_man)_to),$$(INSTALL_MAN)))
             $$(error $$($$(target_man)_to) declared in $(1) will overwrite manual from another module)
         endif
-
-        INSTALL_MAN += $$($$(target_man)_to)
-        UNINSTALL   += $$($$(target_man)_to)
     endif
 
     CLEAN       += $$(target)
