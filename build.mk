@@ -35,8 +35,12 @@ MAKEFLAGS += --no-builtin-variables
 
 CLEAN                 := # list of all generated objects to be removed
 DEPS                  := # list of all dependency files
+DVI                   := # list of all DVI files
 GCNO                  := # list of all gcov notes
+INFO                  := # list of all info files to generate
 INSTALL_BIN           := # list of all binaries to install
+INSTALL_DVI           := # list of all dvi files to install
+INSTALL_INFO          := # list of all info files to install
 INSTALL_LIB           := # list of all libraries to install
 INSTALL_DATA          := # list of all data files to install
 INSTALL_MAN           := # list of all man files to install
@@ -74,6 +78,7 @@ LIB_PERM              ?= 644
 DATA_PERM             ?= 644
 INFO_PERM             ?= 644
 MAN_PERM              ?= 644
+DVI_PERM              ?= 644
 
 CC                    ?= gcc
 CC                    := $(shell which $(CC) 2>/dev/null)
@@ -81,6 +86,10 @@ CXX                   ?= g++
 CXX                   := $(shell which $(CXX) 2>/dev/null)
 INSTALL               ?= install
 INSTALL               := $(shell which $(INSTALL) 2>/dev/null)
+MAKEINFO              ?= makeinfo
+MAKEINFO              := $(shell which $(MAKEINFO) 2>/dev/null)
+TEXI2DVI              ?= texi2dvi
+TEXI2DVI              := $(shell which $(TEXI2DVI) 2>/dev/null)
 
 DEBUG_CFLAGS          ?= -g
 DEBUG_CXXFLAGS        ?= -g
@@ -153,14 +162,20 @@ endif
 # specific data, which later is used to generate rules.
 #
 define include_module
-    data     := # target data
-    man      := # target manual
-    target   := # target executable/library (mandatory)
-    src      := # target executable/library source (mandatory)
-    test     := # target executable/library test (optional)
-    cflags   := # target specific CFLAGS (optional)
-    cxxflags := # target specific CXXFLAGS (optional)
-    ldflags  := # target specific LDFLAGS (optional)
+    data        := # data file(s) (optional)
+    target_data :=
+    dvi         := # texi file(s) that should be converted to dvi file(s) (optional)
+    target_dvi  :=
+    info        := # texi file(s) that should be converted to info file(s) (optional)
+    target_info :=
+    man         := # target manual file(s) (optional)
+    target_man  :=
+    target      := # target executable/library (mandatory)
+    src         := # target executable/library source (mandatory)
+    test        := # target executable/library test (optional)
+    cflags      := # target specific CFLAGS (optional)
+    cxxflags    := # target specific CXXFLAGS (optional)
+    ldflags     := # target specific LDFLAGS (optional)
 
     include $(1)
 
@@ -225,10 +240,10 @@ define include_module
         endif
     endif
 
-    ifneq (,$$(strip $(data)))
-        target_data          := $$(abspath $(DESTDIR)/$(DATADIR)/$(data))
+    ifneq (,$$(strip $$(data)))
+        target_data          := $$(abspath $(DESTDIR)/$(DATADIR)/$$(data))
         $$(target_data)_to   := $$(target_data)
-        $$(target_data)_from := $$(abspath $$(addprefix $$(path)/,$(data)))
+        $$(target_data)_from := $$(abspath $$(addprefix $$(path)/,$$(data)))
         $$(target_data)_perm := $(DATA_PERM)
         INSTALL_DATA         += $$($$(target_data)_to)
         UNINSTALL            += $$($$(target_data)_to)
@@ -238,16 +253,45 @@ define include_module
         endif
     endif
 
-    ifneq (,$$(strip $(man)))
-        target_man          := $$(abspath $(DESTDIR)/$(MANDIR)/$(man))
+    ifneq (,$$(strip $$(man)))
+        target_man          := $$(abspath $(DESTDIR)/$(MANDIR)/$$(man))
         $$(target_man)_to   := $$(target_man)
-        $$(target_man)_from := $$(abspath $$(addprefix $$(path)/,$(man)))
+        $$(target_man)_from := $$(abspath $$(addprefix $$(path)/,$$(man)))
         $$(target_man)_perm := $(MAN_PERM)
+        MAN                 += $$(target_man)
         INSTALL_MAN         += $$($$(target_man)_to)
         UNINSTALL           += $$($$(target_man)_to)
 
         ifneq (,$(filter $$($$(target_man)_to),$$(INSTALL_MAN)))
             $$(error $$($$(target_man)_to) declared in $(1) will overwrite manual from another module)
+        endif
+    endif
+
+    ifneq (,$$(strip $(info)))
+        target_info          := $$(abspath $$(output)/$$(patsubst %.texi,%.info,$$(info)))
+        $$(target_info)_to   := $$(abspath $(DESTDIR)/$(INFODIR)/$(info))
+        $$(target_info)_from := $$(target_info)
+        $$(target_info)_perm := $(INFO_PERM)
+        INFO                 += $$(target_info)
+        INSTALL_INFO         += $$($$(target_info)_to)
+        UNINSTALL            += $$($$(target_info)_to)
+
+        ifneq (,$(filter $$($$(target_info)_to),$$(INSTALL_INFO)))
+            $$(error $$($$(target_info)_to) declared in $(1) will overwrite an info file from another module)
+        endif
+    endif
+
+    ifneq (,$$(strip $$(dvi)))
+        target_dvi          := $$(abspath $$(output)/$$(patsubst %.texi,%.dvi,$$(dvi)))
+        $$(target_dvi)_to   := $$(abspath $(DESTDIR)/$(DVIDIR)/$$(notdir $$(target_dvi)))
+        $$(target_dvi)_from := $$(target_dvi)
+        $$(target_dvi)_perm := $(DVI_PERM)
+        DVI                 += $$(target_dvi)
+        INSTALL_DVI         += $$($$(target_dvi)_to)
+        UNINSTALL           += $$($$(target_dvi)_to)
+
+        ifneq (,$(filter $$($$(target_dvi)_to),$$(INSTALL_DVI)))
+            $$(error $$($$(target_dvi)_to) declared in $(1) will overwrite an dvi file from another module)
         endif
     endif
 
@@ -292,6 +336,10 @@ $$($(1)_to): $$($(1)_from)
 	$$(call run_cmd,INSTALL,$(1),$(INSTALL) -m $$($(1)_perm) $$($(1)_from) $$($(1)_to))
 endef
 
+define info_rule
+info: $(1)
+endef
+
 define uninstall_rule
 uninstall: $(1)_uninstall
 $(1)_uninstall:
@@ -320,6 +368,10 @@ $$($(1)_test): $$(1)
 $$($(1)_run_test): $$($(1)_test)
 endef
 
+define dvi_rule
+dvi: $(1)
+endef
+
 define depends
     $(call run_cmd,DEP,$(1),$(strip $(2) $(3) -MT "$(patsubst %.d,%.o,$(1))" -M $(4) | sed 's,\(^.*.o:\),$@ \1,' > $(1)))
 endef
@@ -337,14 +389,23 @@ endef
 
 default: release
 
+$(COMPILE_CC_SHA1_FILE): SHA1 := $(COMPILE_CC_SHA1)
+$(COMPILE_CXX_SHA1_FILE): SHA1 := $(COMPILE_CXX_SHA1)
+$(LINK_CC_SHA1_FILE): SHA1 := $(LINK_CC_SHA1)
+$(LINK_CXX_SHA1_FILE): SHA1 := $(LINK_CXX_SHA1)
+
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
 $(foreach target,$(TARGETS),$(eval $(call object_rule,$(target))))
 $(foreach target,$(TARGETS),$(eval $(call test_rule,$(target))))
+$(foreach file,$(DVI),$(eval $(call dvi_rule,$(file))))
+$(foreach file,$(INFO),$(eval $(call info_rule,$(file))))
 $(foreach file,$(INSTALL_BIN),$(eval $(call install_rule,$(file))))
 $(foreach file,$(INSTALL_LIB),$(eval $(call install_rule,$(file))))
 $(foreach file,$(INSTALL_DATA),$(eval $(call install_nostrip_rule,$(file))))
 $(foreach file,$(INSTALL_MAN),$(eval $(call install_nostrip_rule,$(file))))
+$(foreach file,$(INSTALL_INFO),$(eval $(call install_nostrip_rule,$(file))))
+$(foreach file,$(INSTALL_DVI),$(eval $(call install_nostrip_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(UNINSTALL))),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
@@ -365,12 +426,17 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cc
 	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
 
 $(BUILDDIR)/%.run:
+	$(call mkdir,$(dir $@))
 	$(call run_cmd,TEST,$<,$< && touch $@)
 
-$(COMPILE_CC_SHA1_FILE): SHA1 := $(COMPILE_CC_SHA1)
-$(COMPILE_CXX_SHA1_FILE): SHA1 := $(COMPILE_CXX_SHA1)
-$(LINK_CC_SHA1_FILE): SHA1 := $(LINK_CC_SHA1)
-$(LINK_CXX_SHA1_FILE): SHA1 := $(LINK_CXX_SHA1)
+$(BUILDDIR)/%.info: $(SRCDIR)/%.texi
+	$(call mkdir,$(dir $@))
+	$(call run_cmd,INFO,$@,$(MAKEINFO) $<)
+
+$(BUILDDIR)/%.dvi: $(SRCDIR)/%.texi
+	$(call mkdir,$(dir $@))
+	$(info TEXI2DVI $(TEXI2DVI))
+	$(call run_cmd,DVI,$@,$(TEXI2DVI) $<)
 
 $(BUILDDIR)/%.sha1: FORCE
 	$(call verify_input,$@,$(SHA1))
@@ -407,10 +473,10 @@ clean:
 distclean: clean
 
 .PHONY: mostlyclean
-mostlyclean: not-implemented
+mostlyclean: clean
 
 .PHONY: maintainer-clean
-maintainer-clean: not-implemented
+maintainer-clean: clean
 
 .PHONY: install
 install:
@@ -441,10 +507,10 @@ uninstall:
 TAGS: not-implemented
 
 .PHONY: info
-info: not-implemented
+info:
 
 .PHONY: dvi
-dvi: not-implemented
+dvi:
 
 .PHONY: html
 html: not-implemented
