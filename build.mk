@@ -342,6 +342,7 @@ endef
 
 define uninstall_rule
 uninstall: $(1)_uninstall
+.PHONY: $(1)_uninstall
 $(1)_uninstall:
 	$$(call run_cmd,RM,$(1),$(RM) $(1))
 endef
