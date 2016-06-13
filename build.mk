@@ -36,6 +36,7 @@ MAKEFLAGS += --no-builtin-variables
 CLEAN                 := # list of all generated objects to be removed
 DEPS                  := # list of all dependency files
 DVI                   := # list of all DVI files
+PDF                   := # list of all PDF files
 GCNO                  := # list of all gcov notes
 INFO                  := # list of all info files to generate
 INSTALL_BIN           := # list of all binaries to install
@@ -44,6 +45,7 @@ INSTALL_INFO          := # list of all info files to install
 INSTALL_LIB           := # list of all libraries to install
 INSTALL_DATA          := # list of all data files to install
 INSTALL_MAN           := # list of all man files to install
+INSTALL_PDF           := # list of all pdf files to install
 UNINSTALL             := # list of all things to uninstall
 OBJS                  := # list of all objects
 TARGETS               := # list of all executables/libraries
@@ -79,7 +81,9 @@ DATA_PERM             ?= 644
 INFO_PERM             ?= 644
 MAN_PERM              ?= 644
 DVI_PERM              ?= 644
+PDF_PERM              ?= 644
 
+# Tools
 CC                    ?= gcc
 CC                    := $(shell which $(CC) 2>/dev/null)
 CXX                   ?= g++
@@ -90,6 +94,8 @@ MAKEINFO              ?= makeinfo
 MAKEINFO              := $(shell which $(MAKEINFO) 2>/dev/null)
 TEXI2DVI              ?= texi2dvi
 TEXI2DVI              := $(shell which $(TEXI2DVI) 2>/dev/null)
+TEXI2PDF              ?= texi2pdf
+TEXI2PDF              := $(shell which $(TEXI2PDF) 2>/dev/null)
 
 DEBUG_CFLAGS          ?= -g
 DEBUG_CXXFLAGS        ?= -g
@@ -168,6 +174,8 @@ define include_module
     target_dvi  :=
     info        := # texi file(s) that should be converted to info file(s) (optional)
     target_info :=
+    pdf         :=
+    target_pdf  :=
     man         := # target manual file(s) (optional)
     target_man  :=
     target      := # target executable/library (mandatory)
@@ -295,6 +303,20 @@ define include_module
         endif
     endif
 
+    ifneq (,$$(strip $$(pdf)))
+        target_pdf          := $$(abspath $$(output)/$$(patsubst %.texi,%.pdf,$$(pdf)))
+        $$(target_pdf)_to   := $$(abspath $(DESTDIR)/$(PDFDIR)/$$(notdir $$(target_pdf)))
+        $$(target_pdf)_from := $$(target_pdf)
+        $$(target_pdf)_perm := $(PDF_PERM)
+        PDF                 += $$(target_pdf)
+        INSTALL_PDF         += $$($$(target_pdf)_to)
+        UNINSTALL           += $$($$(target_pdf)_to)
+
+        ifneq (,$(filter $$($$(target_pdf)_to),$$(INSTALL_PDF)))
+            $$(error $$($$(target_pdf)_to) declared in $(1) will overwrite an pdf file from another module)
+        endif
+    endif
+
     CLEAN       += $$(target)
     CLEAN       += $$($$(target)_obj)
     CLEAN       += $$($$(target)_dep)
@@ -373,6 +395,10 @@ define dvi_rule
 dvi: $(1)
 endef
 
+define pdf_rule
+pdf: $(1)
+endef
+
 define depends
     $(call run_cmd,DEP,$(1),$(strip $(2) $(3) -MT "$(patsubst %.d,%.o,$(1))" -M $(4) | sed 's,\(^.*.o:\),$@ \1,' > $(1)))
 endef
@@ -401,12 +427,14 @@ $(foreach target,$(TARGETS),$(eval $(call object_rule,$(target))))
 $(foreach target,$(TARGETS),$(eval $(call test_rule,$(target))))
 $(foreach file,$(DVI),$(eval $(call dvi_rule,$(file))))
 $(foreach file,$(INFO),$(eval $(call info_rule,$(file))))
+$(foreach pdf,$(PDF),$(eval $(call pdf_rule,$(pdf))))
 $(foreach file,$(INSTALL_BIN),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(INSTALL_LIB),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(INSTALL_DATA),$(eval $(call install_nostrip_rule,$(file),install)))
 $(foreach file,$(INSTALL_MAN),$(eval $(call install_nostrip_rule,$(file),install)))
 $(foreach file,$(INSTALL_INFO),$(eval $(call install_nostrip_rule,$(file),install)))
 $(foreach file,$(INSTALL_DVI),$(eval $(call install_nostrip_rule,$(file),install_dvi)))
+$(foreach file,$(INSTALL_PDF),$(eval $(call install_nostrip_rule,$(file),install_pdf)))
 $(foreach file,$(wildcard $(sort $(UNINSTALL))),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
@@ -437,6 +465,10 @@ $(BUILDDIR)/%.info: $(SRCDIR)/%.texi
 $(BUILDDIR)/%.dvi: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,DVI,$@,$(TEXI2DVI) -b -q -o $@ $<)
+
+$(BUILDDIR)/%.pdf: $(SRCDIR)/%.texi
+	$(call mkdir,$(dir $@))
+	$(call run_cmd,PDF,$@,$(TEXI2PDF) -b -q -o $@ $<)
 
 $(BUILDDIR)/%.sha1: FORCE
 	$(call verify_input,$@,$(SHA1))
@@ -488,10 +520,10 @@ installcheck: not-implemented
 install-html: not-implemented
 
 .PHONY: install-dvi
-install-dvi:
+install-dvi: dvi
 
 .PHONY: install-pdf
-install-pdf: not-implemented
+install-pdf: pdf
 
 .PHONY: install-ps
 install-ps: not-implemented
@@ -516,7 +548,7 @@ dvi:
 html: not-implemented
 
 .PHONY: pdf
-pdf: not-implemented
+pdf:
 
 .PHONY: ps
 ps: not-implemented
