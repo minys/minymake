@@ -315,7 +315,7 @@ $(1)_clean:
 endef
 
 define install_rule
-install: $$($(1)_to)
+$(2): $$($(1)_to)
 $$($(1)_to): $$($(1)_from)
 ifdef FORCE_INSTALL
 $$($(1)_to): FORCE
@@ -326,7 +326,7 @@ $$($(1)_to): $$($(1)_from)
 endef
 
 define install_nostrip_rule
-install: $$($(1)_to)
+$(2): $$($(1)_to)
 $$($(1)_to): $$($(1)_from)
 ifdef FORCE_INSTALL
 $$($(1)_to): FORCE
@@ -401,12 +401,12 @@ $(foreach target,$(TARGETS),$(eval $(call object_rule,$(target))))
 $(foreach target,$(TARGETS),$(eval $(call test_rule,$(target))))
 $(foreach file,$(DVI),$(eval $(call dvi_rule,$(file))))
 $(foreach file,$(INFO),$(eval $(call info_rule,$(file))))
-$(foreach file,$(INSTALL_BIN),$(eval $(call install_rule,$(file))))
-$(foreach file,$(INSTALL_LIB),$(eval $(call install_rule,$(file))))
-$(foreach file,$(INSTALL_DATA),$(eval $(call install_nostrip_rule,$(file))))
-$(foreach file,$(INSTALL_MAN),$(eval $(call install_nostrip_rule,$(file))))
-$(foreach file,$(INSTALL_INFO),$(eval $(call install_nostrip_rule,$(file))))
-$(foreach file,$(INSTALL_DVI),$(eval $(call install_nostrip_rule,$(file))))
+$(foreach file,$(INSTALL_BIN),$(eval $(call install_rule,$(file),install)))
+$(foreach file,$(INSTALL_LIB),$(eval $(call install_rule,$(file),install)))
+$(foreach file,$(INSTALL_DATA),$(eval $(call install_nostrip_rule,$(file),install)))
+$(foreach file,$(INSTALL_MAN),$(eval $(call install_nostrip_rule,$(file),install)))
+$(foreach file,$(INSTALL_INFO),$(eval $(call install_nostrip_rule,$(file),install)))
+$(foreach file,$(INSTALL_DVI),$(eval $(call install_nostrip_rule,$(file),install_dvi)))
 $(foreach file,$(wildcard $(sort $(UNINSTALL))),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
@@ -436,8 +436,7 @@ $(BUILDDIR)/%.info: $(SRCDIR)/%.texi
 
 $(BUILDDIR)/%.dvi: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
-	$(info TEXI2DVI $(TEXI2DVI))
-	$(call run_cmd,DVI,$@,$(TEXI2DVI) $<)
+	$(call run_cmd,DVI,$@,$(TEXI2DVI) -b -q -o $@ $<)
 
 $(BUILDDIR)/%.sha1: FORCE
 	$(call verify_input,$@,$(SHA1))
@@ -489,7 +488,7 @@ installcheck: not-implemented
 install-html: not-implemented
 
 .PHONY: install-dvi
-install-dvi: not-implemented
+install-dvi:
 
 .PHONY: install-pdf
 install-pdf: not-implemented
