@@ -53,8 +53,7 @@ UNINSTALL             := # things to uninstall
 
 # Standard GNU variables for installation directories
 BINDIR                ?= bin
-BUILDDIR              ?= $(CURDIR)
-BUILDDIR              := $(abspath $(BUILDDIR))
+BUILDDIR              ?= $(abspath $(CURDIR))
 DATADIR               ?= share
 DATAROOTDIR           ?= share
 DOCDIR                ?= doc
