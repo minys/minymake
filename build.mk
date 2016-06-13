@@ -33,57 +33,57 @@ MAKEFLAGS += --no-builtin-variables
 
 # -- [ Variables ] -------------------------------------------------------------
 
-CLEAN                 := # list of all generated objects to be removed
-DEPS                  := # list of all dependency files
-DVI                   := # list of all DVI files
-PDF                   := # list of all PDF files
-GCNO                  := # list of all gcov notes
-INFO                  := # list of all info files to generate
-INSTALL_BIN           := # list of all binaries to install
-INSTALL_DVI           := # list of all dvi files to install
-INSTALL_INFO          := # list of all info files to install
-INSTALL_LIB           := # list of all libraries to install
-INSTALL_DATA          := # list of all data files to install
-INSTALL_MAN           := # list of all man files to install
-INSTALL_PDF           := # list of all pdf files to install
-UNINSTALL             := # list of all things to uninstall
-OBJS                  := # list of all objects
-TARGETS               := # list of all executables/libraries
-TESTS                 := # list of all tests
+CLEAN                 := # generated objects to be removed
+DEPS                  := # dependency files
+DVI                   := # DVI files
+PDF                   := # PDF files
+GCNO                  := # gcov notes
+INFO                  := # info files to generate
+INSTALL_BIN           := # binaries to install
+INSTALL_DATA          := # data files to install
+INSTALL_DVI           := # dvi files to install
+INSTALL_INFO          := # info files to install
+INSTALL_LIB           := # libraries to install
+INSTALL_MAN           := # man files to install
+INSTALL_PDF           := # pdf files to install
+OBJS                  := # objects
+TARGETS               := # executables/libraries
+TESTS                 := # tests
+UNINSTALL             := # things to uninstall
 
 # Standard GNU variables for installation directories
+BINDIR                ?= bin
 BUILDDIR              ?= $(CURDIR)
 BUILDDIR              := $(abspath $(BUILDDIR))
-SRCDIR                := $(CURDIR)
-BINDIR                ?= bin
-SBINDIR               ?= sbin
-LIBEXECDIR            ?= libexec
-LIBDIR                ?= lib
-DATAROOTDIR           ?= share
 DATADIR               ?= share
-INFODIR               ?= $(DATAROOTDIR)/info
-INCLUDEDIR            ?= include
-SYSCONFDIR            ?= etc
-SHAREDSTATEDIR        ?= com
-LOCALSTATEDIR         ?= var
-RUNSTATEDIR           ?= run
+DATAROOTDIR           ?= share
 DOCDIR                ?= doc
-HTMLDIR               ?= $(DOCDIR)
 DVIDIR                ?= $(DOCDIR)
+HTMLDIR               ?= $(DOCDIR)
+INCLUDEDIR            ?= include
+INFODIR               ?= $(DATAROOTDIR)/info
+LIBDIR                ?= lib
+LIBEXECDIR            ?= libexec
+LOCALSTATEDIR         ?= var
+MANDIR                ?= $(DATAROOTDIR)/man
 PDFDIR                ?= $(DOCDIR)
 PSDIR                 ?= $(DOCDIR)
-MANDIR                ?= $(DATAROOTDIR)/man
+RUNSTATEDIR           ?= run
+SBINDIR               ?= sbin
+SHAREDSTATEDIR        ?= com
+SRCDIR                := $(CURDIR)
+SYSCONFDIR            ?= etc
 
 # Default permissions when installing files
 BIN_PERM              ?= 755
-LIB_PERM              ?= 644
 DATA_PERM             ?= 644
-INFO_PERM             ?= 644
-MAN_PERM              ?= 644
 DVI_PERM              ?= 644
+INFO_PERM             ?= 644
+LIB_PERM              ?= 644
+MAN_PERM              ?= 644
 PDF_PERM              ?= 644
 
-# Tools
+# External tools
 CC                    ?= gcc
 CC                    := $(shell which $(CC) 2>/dev/null)
 CXX                   ?= g++
@@ -168,22 +168,26 @@ endif
 # specific data, which later is used to generate rules.
 #
 define include_module
-    data        := # data file(s) (optional)
-    target_data :=
-    dvi         := # texi file(s) that should be converted to dvi file(s) (optional)
-    target_dvi  :=
-    info        := # texi file(s) that should be converted to info file(s) (optional)
-    target_info :=
-    pdf         :=
-    target_pdf  :=
-    man         := # target manual file(s) (optional)
-    target_man  :=
+
+    # Module keywords
     target      := # target executable/library (mandatory)
     src         := # target executable/library source (mandatory)
     test        := # target executable/library test (optional)
     cflags      := # target specific CFLAGS (optional)
     cxxflags    := # target specific CXXFLAGS (optional)
     ldflags     := # target specific LDFLAGS (optional)
+    data        := # data file(s) (optional)
+    dvi         := # texi file(s) that should be converted to dvi file(s) (optional)
+    info        := # texi file(s) that should be converted to info file(s) (optional)
+    man         := # target manual file(s) (optional)
+    pdf         := # target pdf files (optional)
+
+    # Internal variables related to keywords
+    target_data :=
+    target_dvi  :=
+    target_info :=
+    target_man  :=
+    target_pdf  :=
 
     include $(1)
 
