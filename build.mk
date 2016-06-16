@@ -84,16 +84,17 @@ PDF_PERM              ?= 644
 
 # External tools
 CC                    ?= gcc
-CC                    := $(shell which $(CC) 2>/dev/null)
 CXX                   ?= g++
-CXX                   := $(shell which $(CXX) 2>/dev/null)
 INSTALL               ?= install
-INSTALL               := $(shell which $(INSTALL) 2>/dev/null)
 MAKEINFO              ?= makeinfo
-MAKEINFO              := $(shell which $(MAKEINFO) 2>/dev/null)
 TEXI2DVI              ?= texi2dvi
-TEXI2DVI              := $(shell which $(TEXI2DVI) 2>/dev/null)
 TEXI2PDF              ?= texi2pdf
+
+CC                    := $(shell which $(CC) 2>/dev/null)
+CXX                   := $(shell which $(CXX) 2>/dev/null)
+INSTALL               := $(shell which $(INSTALL) 2>/dev/null)
+MAKEINFO              := $(shell which $(MAKEINFO) 2>/dev/null)
+TEXI2DVI              := $(shell which $(TEXI2DVI) 2>/dev/null)
 TEXI2PDF              := $(shell which $(TEXI2PDF) 2>/dev/null)
 
 DEBUG_CFLAGS          ?= -g
@@ -279,6 +280,10 @@ define include_module
     endif
 
     ifneq (,$$(strip $(info)))
+        ifeq (,$$(strip $$(MAKEINFO)))
+            $$(error 'info' keyword present in $(1) but 'makeinfo' tool is not installed or missing from PATH)
+        endif
+
         target_info          := $$(abspath $$(output)/$$(patsubst %.texi,%.info,$$(info)))
         $$(target_info)_to   := $$(abspath $(DESTDIR)/$(INFODIR)/$(info))
         $$(target_info)_from := $$(target_info)
@@ -293,6 +298,10 @@ define include_module
     endif
 
     ifneq (,$$(strip $$(dvi)))
+        ifeq (,$$(strip $$(TEXI2DVI)))
+            $$(error 'dvi' keyword present in $(1) but 'texi2dvi' tool is not installed or missing from PATH)
+        endif
+
         target_dvi          := $$(abspath $$(output)/$$(patsubst %.texi,%.dvi,$$(dvi)))
         $$(target_dvi)_to   := $$(abspath $(DESTDIR)/$(DVIDIR)/$$(notdir $$(target_dvi)))
         $$(target_dvi)_from := $$(target_dvi)
@@ -307,6 +316,10 @@ define include_module
     endif
 
     ifneq (,$$(strip $$(pdf)))
+        ifeq (,$$(strip $$(TEXI2PDF)))
+            $$(error 'pdf' keyword present in $(1) but 'texi2pdf' tool is not installed or missing from PATH)
+        endif
+
         target_pdf          := $$(abspath $$(output)/$$(patsubst %.texi,%.pdf,$$(pdf)))
         $$(target_pdf)_to   := $$(abspath $(DESTDIR)/$(PDFDIR)/$$(notdir $$(target_pdf)))
         $$(target_pdf)_from := $$(target_pdf)
