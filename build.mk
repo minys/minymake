@@ -50,6 +50,8 @@ OBJS                  := # objects
 TARGETS               := # executables/libraries
 TESTS                 := # tests
 UNINSTALL             := # things to uninstall
+CC_SUFFIX             ?= c
+CXX_SUFFIX            ?= cc
 
 # Standard GNU variables for installation directories
 BINDIR                ?= bin
@@ -215,7 +217,7 @@ define include_module
     $$(target)_ldflags  := $$(ldflags)
     $$(target)_module   := $$(abspath $(1))
 
-    ifeq (.c,$$(sort $$(suffix $$($$(target)_src))))
+    ifeq (.$$(CC_SUFFIX),$$(sort $$(suffix $$($$(target)_src))))
         $$(target)_ld           := $$(CC)
         $$(target)_compile_sha1 := $$(COMPILE_CC_SHA1_FILE)
         $$(target)_link_sha1    := $$(LINK_CC_SHA1_FILE)
@@ -454,19 +456,19 @@ $(foreach file,$(INSTALL_PDF),$(eval $(call install_nostrip_rule,$(file),install
 $(foreach file,$(wildcard $(sort $(UNINSTALL))),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
-$(BUILDDIR)/%.d: $(SRCDIR)/%.c
+$(BUILDDIR)/%.d: $(SRCDIR)/%.$(CC_SUFFIX)
 	$(call mkdir,$(dir $@))
 	$(call depends,$@,$(CC),$(CFLAGS),$<)
 
-$(BUILDDIR)/%.o: $(SRCDIR)/%.c
+$(BUILDDIR)/%.o: $(SRCDIR)/%.$(CC_SUFFIX)
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CC,$@,$(CC) $(CFLAGS) -o $@ -c $<)
 
-$(BUILDDIR)/%.d: $(SRCDIR)/%.cc
+$(BUILDDIR)/%.d: $(SRCDIR)/%.$(CXX_SUFFIX)
 	$(call mkdir,$(dir $@))
 	$(call depends,$@,$(CXX),$(CXXFLAGS),$<)
 
-$(BUILDDIR)/%.o: $(SRCDIR)/%.cc
+$(BUILDDIR)/%.o: $(SRCDIR)/%.$(CXX_SUFFIX)
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
 
