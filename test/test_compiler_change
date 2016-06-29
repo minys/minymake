@@ -7,7 +7,9 @@ source ${CURDIR}/setup
 source ${CURDIR}/common
 
 test_start ${TEST}
-
-test_step "make gcov"
-make gcov
-assert_full_build_coverage
+test_step make
+make
+touch timestamp # FIXME this can be left behind
+make CFLAGS=-pipe
+assert_newer_than program timestamp
+rm -f timestamp

@@ -1,22 +1,28 @@
 #!/bin/bash
 
-CURDIR=${CURDIR:-$(dirname $(readlink -f $0))}
+TEST=$(readlink -f ${BASH_SOURCE[0]})
+CURDIR=${CURDIR:-$(dirname ${TEST})}
 
 source ${CURDIR}/setup
 source ${CURDIR}/common
 
+test_start ${TEST}
+
 tmpdir=$(mktemp -d)
-test_start "make BUILDDIR=${tmpdir}"
+test_step "make BUILDDIR=${tmpdir}"
 make BUILDDIR=${tmpdir}
-for file in ${targets} ${obj} ${dep} ${sha1}; do
+for file in ${all}; do
 	assert_exist ${tmpdir}/${file}
 done
 for file in ${notes}; do
 	assert_not_exist ${tmpdir}/${file}
 done
 
-test_start "make BUILDDIR=${tmpdir} clean"
+test_step "make BUILDDIR=${tmpdir} clean"
 make BUILDDIR=${tmpdir} clean
 for file in ${all}; do
 	assert_not_exist ${tmpdir}/${file}
 done
+
+rm -rf ${tmpdir}
+unset tmpdir

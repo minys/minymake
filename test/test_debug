@@ -1,0 +1,19 @@
+#!/bin/bash
+
+TEST=$(readlink -f ${BASH_SOURCE[0]})
+CURDIR=${CURDIR:-$(dirname ${TEST})}
+
+source ${CURDIR}/setup
+source ${CURDIR}/common
+
+test_start ${TEST}
+
+file=$(readlink -f program)
+test_step "make debug"
+make debug
+assert_full_build
+
+debug_info=$(readelf --debug-dump ${file} | wc -l)
+
+[ "${debug_info}" -gt 0 ] ||
+	assert_fail "${file} should contain debug information but does not"

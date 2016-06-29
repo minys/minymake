@@ -1,15 +1,13 @@
 #!/bin/bash
 
-CURDIR=${CURDIR:-$(dirname $(readlink -f $0))}
+TEST=$(readlink -f ${BASH_SOURCE[0]})
+CURDIR=${CURDIR:-$(dirname ${TEST})}
 
 source ${CURDIR}/setup
 source ${CURDIR}/common
 
-test_start "make release"
+test_start ${TEST}
+
+test_step "make release"
 make release
-for file in ${targets} ${obj} ${dep} ${sha1}; do
-	assert_exist ${file}
-done
-for file in ${notes}; do
-	assert_not_exist ${file}
-done
+assert_full_build

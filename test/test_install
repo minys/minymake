@@ -1,0 +1,53 @@
+#!/bin/bash
+
+TEST=$(readlink -f ${BASH_SOURCE[0]})
+CURDIR=${CURDIR:-$(dirname ${TEST})}
+
+source ${CURDIR}/setup
+source ${CURDIR}/common
+
+tmpdir=$(mktemp -d)
+
+test_start ${TEST}
+
+test_step "make DESTDIR=${tmpdir} install"
+make DESTDIR=${tmpdir} install
+assert_full_build
+
+for program in ${programs}; do
+	assert_exist ${tmpdir}/bin/$(basename ${program})
+done
+
+for library in ${libraries}; do
+	assert_exist ${tmpdir}/lib/$(basename ${library})
+done
+
+for data in ${data} ${libdata}; do
+	assert_exist ${tmpdir}/share/$(basename ${data})
+done
+
+for manual in ${manuals}; do
+	assert_exist ${tmpdir}/share/man/$(basename ${manual})
+done
+
+test_step "make DESTDIR=${tmpdir} uninstall"
+make DESTDIR=${tmpdir} uninstall
+
+for program in ${programs}; do
+	assert_not_exist ${tmpdir}/bin/$(basename ${program})
+done
+
+for library in ${libraries}; do
+	assert_not_exist ${tmpdir}/lib/$(basename ${library})
+done
+
+for data in ${data} ${libdata}; do
+	assert_not_exist ${tmpdir}/share/$(basename ${data})
+done
+
+for manual in ${manuals}; do
+	assert_not_exist ${tmpdir}/share/man/$(basename ${manual})
+done
+
+rm -rf ${tmpdir}
+unset tmpdir

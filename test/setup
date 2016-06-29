@@ -24,7 +24,7 @@ teardown ()
 	set +o errexit
 
 	if [ "${PASSED}" == 'true' ]; then
-		printf '\n\e[1;32mPASSED\e[0m\n\n'
+		printf '\nAll tests \e[1;32mPASSED\e[0m\n\n'
 	else
 		printf '\n\e[1;31m%s\e[0m %s\n\n' FAILED "${FAILURE:=while executing \"${BASH_COMMAND}\"}"
 	fi

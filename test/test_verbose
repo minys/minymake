@@ -1,15 +1,29 @@
 #!/bin/bash
 
-CURDIR=${CURDIR:-$(dirname $(readlink -f $0))}
+TEST=$(readlink -f ${BASH_SOURCE[0]})
+CURDIR=${CURDIR:-$(dirname ${TEST})}
 
 source ${CURDIR}/setup
 source ${CURDIR}/common
 
-test_start "make VERBOSE=1"
-make VERBOSE=1
-for file in ${targets} ${obj} ${dep} ${sha1}; do
-	assert_exist ${file}
-done
-for file in ${notes}; do
-	assert_not_exist ${file}
-done
+test_start ${TEST}
+
+tmp_file=$(mktemp)
+
+test_step "make"
+
+make | tee ${tmp_file}
+default_characters=$(cat ${tmp_file} | wc -m)
+rm -f ${tmp_file}
+assert_full_build
+
+make clean
+
+test_step "make VERBOSE=1"
+make VERBOSE=1 | tee ${tmp_file}
+verbose_characters=$(cat ${tmp_file} | wc -m)
+rm -f ${tmp_file}
+assert_full_build
+
+[ ${default_characters} -lt ${verbose_characters} ] ||
+	assert_fail "verbose build mode produced less output characters than normal build"

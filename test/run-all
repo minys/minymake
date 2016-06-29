@@ -2,18 +2,20 @@
 
 CURDIR=$(dirname $(readlink -f $0))
 
-source ${CURDIR}/setup
+source ${CURDIR}/setup $@
 
-source ${CURDIR}/test_default_target
-source ${CURDIR}/test_clean
-source ${CURDIR}/test_gcov
-source ${CURDIR}/test_clean
 source ${CURDIR}/test_build_dir
+source ${CURDIR}/test_cflag_change
+source ${CURDIR}/test_clean
+source ${CURDIR}/test_compiler_change
+source ${CURDIR}/test_debug
+source ${CURDIR}/test_default_target
+source ${CURDIR}/test_deps_file
 source ${CURDIR}/test_distclean
+source ${CURDIR}/test_gcov
+source ${CURDIR}/test_install
 source ${CURDIR}/test_release
-source ${CURDIR}/test_clean
 #source ${CURDIR}/test_static
-source ${CURDIR}/test_clean
 source ${CURDIR}/test_verbose
 
 exit 0
