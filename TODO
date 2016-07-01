@@ -12,4 +12,8 @@ TODO hooks for post build?
 
 TODO compiler/linker tests?
 
+XXX when a source file is removed, do we handle that properly?
+
 FIXME default value of LIBDIR detect 64/32 bit location?
+
+FIXME test binaries gets install, remove from INSTALL_BIN
