@@ -25,7 +25,22 @@ test_start ()
 
 test_step ()
 {
-	printf '\n\e[1;34m%s\e[0m %s\n\n' "TEST STEP" "[${CURRENT_TEST}] ${@}"
+	printf '\n\e[1;34m%s\e[0m %s\n\n%s\n' "TEST STEP" "[${CURRENT_TEST}]" "${@}"
+}
+
+assert_equal ()
+{
+	set +o errexit
+	test ${1} -eq ${2}
+	result=$?
+	if [ "${result}" -ne 0 ] && [ -n "${3}" ]; then
+		FAILURE="${3}"
+	else
+		FAILURE="assert_equal failed (${1} not equal to ${2})"
+	fi
+	set -o errexit
+
+	return ${result}
 }
 
 assert_exist ()
