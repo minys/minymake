@@ -13,6 +13,7 @@ source ${CURDIR}/test_default_target
 source ${CURDIR}/test_deps_file
 source ${CURDIR}/test_distclean
 source ${CURDIR}/test_gcov
+source ${CURDIR}/test_check
 source ${CURDIR}/test_install
 source ${CURDIR}/test_release
 #source ${CURDIR}/test_static
