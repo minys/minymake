@@ -40,6 +40,7 @@ PDF                   := # PDF files
 GCNO                  := # gcov notes
 INFO                  := # info files to generate
 INSTALL_BIN           := # binaries to install
+NOINSTALL_BIN         := # binaries we should NOT install
 INSTALL_DATA          := # data files to install
 INSTALL_DVI           := # dvi files to install
 INSTALL_INFO          := # info files to install
@@ -200,22 +201,22 @@ define include_module
         $$(error src not defined by $(1))
     endif
 
-    path                := $(dir $(1))
-    output              := $$(BUILDDIR)/$$(path)
-    target              := $$(abspath $$(output)/$$(target))
-    $$(target)_src      := $$(abspath $$(addprefix $$(path)/,$$(src)))
-    $$(target)_test     := $$(abspath $$(addprefix $$(path)/,$$(test)))
-    $$(target)_test     := $$(if $$(wildcard $$($$(target)_test)),$$($$(target)_test),$$(abspath $$(addprefix $$(output)/,$$(test))))
-    $$(target)_run_test := $$(if $$(test),$$(abspath $$(output)/.$$(notdir $$(test)).run),)
-    $$(target)_obj      := $$(addsuffix .o,$$(basename $$(src)))
-    $$(target)_obj      := $$(abspath $$(addprefix $$(output)/,$$($$(target)_obj)))
-    $$(target)_dep      := $$(patsubst %.o,%.d,$$($$(target)_obj))
-    $$(target)_gcno     := $$(patsubst %.o,%.gcno,$$($$(target)_obj))
-    $$(target)_gcno     += $$(addsuffix .gcno,$$(target))
-    $$(target)_cflags   := $$(cflags)
-    $$(target)_cxxflags := $$(cxxflags)
-    $$(target)_ldflags  := $$(ldflags)
-    $$(target)_module   := $$(abspath $(1))
+    path                 := $(dir $(1))
+    output               := $$(BUILDDIR)/$$(path)
+    target               := $$(abspath $$(output)/$$(target))
+    $$(target)_src       := $$(abspath $$(addprefix $$(path)/,$$(src)))
+    $$(target)_test      := $$(abspath $$(addprefix $$(path)/,$$(test)))
+    $$(target)_test      := $$(if $$(wildcard $$($$(target)_test)),$$($$(target)_test),$$(abspath $$(addprefix $$(output)/,$$(test))))
+    $$(target)_run_test  := $$(if $$(test),$$(abspath $$(output)/.$$(notdir $$(test)).run),)
+    $$(target)_obj       := $$(addsuffix .o,$$(basename $$(src)))
+    $$(target)_obj       := $$(abspath $$(addprefix $$(output)/,$$($$(target)_obj)))
+    $$(target)_dep       := $$(patsubst %.o,%.d,$$($$(target)_obj))
+    $$(target)_gcno      := $$(patsubst %.o,%.gcno,$$($$(target)_obj))
+    $$(target)_gcno      += $$(addsuffix .gcno,$$(target))
+    $$(target)_cflags    := $$(cflags)
+    $$(target)_cxxflags  := $$(cxxflags)
+    $$(target)_ldflags   := $$(ldflags)
+    $$(target)_module    := $$(abspath $(1))
 
     ifeq (.$$(CC_SUFFIX),$$(sort $$(suffix $$($$(target)_src))))
         $$(target)_ld           := $$(CC)
@@ -248,6 +249,10 @@ define include_module
         $$(target_bin)_perm := $(BIN_PERM)
         INSTALL_BIN         += $$($$(target_bin)_to)
         UNINSTALL           += $$($$(target_bin)_to)
+
+        ifneq (,$(strip $$($$(target)_test)))
+            NOINSTALL_BIN += $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$($$(target)_test)))
+        endif
 
         ifneq (,$(filter $$($$(target_bin)_to),$$(INSTALL_BIN)))
             $$(error $$($$(target_bin)_to) declared in $(1) will overwrite binary from another module)
@@ -335,16 +340,16 @@ define include_module
         endif
     endif
 
-    CLEAN       += $$(target)
-    CLEAN       += $$($$(target)_obj)
-    CLEAN       += $$($$(target)_dep)
-    CLEAN       += $$($$(target)_gcno)
-    CLEAN       += $$($$(target)_run_test)
-    DEPS        += $$($$(target)_dep)
-    GCNO        += $$($$(target)_gcno)
-    OBJS        += $$($$(target)_obj)
-    TARGETS     += $$(target)
-    TESTS       += $$($$(target)_run_test)
+    CLEAN   += $$(target)
+    CLEAN   += $$($$(target)_obj)
+    CLEAN   += $$($$(target)_dep)
+    CLEAN   += $$($$(target)_gcno)
+    CLEAN   += $$($$(target)_run_test)
+    DEPS    += $$($$(target)_dep)
+    GCNO    += $$($$(target)_gcno)
+    OBJS    += $$($$(target)_obj)
+    TARGETS += $$(target)
+    TESTS   += $$($$(target)_run_test)
 endef
 
 define clean_rule
@@ -440,6 +445,19 @@ $(LINK_CC_SHA1_FILE): SHA1 := $(LINK_CC_SHA1)
 $(LINK_CXX_SHA1_FILE): SHA1 := $(LINK_CXX_SHA1)
 
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
+
+# A quirk, since we use the same keyword to build both program
+# and test executables and later add install targets for these, we
+# have to filter out all binaries referenced with the 'test' keyword.
+#
+# Since we allow inter-module references we have to handle the
+# case where a target is specified in one module and later referenced
+# with 'test', so we have to filter out all test binaries after
+# all modules have been parsed. A bit ugly, but makes life a little
+# bit easier for the user.
+#
+INSTALL_BIN := $(filter-out $(NOINSTALL_BIN),$(INSTALL_BIN))
+
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
 $(foreach target,$(TARGETS),$(eval $(call object_rule,$(target))))
 $(foreach target,$(TARGETS),$(eval $(call test_rule,$(target))))
