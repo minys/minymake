@@ -85,6 +85,13 @@ LIB_PERM              ?= 644
 MAN_PERM              ?= 644
 PDF_PERM              ?= 644
 
+# Distribution variables
+PROJECT               ?= unknown
+MAJOR_VERSION         ?= 0
+MINOR_VERSION         ?= 0
+DIST_ARCHIVE          := $(BUILDDIR)/$(PROJECT)-$(MAJOR_VERSION).$(MINOR_VERSION).tar.gz
+CLEAN                 += $(DIST_ARCHIVE)
+
 # External tools
 CC                    ?= gcc
 CXX                   ?= g++
@@ -458,6 +465,14 @@ $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 #
 INSTALL_BIN := $(filter-out $(NOINSTALL_BIN),$(INSTALL_BIN))
 
+# In order to create a distribution archive, we list all files in SRCDIR
+# and exclude generated objects.
+#
+DIST_INCLUDE := $(shell find $(SRCDIR) ! -type d -a ! -name '*.gcno' -a ! -name '*.o' -a ! -name '*.so' -a ! -name '*.d' -a ! -name '*.sha1')
+DIST_INCLUDE := $(filter-out $(TARGETS),$(DIST_INCLUDE))
+DIST_INCLUDE := $(filter-out $(DIST_ARCHIVE),$(DIST_INCLUDE))
+DIST_INCLUDE := $(patsubst $(SRCDIR)/%,%,$(DIST_INCLUDE))
+
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
 $(foreach target,$(TARGETS),$(eval $(call object_rule,$(target))))
 $(foreach target,$(TARGETS),$(eval $(call test_rule,$(target))))
@@ -590,7 +605,10 @@ pdf:
 ps: not-implemented
 
 .PHONY: dist
-dist: not-implemented
+dist: $(DIST_ARCHIVE)
+
+$(DIST_ARCHIVE): $(DIST_INCLUDE)
+	$(call run_cmd,TAR,$@,tar czf $@ $^)
 
 .PHONY: check
 check: $(TESTS)
