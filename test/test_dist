@@ -1,0 +1,50 @@
+#!/bin/bash
+
+TEST=$(readlink -f ${BASH_SOURCE[0]})
+CURDIR=${CURDIR:-$(dirname ${TEST})}
+
+source ${CURDIR}/setup
+source ${CURDIR}/common
+
+test_start ${TEST}
+
+test_step "make dist"
+make dist
+
+tmp=$(mktemp)
+(
+	echo a/data.dat
+	echo a/main.c
+	echo a/man.1
+	echo a/module.mk
+	echo a/test.mk
+	echo b/c/c.c
+	echo b/c/c.h
+	echo b/d/d.c
+	echo b/d/d.h
+	echo b/main.c
+	echo b/module.mk
+	echo build.mk
+	echo c/c.cc
+	echo c/module.mk
+	echo c/test.sh
+	echo d/lib.c
+	echo d/libdata.dat
+	echo d/lib.texi
+	echo d/module.mk
+	echo e/main.c
+	echo e/module.mk
+	echo e/test.c
+	echo e/test.mk
+	echo GNUmakefile
+	echo main.c
+	echo module.mk
+	echo settings.x86_64
+) > ${tmp}
+
+tar tf unknown-0.0.tar.gz | sort > ${tmp}.actual
+diff=$(diff -u ${tmp} ${tmp}.actual | wc -l)
+
+if [ "${diff}" -ne 0 ]; then
+	assert_fail "Unexpected content in archive: $(diff -u ${tmp} ${tmp}.actual)"
+fi

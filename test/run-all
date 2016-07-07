@@ -11,6 +11,7 @@ source ${CURDIR}/test_compiler_change
 source ${CURDIR}/test_debug
 source ${CURDIR}/test_default_target
 source ${CURDIR}/test_deps_file
+source ${CURDIR}/test_dist
 source ${CURDIR}/test_distclean
 source ${CURDIR}/test_gcov
 source ${CURDIR}/test_check
