@@ -610,7 +610,7 @@ ps: not-implemented
 dist: $(DIST_ARCHIVE)
 
 $(DIST_ARCHIVE): $(DIST_INCLUDE)
-	$(call run_cmd,TAR,$@,tar czf $@ $^)
+	$(call run_cmd_green,TAR,$@,tar czf $@ $^)
 
 .PHONY: check
 check: $(TESTS)
