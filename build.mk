@@ -97,6 +97,7 @@ CC                    ?= gcc
 CXX                   ?= g++
 INSTALL               ?= install
 MAKEINFO              ?= makeinfo
+PRINTF                ?= printf
 TEXI2DVI              ?= texi2dvi
 TEXI2PDF              ?= texi2pdf
 
@@ -104,6 +105,7 @@ CC                    := $(shell which $(CC) 2>/dev/null)
 CXX                   := $(shell which $(CXX) 2>/dev/null)
 INSTALL               := $(shell which $(INSTALL) 2>/dev/null)
 MAKEINFO              := $(shell which $(MAKEINFO) 2>/dev/null)
+PRINTF                := $(shell which $(PRINTF) 2>/dev/null)
 TEXI2DVI              := $(shell which $(TEXI2DVI) 2>/dev/null)
 TEXI2PDF              := $(shell which $(TEXI2PDF) 2>/dev/null)
 
@@ -157,15 +159,15 @@ ifdef VERBOSE
     endef
 else
     define run_cmd
-        @printf ' %-8s \e[0;20m%s\e[0m\n' "$(1)" "$(2)"
+        @$(PRINTF) ' %-8s \e[0;20m%s\e[0m\n' "$(1)" "$(2)"
         @$(strip $(3))
     endef
     define run_cmd_red
-        @printf ' %-8s \e[1;31m%s\e[0m\n' "$(1)" "$(2)"
+        @$(PRINTF)' %-8s \e[1;31m%s\e[0m\n' "$(1)" "$(2)"
         @$(strip $(3))
     endef
     define run_cmd_green
-        @printf ' %-8s \e[1;32m%s\e[0m\n' "$(1)" "$(2)"
+        @$(PRINTF) ' %-8s \e[1;32m%s\e[0m\n' "$(1)" "$(2)"
         @$(strip $(3))
     endef
     define run_cmd_silent
