@@ -470,7 +470,7 @@ INSTALL_BIN := $(filter-out $(NOINSTALL_BIN),$(INSTALL_BIN))
 # In order to create a distribution archive, we list all files in SRCDIR
 # and exclude generated objects.
 #
-DIST_INCLUDE := $(shell find $(SRCDIR) ! -type d -a ! -name '*.gcno' -a ! -name '*.o' -a ! -name '*.so' -a ! -name '*.d' -a ! -name '*.sha1')
+DIST_INCLUDE := $(shell find $(SRCDIR) ! -type d -a ! -name '*.gcno' -a ! -name '*.o' -a ! -name '*.gz' -a ! -name '*.so' -a ! -name '*.d' -a ! -name '*.sha1')
 DIST_INCLUDE := $(filter-out $(TARGETS),$(DIST_INCLUDE))
 DIST_INCLUDE := $(filter-out $(DIST_ARCHIVE),$(DIST_INCLUDE))
 DIST_INCLUDE := $(patsubst $(SRCDIR)/%,%,$(DIST_INCLUDE))
