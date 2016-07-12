@@ -8,9 +8,11 @@ source ${CURDIR}/common
 
 test_start ${TEST}
 
-tmpdir=$(mktemp -d)
+tmpdir=$(get_tmpdir)
 test_step "make BUILDDIR=${tmpdir}"
 make BUILDDIR=${tmpdir}
+
+test_step 'Verify build output'
 for file in ${all}; do
 	assert_exist ${tmpdir}/${file}
 done
@@ -20,9 +22,8 @@ done
 
 test_step "make BUILDDIR=${tmpdir} clean"
 make BUILDDIR=${tmpdir} clean
+
+test_step 'Verify that all files were deleted'
 for file in ${all}; do
 	assert_not_exist ${tmpdir}/${file}
 done
-
-rm -rf ${tmpdir}
-unset tmpdir

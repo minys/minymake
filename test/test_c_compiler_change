@@ -7,17 +7,16 @@ source ${CURDIR}/setup
 source ${CURDIR}/common
 
 test_start ${TEST}
-
 test_step 'make'
 make
-tmp=$(get_tmpfile)
+tmp=$(get_tmpdir)
 touch ${tmp}
 
-test_step 'make CFLAGS=-pipe'
-make CFLAGS=-pipe
+test_step 'make'
+make CC=${MYCC}
 
 test_step 'Verify that C program(s) was rebuilt'
 assert_newer_than program ${tmp}
 
-test_step 'Verify that C++ program(s) was not rebuilt'
+test_step 'Verify that C++ program(s) was no rebuilt'
 assert_older_than c/test_cc ${tmp}

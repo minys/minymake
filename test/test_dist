@@ -10,6 +10,7 @@ test_start ${TEST}
 
 test_step "make dist"
 make dist
+assert_exist unknown-0.0.tar.gz
 
 tmp=$(mktemp)
 (
@@ -42,9 +43,22 @@ tmp=$(mktemp)
 	echo settings.x86_64
 ) > ${tmp}
 
+test_step 'Verify content of archive'
 tar tf unknown-0.0.tar.gz | sort > ${tmp}.actual
 diff=$(diff -u ${tmp} ${tmp}.actual | wc -l)
 
 if [ "${diff}" -ne 0 ]; then
 	assert_fail "Unexpected content in archive: $(diff -u ${tmp} ${tmp}.actual)"
 fi
+
+test_step 'make clean'
+make clean
+assert_clean
+
+test_step 'make PROJECT=test MAJOR_VERSION=1 MINOR_VERSION=99 dist'
+make PROJECT=test MAJOR_VERSION=1 MINOR_VERSION=99 dist
+assert_exist test-1.99.tar.gz
+
+test_step 'make clean'
+make PROJECT=test MAJOR_VERSION=1 MINOR_VERSION=99 clean
+assert_clean

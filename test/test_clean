@@ -8,6 +8,10 @@ source ${CURDIR}/common
 
 test_start ${TEST}
 
-test_step "make clean"
+test_step 'make'
+make
+assert_full_build
+
+test_step 'make clean'
 make clean
 assert_clean

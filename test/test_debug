@@ -9,11 +9,11 @@ source ${CURDIR}/common
 test_start ${TEST}
 
 file=$(readlink -f program)
-test_step "make debug"
+test_step 'make debug'
 make debug
 assert_full_build
 
+test_step 'Verify that binary contains debug symbols'
 debug_info=$(readelf --debug-dump ${file} | wc -l)
-
 [ "${debug_info}" -gt 0 ] ||
 	assert_fail "${file} should contain debug information but does not"

@@ -15,17 +15,36 @@ export all_coverage="${obj} ${dep} ${notes} ${sha1} ${targets}"
 
 test=$(which test 2>/dev/null)
 
+get_tmpdir ()
+{
+	if [ -w ${_TMPDIR} ] && [ -d "${_TMPDIR}" ]; then
+		rm -rf ${_TMPDIR}/*
+		echo ${_TMPDIR}
+	else
+		error '_TMPDIR does not exist or lacking write access'
+	fi
+}
+
+get_tmpfile ()
+{
+	if [ -w ${_TMPFILE} ]; then
+		echo > ${_TMPFILE}
+		echo ${_TMPFILE}
+	else
+		error '_TMPFILE does not exist or lacking write access'
+	fi
+}
+
 test_start ()
 {
 	CURRENT_TEST=$(basename ${1})
 	printf '\n\e[1;34m%s\e[0m %s\n' TEST "$(basename ${1})"
-
 	make distclean >/dev/null
 }
 
 test_step ()
 {
-	printf '\n\e[1;34m%s\e[0m %s\n\n%s\n' "TEST STEP" "[${CURRENT_TEST}]" "${@}"
+	printf '\n\e[1;34m%s\e[0m %s\n\n' "TEST STEP" "${@}"
 }
 
 assert_equal ()
@@ -110,21 +129,57 @@ assert_fail ()
 
 assert_clean ()
 {
+	test_step "Verify that build output was removed"
+
+	set +o errexit
 	for file in ${all}; do
-		assert_not_exist ${file}
+		${test} -e ${file}
+		result=$?
+		if [ "${result}" -eq 0 ]; then
+			FAILURE="should not exist but does: ${file}"
+			result=1
+			break
+		else
+			result=0
+		fi
 	done
+	set -o errexit
+
+	return ${result}
 }
 
 assert_full_build ()
 {
+	test_step "Verify build output"
+
+	set +o errexit
 	for file in ${all}; do
-		assert_exist ${file}
+		${test} -e ${file}
+		result=$?
+		if [ "${result}" -ne 0 ]; then
+			FAILURE="should exist but does not: ${file}"
+			break
+		fi
 	done
+	set -o errexit
+
+	return ${result}
 }
 
 assert_full_build_coverage ()
 {
+	test_step "Verify build output (including coverage)"
+
+	set +o errexit
 	for file in ${all_coverage}; do
-		assert_exist ${file}
+		${test} -e ${file}
+		result=$?
+		if [ "${result}" -ne 0 ]; then
+			FAILURE="should exist but does not: ${file}"
+			break
+		fi
 	done
+	set -o errexit
+
+	return ${result}
 }

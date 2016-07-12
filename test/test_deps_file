@@ -8,11 +8,11 @@ source ${CURDIR}/common
 
 test_start ${TEST}
 
-test_step "make"
+test_step 'make'
 make
 assert_full_build
 
-test_step "trigger rebuild"
+test_step 'Trigger rebuild'
 touch a/main.c
 make
 assert_newer_than a/main.d a/main.c

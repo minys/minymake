@@ -1,0 +1,20 @@
+#!/bin/bash
+
+TEST=$(readlink -f ${BASH_SOURCE[0]})
+CURDIR=${CURDIR:-$(dirname ${TEST})}
+
+source ${CURDIR}/setup
+source ${CURDIR}/common
+
+test_start ${TEST}
+
+test_step "make"
+make
+tmp=$(get_tmpfile)
+touch ${tmp}
+
+test_step "make CXXFLAGS=-pipe"
+make CXXFLAGS=-pipe
+
+test_step "Verify that program was rebuilt"
+assert_newer_than c/test_cc ${tmp}

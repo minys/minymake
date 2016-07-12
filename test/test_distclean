@@ -6,5 +6,8 @@ CURDIR=${CURDIR:-$(dirname ${TEST})}
 source ${CURDIR}/setup
 source ${CURDIR}/common
 
-make distclean > /dev/null
+test_start ${TEST}
+
+test_step 'make distclean'
+make distclean
 assert_clean

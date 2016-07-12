@@ -5,6 +5,17 @@
 
 export TEST_SETUP_INCLUDE_GUARD=1
 
+_TMPFILE=$(mktemp)
+_TMPDIR=$(mktemp -d)
+
+error ()
+{
+	[ -n "$@" ] &&
+		echo "$@" >$2
+
+	exit 1
+}
+
 interrupted ()
 {
 	PASSED=false
@@ -14,8 +25,11 @@ interrupted ()
 
 teardown ()
 {
-	if [ -d "${tmpdir}" ]; then
-		rm -rf ${tmpdir}
+	if [ -d "${_TMPDIR}" ]; then
+		rm -rf ${_TMPDIR}
+	fi
+	if [ -e "${_TMPFILE}" ]; then
+		rm -f ${_TMPFILE}
 	fi
 
 	make distclean >/dev/null 2>&1
@@ -34,9 +48,9 @@ trap "PASSED=false" ERR
 trap interrupted INT
 trap teardown EXIT
 
+export MYCC=$(readlink -f mycc)
+export MYCXX=$(readlink -f mycxx)
 cd ${CURDIR}/project
 PASSED=true
 
 set -o errexit
-
-make distclean >/dev/null 2>&1

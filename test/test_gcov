@@ -8,6 +8,10 @@ source ${CURDIR}/common
 
 test_start ${TEST}
 
-test_step "make gcov"
+test_step 'make gcov'
 make gcov
 assert_full_build_coverage
+
+test_step 'make clean'
+make clean
+assert_clean

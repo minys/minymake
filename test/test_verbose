@@ -8,22 +8,22 @@ source ${CURDIR}/common
 
 test_start ${TEST}
 
-tmp_file=$(mktemp)
+tmp=$(get_tmpfile)
 
-test_step "make"
-
-make | tee ${tmp_file}
-default_characters=$(cat ${tmp_file} | wc -m)
-rm -f ${tmp_file}
+test_step 'make'
+make | tee ${tmp}
+default_characters=$(cat ${tmp} | wc -m)
 assert_full_build
 
+test_step 'make clean'
+rm -f ${tmp}
 make clean
 
 test_step "make VERBOSE=1"
-make VERBOSE=1 | tee ${tmp_file}
-verbose_characters=$(cat ${tmp_file} | wc -m)
-rm -f ${tmp_file}
+make VERBOSE=1 | tee ${tmp}
+verbose_characters=$(cat ${tmp} | wc -m)
 assert_full_build
 
+test_step 'Verify verbose output'
 [ ${default_characters} -lt ${verbose_characters} ] ||
 	assert_fail "verbose build mode produced less output characters than normal build"
