@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 TEST=$(readlink -f ${BASH_SOURCE[0]})
 CURDIR=${CURDIR:-$(dirname ${TEST})}
@@ -12,7 +12,10 @@ test_step 'make check'
 guard=/tmp/test.sh.has.run
 rm -f ${guard}
 make check
-assert_full_build
 
-test_step 'Verify that test program has been run'
+test_step 'Verify that all required binaries have been built'
+assert_exist c/test_cc
+assert_exist e/program_e
+
+test_step 'Verify that test has been run'
 assert_exist ${guard}

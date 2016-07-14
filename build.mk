@@ -419,7 +419,7 @@ $(1): $$($(1)_obj)
 endef
 
 define test_rule
-$$($(1)_test): $$(1)
+$$($(1)_test): $(1)
 $$($(1)_run_test): $$($(1)_test)
 endef
 
