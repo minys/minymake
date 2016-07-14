@@ -12,7 +12,7 @@ test_start ${TEST}
 
 test_step "make DESTDIR=${tmpdir} install"
 make DESTDIR=${tmpdir} install
-assert_full_build
+assert_full_build_no_tests
 
 test_step 'Verify installation'
 for program in ${programs}; do
@@ -29,6 +29,7 @@ for manual in ${manuals}; do
 done
 built_programs=$(echo ${programs} | wc -w)
 installed_programs=$(ls -1 ${tmpdir}/bin/ | wc -l)
+ls -l ${tmpdir}/bin
 assert_equal ${built_programs} ${installed_programs} "Expected ${built_programs} programs to be installed, found ${installed_programs}"
 
 test_step "make DESTDIR=${tmpdir} uninstall"
