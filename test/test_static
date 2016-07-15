@@ -8,11 +8,14 @@ source ${CURDIR}/common
 
 test_start ${TEST}
 
-test_step "make static"
+test_step 'make static'
 make static
-for file in ${targets} ${obj} ${dep} ${sha1}; do
-	assert_exist ${file}
-done
-for file in ${notes}; do
-	assert_not_exist ${file}
-done
+assert_full_build
+
+# FIXME Is it enough to make sure we do not have a .dynamic section in ELF?
+test_step 'Verify that built binaries are statically linked'
+result=0
+(objdump -h program | grep -q .dynamic) || result=$?
+
+[ ${result} -eq 0 ] &&
+	assert_fail "program should be statically linked but contains a dynamic section in the ELF header"
