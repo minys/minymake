@@ -17,5 +17,4 @@ test_step 'Verify that built binaries are statically linked'
 result=0
 (objdump -h program | grep -q .dynamic) || result=$?
 
-[ ${result} -eq 0 ] &&
-	assert_fail "program should be statically linked but contains a dynamic section in the ELF header"
+assert_equal ${result} 1 "program should be statically linked but contains a dynamic section in the ELF header" 
