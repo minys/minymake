@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 TEST=$(readlink -f ${BASH_SOURCE[0]})
 CURDIR=${CURDIR:-$(dirname ${TEST})}
@@ -29,7 +29,6 @@ for manual in ${manuals}; do
 done
 built_programs=$(echo ${programs} | wc -w)
 installed_programs=$(ls -1 ${tmpdir}/bin/ | wc -l)
-ls -l ${tmpdir}/bin
 assert_equal ${built_programs} ${installed_programs} "Expected ${built_programs} programs to be installed, found ${installed_programs}"
 
 test_step "make DESTDIR=${tmpdir} uninstall"
