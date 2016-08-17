@@ -3,28 +3,93 @@ minymake
 Small build enginge inspired by Robert Miller's "Recursive Make Considered
 Harmful".
 
+Modules
+-------
+A module is a make fragment that is responsible for declaring dependencies for
+one target (and only one). Modules cannot include other modules, so a bigger
+project needs to include all modules from one top level makefile (or several
+separate ones).
+
 A module *must* declare the following variables:
 
- target : Name of the executable or library that this module is responsible
-          for. Only one executable or library is allowed per module file and
-          type is deducted from the precense of the suffix '.so'.
- src    : Whitespace separated list of source files used to build 'target'.
+    target : Name of the executable or library that this module is responsible
+             for. Only one executable or library is allowed per module file and
+             type is deducted from the precense of the suffix '.so'.
+
+    src    : Whitespace separated list of source files used to build 'target'.
 
 A module *might* declare the following variables:
 
- test          : Target test which will be invoked whenever target is rebuilt.
- cflags        : Target specific CFLAGS.
- cxxflags      : Target specific CXXFLAGS.
- ldflags       : Target specific LDFLAGS.
+    test   : Test program that will be run whenever the module target is
+             rebuilt. Unless the test program is pre-compiled, a separate
+             module using the same path needs to declare a target matching
+             the test binary name. Example, module A declares:
 
-Modules cannot include other modules, everything needs to be orchestrated
-from one top level makefile (or several separate ones).
+               target := foo
+               test   := bar
 
+             where 'bar' is a shell script. Nothing else needs to be done in
+             order for tests to be run as target in module A is rebuilt. If
+             however, 'bar' is the name of a binary which is yet to be built, a
+             separate module needs to define foo as a target:
+
+               target := bar
+               src    := bar.c
+
+             'bar' will then be marked as a dependency for 'foo' in module A.
+
+    cflags   : Target specific CFLAGS.
+    cxxflags : Target specific CXXFLAGS.
+    ldflags  : Target specific LDFLAGS.
+    data     : Target data.
+    dvi      : Target (or project) documentation in DVI format.
+    info     : Target documentation in GNU info format.
+    man      : Target documentation in man format.
+    pdf      : Target documentation in PDF format.
+
+Project wide configuration can be done in a top level makefile (see
+test/project for an example).
+
+Builtin targets
+---------------
+minymake provides the standard GNU targets with some additions:
+
+ release          : Build all appending RELEASE_CFLAGS
+ debug            : Build all using no optimizations and adding symbols
+ gcov             : Build all with coverage enabled
+ static           : Build all and link static
+ clean            : Remove all generated objects
+ distclean        : Remove all generated objects
+ mostlyclean      : Remove all generated objects
+ maintainer-clean : Remove all generated objects
+ install          : Build and install to DESTDIR
+ installcheck     : Run post-install checks
+ install-html     : Install target for HTML
+ install-dvi      : Install target for DVI
+ install-pdf      : Install target for PDF
+ install-ps       : Install target for PS
+ install-strip    : Install and strip binaries
+ uninstall        : Uninstall project
+ TAGS
+ info
+ dvi
+ html
+ pdf
+ ps
+ dist
+ check
+
+Options
+-------
 Flags that can be declared outside of build.mk and used for different targets:
 
 VERBOSE   - If defined, echo commands as they are executed.
 BUILDDIR  - If defined, files are generated rooted at BUILD_DIR using the same
             directory structure as they appear in the source tree.
+DESTDIR   - Set root of install
+
+The following is appending flags to any internally declared flags (such used by
+invoked targets):
 
 Used by all targets:
  CFLAGS
