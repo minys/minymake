@@ -1,15 +1,10 @@
 TODO add support for exporting interfaces to rest of the project during
      build
 
-TODO make it possible to enable/disable parts of the project?
+TODO hooks for post build
 
-FIXME distclean does not do anymore than clean does at the moment, maybe that
-      is fine.
+TODO default value of LIBDIR in order to install 64/32 bit libs into correct
+     location
 
-TODO improve error handling
-
-TODO hooks for post build?
-
-TODO compiler/linker tests?
-
-FIXME default value of LIBDIR detect 64/32 bit location?
+FIXME install target(s) are most likely not GNU compliant (honoring prefix etc),
+      worth fixing?
