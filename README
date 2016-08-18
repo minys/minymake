@@ -1,115 +1,119 @@
-minymake
-========
-Small build enginge inspired by Robert Miller's "Recursive Make Considered
-Harmful".
+# minymake
 
-Modules
--------
-A module is a make fragment that is responsible for declaring dependencies for
-one target (and only one). Modules cannot include other modules, so a bigger
-project needs to include all modules from one top level makefile (or several
-separate ones).
+ Small build enginge inspired by Robert Miller's "Recursive Make Considered
+ Harmful".
 
-A module *must* declare the following variables:
+ To start using minymake, copy build.mk into your project directory structure
+ and add module files (make fragments). See the test/project for an example
+ deployment.
 
-    target : Name of the executable or library that this module is responsible
-             for. Only one executable or library is allowed per module file and
-             type is deducted from the precense of the suffix '.so'.
 
-    src    : Whitespace separated list of source files used to build 'target'.
+## Modules
 
-A module *might* declare the following variables:
+ A module is a make fragment that is responsible for declaring dependencies for
+ one target (and only one). Modules cannot include other modules, so a bigger
+ project needs to include all modules from one top level makefile (or several
+ separate ones).
 
-    test   : Test program that will be run whenever the module target is
-             rebuilt. Unless the test program is pre-compiled, a separate
-             module using the same path needs to declare a target matching
-             the test binary name. Example, module A declares:
+ A module *must* declare the following variables:
 
-               target := foo
-               test   := bar
+     target   : Name of the executable or library that this module is
+                responsible for. Only one executable or library is allowed per
+                module file and type is deducted from the precense of the suffix
+                '.so'.
 
-             where 'bar' is a shell script. Nothing else needs to be done in
-             order for tests to be run as target in module A is rebuilt. If
-             however, 'bar' is the name of a binary which is yet to be built, a
-             separate module needs to define foo as a target:
+     src      : Whitespace separated list of source files used to build
+                'target'.
 
-               target := bar
-               src    := bar.c
+ A module *might* declare the following variables:
 
-             'bar' will then be marked as a dependency for 'foo' in module A.
+     test     : Test program that will be run whenever the module target is
+                rebuilt. Unless the test program is pre-compiled, a separate
+                module using the same path needs to declare a target matching
+                the test binary name. Example, module A declares:
 
-    cflags   : Target specific CFLAGS.
-    cxxflags : Target specific CXXFLAGS.
-    ldflags  : Target specific LDFLAGS.
-    data     : Target data.
-    dvi      : Target (or project) documentation in DVI format.
-    info     : Target documentation in GNU info format.
-    man      : Target documentation in man format.
-    pdf      : Target documentation in PDF format.
+                  target := foo
+                  test   := bar
 
-Project wide configuration can be done in a top level makefile (see
-test/project for an example).
+                where 'bar' is a shell script. Nothing else needs to be done in
+                order for tests to be run as target in module A is rebuilt. If
+                however, 'bar' is the name of a binary which is yet to be built,
+                a separate module needs to define foo as a target:
 
-Builtin targets
----------------
-minymake provides the standard GNU targets with some additions:
+                  target := bar
+                  src    := bar.c
 
- release          : Build all appending RELEASE_CFLAGS
- debug            : Build all using no optimizations and adding symbols
- gcov             : Build all with coverage enabled
- static           : Build all and link static
- clean            : Remove all generated objects
- distclean        : Remove all generated objects
- mostlyclean      : Remove all generated objects
- maintainer-clean : Remove all generated objects
- install          : Build and install to DESTDIR
- installcheck     : Run post-install checks
- install-html     : Install target for HTML
- install-dvi      : Install target for DVI
- install-pdf      : Install target for PDF
- install-ps       : Install target for PS
- install-strip    : Install and strip binaries
- uninstall        : Uninstall project
- TAGS
- info
- dvi
- html
- pdf
- ps
- dist
- check
+                'bar' will then be marked as a dependency for 'foo' in module A.
 
-Options
--------
-Flags that can be declared outside of build.mk and used for different targets:
+     cflags   : Target specific CFLAGS.
+     cxxflags : Target specific CXXFLAGS.
+     ldflags  : Target specific LDFLAGS.
+     data     : Target data.
+     dvi      : Target (or project) documentation in DVI format.
+     info     : Target documentation in GNU info format.
+     man      : Target documentation in man format.
+     pdf      : Target documentation in PDF format.
 
-VERBOSE   - If defined, echo commands as they are executed.
-BUILDDIR  - If defined, files are generated rooted at BUILD_DIR using the same
-            directory structure as they appear in the source tree.
-DESTDIR   - Set root of install
+ Note that targets, source files etc should be referenced through a relative
+ path preferable from a module file reciding in the same location as the source
+ or target file(s).
 
-The following is appending flags to any internally declared flags (such used by
-invoked targets):
+ Project wide configuration can be done in a top level makefile (see
+ test/project for an example). Header files needs to be handled through
+ cflags, cxxflags and ldflags, there is no mechanism to automatically export
+ header files to the rest of the project.
 
-Used by all targets:
- CFLAGS
- CXXFLAGS
- LDFLAGS
 
-Used by 'debug' target:
- DEBUG_CFLAGS
- DEBUG_CXXFLAGS
+## Building
 
-Used by 'gcov' target:
- GCOV_CFLAGS
- GCOV_CXXFLAGS
- GCOV_LDFLAGS
+ minymake provides the standard GNU targets with some additions:
 
-Used by 'release' target:
- RELEASE_CFLAGS
- RELEASE_CXXFLAGS
+     release          : Build all using RELEASE_CFLAGS, RELEASE_CXXFLAGS and
+                        RELEASE_LDFLAGS.
+     debug            : Build all using DEBUG_CFLAGS, RELEASE_CXXFLAGS and
+                        DEBUG_LDFLAGS.
+     gcov             : Build all using GCOV_CFLAGS, GCOV_CXXFLAGS and
+                        GCOV_LDFLAGS.
+     static           : Build all using STATIC_CFLAGS, STATIC_CXXFLAGS and
+                        STATIC_LDFLAGS.
+     clean            : Remove all generated objects
+     distclean        : Remove all generated objects
+     mostlyclean      : Remove all generated objects
+     maintainer-clean : Remove all generated objects
+     install          : Build and install to DESTDIR
+     installcheck     : Run post-install checks
+     install-html     : Install target for HTML
+     install-dvi      : Install target for DVI
+     install-pdf      : Install target for PDF
+     install-ps       : Install target for PS
+     install-strip    : Install and strip binaries
+     uninstall        : Uninstall project
+     TAGS
+     info
+     dvi
+     html
+     pdf
+     ps
+     dist
+     check
 
-Used by 'static' target:
- STATIC_CFLAGS
- STATIC_CXXFLAGS
- STATIC_LDFLAGS
+ The following variables can be defined before including build.mk, or passed on
+ the make command line. They are used to pass options to minymake itself, the
+ compiler or the linker during builds:
+
+     VERBOSE          : If defined, echo commands as they are executed.
+     BUILDDIR         : If defined, files are generated rooted at BUILD_DIR using the same
+                        directory structure as they appear in the source tree.
+     CFLAGS           : C compiler options, always applied.
+     CXXFLAGS         : C++ compiler options, always applied.
+     LDFLAGS          : Linker options, always applied.
+     DEBUG_CFLAGS     : C compiler flags added when 'debug' target is invoked.
+     DEBUG_CXXFLAGS   : C++ compiler flags added when 'debug' target is invoked.
+     GCOV_CFLAGS      : C compiler flags added when 'gcov' target is invoked.
+     GCOV_CXXFLAGS    : C++ compiler flags added when 'gcov' target is invoked.
+     GCOV_LDFLAGS     : Linker flags added when 'gcov' target is invoked.
+     RELEASE_CFLAGS   : C compiler flags added when 'release' target is invoked.
+     RELEASE_CXXFLAGS : C++ compiler flags added when 'release' target is invoked.
+     STATIC_CFLAGS    : C compiler flags added when 'static' target is invoked.
+     STATIC_CXXFLAGS  : C++ compiler flags added when 'static' target is invoked.
+     STATIC_LDFLAGS   : Linker flags added when 'static' target is invoked.
