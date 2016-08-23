@@ -1,7 +1,14 @@
 # minymake
 
- Small build enginge inspired by Robert Miller's "Recursive Make Considered
- Harmful".
+ Small non-recursive build enginge inspired by Robert Miller's "Recursive Make
+ Considered Harmful".
+
+ minymake goals are to keep it reasonable fast and small, but above all try to
+ make sure things are rebuilt when they should. It also tries to fix some
+ problems with most make based build systems such as keeping track of other
+ inputs apart from the source files, so that a object is rebuilt if the compiler
+ change, a flag is added or removed or the module file used to build the object
+ has changed.
 
  To start using minymake, copy build.mk into your project directory structure
  and add module files (make fragments). See the test/project for an example
@@ -64,6 +71,83 @@
  header files to the rest of the project.
 
 
+## Configuration
+
+ The following variables can be defined before including build.mk, or passed on
+ the make command line. They are used to pass options to minymake itself, the
+
+ Miscellaneous variables:
+
+     PROJECT       : Project name (defaults to 'unknown').
+     MAJOR_VERSION : Major version (defaults to '0').
+     MINOR_VERSION : Minor version (defaults to '0').
+
+     VERBOSE       : If defined, echo commands as they are executed.
+     BUILDDIR      : If defined, files are generated rooted at BUILDDIR using the same
+                     directory structure as they appear in the source tree.
+
+ External tools, override if needed:
+
+     CC       : C compiler
+     CXX      : C++ compiler
+     INSTALL  : install command
+     MAKEINFO : makeinfo command
+     PRINTF   : printf command
+     TEXI2DVI : texi2dvi command
+     TEXI2PDF : texi2pdf command
+
+
+ Compiler and linker variables:
+
+     CC_SUFFIX        : Suffix for C files (defaults to 'c').
+     CXX_SUFFIX       : Suffix for C++ files (defaults to 'cc').
+     CFLAGS           : C compiler options, always applied.
+     CXXFLAGS         : C++ compiler options, always applied.
+     LDFLAGS          : Linker options, always applied.
+     DEBUG_CFLAGS     : C compiler flags added when 'debug' target is invoked.
+     DEBUG_CXXFLAGS   : C++ compiler flags added when 'debug' target is invoked.
+     GCOV_CFLAGS      : C compiler flags added when 'gcov' target is invoked.
+     GCOV_CXXFLAGS    : C++ compiler flags added when 'gcov' target is invoked.
+     GCOV_LDFLAGS     : Linker flags added when 'gcov' target is invoked.
+     RELEASE_CFLAGS   : C compiler flags added when 'release' target is invoked.
+     RELEASE_CXXFLAGS : C++ compiler flags added when 'release' target is invoked.
+     STATIC_CFLAGS    : C compiler flags added when 'static' target is invoked.
+     STATIC_CXXFLAGS  : C++ compiler flags added when 'static' target is invoked.
+     STATIC_LDFLAGS   : Linker flags added when 'static' target is invoked.
+
+ Installation variables, override the default if neccesary:
+
+     BINDIR         : installation directory for binaries (default: bin).
+     DATADIR        : installation directory for data (default: share).
+     DATAROOTDIR    : installation directory for binaries (default: share).
+     DOCDIR         : installation directory for binaries (default: doc).
+     DVIDIR         : installation directory for binaries (default: doc).
+     HTMLDIR        : installation directory for binaries (default: doc).
+     INCLUDEDIR     : installation directory for binaries (default: include).
+     INFODIR        : installation directory for binaries (default: DATAROOTDIR/info).
+     LIBDIR         : installation directory for binaries (default: lib).
+     LIBEXECDIR     : installation directory for binaries (default: libexec).
+     LOCALSTATEDIR  : installation directory for binaries (default: var).
+     MANDIR         : installation directory for binaries (default: DATAROOTDIR/man).
+     PDFDIR         : installation directory for binaries (default: doc).
+     PSDIR          : installation directory for binaries (default: doc).
+     RUNSTATEDIR    : installation directory for binaries (default: run).
+     SBINDIR        : installation directory for binaries (default: sbin).
+     SHAREDSTATEDIR : installation directory for binaries (default: com).
+     SYSCONFDIR     : installation directory for binaries (default: etc).
+     
+     BIN_PERM       : permissions for binaries (default: 755).
+     DATA_PERM      : permissions for data (default: 644).
+     DVI_PERM       : permissions for dvi (default: 644).
+     INFO_PERM      : permissions for info (default: 644).
+     LIB_PERM       : permissions for libraries (default: 644).
+     MAN_PERM       : permissions for manuals (default: 644).
+     PDF_PERM       : permissions for pdfs (default: 644).
+
+     FORCE_INSTALL  : If defined, 'install' target will install everything even
+                      if none or some of the files have not been rebuilt.
+
+
 ## Building
 
  minymake provides the standard GNU targets with some additions:
@@ -97,23 +181,7 @@
      dist
      check
 
- The following variables can be defined before including build.mk, or passed on
- the make command line. They are used to pass options to minymake itself, the
- compiler or the linker during builds:
+## Example
 
-     VERBOSE          : If defined, echo commands as they are executed.
-     BUILDDIR         : If defined, files are generated rooted at BUILD_DIR using the same
-                        directory structure as they appear in the source tree.
-     CFLAGS           : C compiler options, always applied.
-     CXXFLAGS         : C++ compiler options, always applied.
-     LDFLAGS          : Linker options, always applied.
-     DEBUG_CFLAGS     : C compiler flags added when 'debug' target is invoked.
-     DEBUG_CXXFLAGS   : C++ compiler flags added when 'debug' target is invoked.
-     GCOV_CFLAGS      : C compiler flags added when 'gcov' target is invoked.
-     GCOV_CXXFLAGS    : C++ compiler flags added when 'gcov' target is invoked.
-     GCOV_LDFLAGS     : Linker flags added when 'gcov' target is invoked.
-     RELEASE_CFLAGS   : C compiler flags added when 'release' target is invoked.
-     RELEASE_CXXFLAGS : C++ compiler flags added when 'release' target is invoked.
-     STATIC_CFLAGS    : C compiler flags added when 'static' target is invoked.
-     STATIC_CXXFLAGS  : C++ compiler flags added when 'static' target is invoked.
-     STATIC_LDFLAGS   : Linker flags added when 'static' target is invoked.
+ Please see the project located in the test directory, it uses all features
+ that minymake provides and offers a pretty good starting point.
