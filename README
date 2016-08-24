@@ -4,11 +4,9 @@
  Considered Harmful".
 
  minymake goals are to keep it reasonable fast and small, but above all try to
- make sure things are rebuilt when they should. It also tries to fix some
- problems with most make based build systems such as keeping track of other
- inputs apart from the source files, so that a object is rebuilt if the compiler
- change, a flag is added or removed or the module file used to build the object
- has changed.
+ make sure things are rebuilt when they should. By keeping track of changes to
+ make files, compilers, linkers and options to those, minymake detects changes
+ that could affect the build and rebuilds all affected targets.
 
  To start using minymake, copy build.mk into your project directory structure
  and add module files (make fragments). See the test/project for an example
@@ -21,6 +19,8 @@
  one target (and only one). Modules cannot include other modules, so a bigger
  project needs to include all modules from one top level makefile (or several
  separate ones).
+
+ Modules are listed in a top level makefile in the MODULES variable.
 
  A module *must* declare the following variables:
 
@@ -51,7 +51,6 @@
                   src    := bar.c
 
                 'bar' will then be marked as a dependency for 'foo' in module A.
-
      cflags   : Target specific CFLAGS.
      cxxflags : Target specific CXXFLAGS.
      ldflags  : Target specific LDFLAGS.
@@ -75,12 +74,13 @@
 
  The following variables can be defined before including build.mk, or passed on
  the make command line. They are used to pass options to minymake itself, the
+ the compiler or linker.
 
  Miscellaneous variables:
 
-     PROJECT       : Project name (defaults to 'unknown').
-     MAJOR_VERSION : Major version (defaults to '0').
-     MINOR_VERSION : Minor version (defaults to '0').
+     PROJECT       : Project name (default: unknown).
+     MAJOR_VERSION : Major version (default: 0).
+     MINOR_VERSION : Minor version (default: 0).
 
      VERBOSE       : If defined, echo commands as they are executed.
      BUILDDIR      : If defined, files are generated rooted at BUILDDIR using the same
@@ -99,8 +99,8 @@
 
  Compiler and linker variables:
 
-     CC_SUFFIX        : Suffix for C files (defaults to 'c').
-     CXX_SUFFIX       : Suffix for C++ files (defaults to 'cc').
+     CC_SUFFIX        : Suffix for C files (default: c).
+     CXX_SUFFIX       : Suffix for C++ files (default: cc).
      CFLAGS           : C compiler options, always applied.
      CXXFLAGS         : C++ compiler options, always applied.
      LDFLAGS          : Linker options, always applied.
@@ -119,22 +119,22 @@
 
      BINDIR         : installation directory for binaries (default: bin).
      DATADIR        : installation directory for data (default: share).
-     DATAROOTDIR    : installation directory for binaries (default: share).
-     DOCDIR         : installation directory for binaries (default: doc).
-     DVIDIR         : installation directory for binaries (default: doc).
-     HTMLDIR        : installation directory for binaries (default: doc).
-     INCLUDEDIR     : installation directory for binaries (default: include).
-     INFODIR        : installation directory for binaries (default: DATAROOTDIR/info).
-     LIBDIR         : installation directory for binaries (default: lib).
-     LIBEXECDIR     : installation directory for binaries (default: libexec).
-     LOCALSTATEDIR  : installation directory for binaries (default: var).
-     MANDIR         : installation directory for binaries (default: DATAROOTDIR/man).
-     PDFDIR         : installation directory for binaries (default: doc).
-     PSDIR          : installation directory for binaries (default: doc).
-     RUNSTATEDIR    : installation directory for binaries (default: run).
-     SBINDIR        : installation directory for binaries (default: sbin).
-     SHAREDSTATEDIR : installation directory for binaries (default: com).
-     SYSCONFDIR     : installation directory for binaries (default: etc).
+     DATAROOTDIR    : installation directory for data (default: share).
+     DOCDIR         : installation directory for docs (default: doc).
+     DVIDIR         : installation directory for dvi (default: doc).
+     HTMLDIR        : installation directory for HTML (default: doc).
+     INCLUDEDIR     : installation directory for header files (default: include).
+     INFODIR        : installation directory for info files (default: DATAROOTDIR/info).
+     LIBDIR         : installation directory for libraries (default: lib).
+     LIBEXECDIR     : installation directory for libexec (default: libexec).
+     LOCALSTATEDIR  : installation directory for logs (default: var).
+     MANDIR         : installation directory for manuals (default: DATAROOTDIR/man).
+     PDFDIR         : installation directory for pdf files (default: doc).
+     PSDIR          : installation directory for ps files(default: doc).
+     RUNSTATEDIR    : installation directory for running state (default: run).
+     SBINDIR        : installation directory for system binaries (default: sbin).
+     SHAREDSTATEDIR : installation directory for shared state (default: com).
+     SYSCONFDIR     : installation directory for configuration files (default: etc).
      
      BIN_PERM       : permissions for binaries (default: 755).
      DATA_PERM      : permissions for data (default: 644).
@@ -160,26 +160,24 @@
                         GCOV_LDFLAGS.
      static           : Build all using STATIC_CFLAGS, STATIC_CXXFLAGS and
                         STATIC_LDFLAGS.
-     clean            : Remove all generated objects
-     distclean        : Remove all generated objects
-     mostlyclean      : Remove all generated objects
-     maintainer-clean : Remove all generated objects
-     install          : Build and install to DESTDIR
-     installcheck     : Run post-install checks
-     install-html     : Install target for HTML
-     install-dvi      : Install target for DVI
-     install-pdf      : Install target for PDF
-     install-ps       : Install target for PS
-     install-strip    : Install and strip binaries
-     uninstall        : Uninstall project
-     TAGS
-     info
-     dvi
-     html
-     pdf
-     ps
-     dist
-     check
+     clean            : Remove all generated objects.
+     mostlyclean      : Remove all generated objects.
+     maintainer-clean : Remove all generated objects.
+     install          : Build and install to DESTDIR.
+     installcheck     : Run post-install checks.
+     install-html     : Install target for HTML.
+     install-dvi      : Install target for DVI.
+     install-pdf      : Install target for PDF.
+     install-ps       : Install target for PS.
+     install-strip    : Install and strip binaries.
+     uninstall        : Uninstall project.
+     info             : Generate info files.
+     dvi              : Generate dvi files.
+     html             : Generate HTML files.
+     pdf              : Generate PDF files.
+     ps               : Generate PostScript files.
+     dist             : Create a distribution archive.
+     check            : Run all tests, will build necessary dependencies.
 
 ## Example
 
