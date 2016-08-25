@@ -100,6 +100,7 @@ MAKEINFO              ?= makeinfo
 PRINTF                ?= printf
 TEXI2DVI              ?= texi2dvi
 TEXI2PDF              ?= texi2pdf
+TEXI2HTML             ?= texi2html
 
 CC                    := $(shell which $(CC) 2>/dev/null)
 CXX                   := $(shell which $(CXX) 2>/dev/null)
@@ -108,6 +109,7 @@ MAKEINFO              := $(shell which $(MAKEINFO) 2>/dev/null)
 PRINTF                := $(shell which $(PRINTF) 2>/dev/null)
 TEXI2DVI              := $(shell which $(TEXI2DVI) 2>/dev/null)
 TEXI2PDF              := $(shell which $(TEXI2PDF) 2>/dev/null)
+TEXI2HTML             := $(shell which $(TEXI2HTML) 2>/dev/null)
 
 DEBUG_CFLAGS          ?= -g
 DEBUG_CXXFLAGS        ?= -g
@@ -193,6 +195,7 @@ define include_module
     info        := # texi file(s) that should be converted to info file(s) (optional)
     man         := # target manual file(s) (optional)
     pdf         := # target pdf files (optional)
+    html        := # target html files (optional)
 
     # Internal variables related to keywords
     target_data :=
@@ -200,6 +203,7 @@ define include_module
     target_info :=
     target_man  :=
     target_pdf  :=
+    target_html :=
 
     include $(1)
 
@@ -349,6 +353,24 @@ define include_module
         endif
     endif
 
+    ifneq (,$$(strip $$(html)))
+        ifeq (,$$(strip $$(TEXI2HTML)))
+            $$(error 'html' keyword present in $(1) but 'texi2html' tool is not installed or missing from PATH)
+        endif
+
+        target_html          := $$(abspath $$(output)/$$(patsubst %.texi,%.html,$$(html)))
+        $$(target_html)_to   := $$(abspath $(DESTDIR)/$(PDFDIR)/$$(notdir $$(target_html)))
+        $$(target_html)_from := $$(target_html)
+        $$(target_html)_perm := $(PDF_PERM)
+        HTML                 += $$(target_html)
+        INSTALL_HTML         += $$($$(target_html)_to)
+        UNINSTALL            += $$($$(target_html)_to)
+
+        ifneq (,$(filter $$($$(target_html)_to),$$(INSTALL_HTML)))
+            $$(error $$($$(target_html)_to) declared in $(1) will overwrite an HTML file from another module)
+        endif
+    endif
+
     CLEAN   += $$(target)
     CLEAN   += $$($$(target)_obj)
     CLEAN   += $$($$(target)_dep)
@@ -431,6 +453,10 @@ define pdf_rule
 pdf: $(1)
 endef
 
+define html_rule
+html: $(1)
+endef
+
 define depends
     $(call run_cmd,DEP,$(1),$(strip $(2) $(3) -MT "$(patsubst %.d,%.o,$(1))" -M $(4) | sed 's,\(^.*.o:\),$@ \1,' > $(1)))
 endef
@@ -481,6 +507,7 @@ $(foreach target,$(TARGETS),$(eval $(call test_rule,$(target))))
 $(foreach file,$(DVI),$(eval $(call dvi_rule,$(file))))
 $(foreach file,$(INFO),$(eval $(call info_rule,$(file))))
 $(foreach pdf,$(PDF),$(eval $(call pdf_rule,$(pdf))))
+$(foreach file,$(HTML),$(eval $(call html_rule,$(file))))
 $(foreach file,$(INSTALL_BIN),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(INSTALL_LIB),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(INSTALL_DATA),$(eval $(call install_nostrip_rule,$(file),install)))
@@ -488,6 +515,7 @@ $(foreach file,$(INSTALL_MAN),$(eval $(call install_nostrip_rule,$(file),install
 $(foreach file,$(INSTALL_INFO),$(eval $(call install_nostrip_rule,$(file),install)))
 $(foreach file,$(INSTALL_DVI),$(eval $(call install_nostrip_rule,$(file),install_dvi)))
 $(foreach file,$(INSTALL_PDF),$(eval $(call install_nostrip_rule,$(file),install_pdf)))
+$(foreach file,$(INSTALL_HTML),$(eval $(call install_nostrip_rule,$(file),install_html)))
 $(foreach file,$(wildcard $(sort $(UNINSTALL))),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
@@ -522,6 +550,10 @@ $(BUILDDIR)/%.dvi: $(SRCDIR)/%.texi
 $(BUILDDIR)/%.pdf: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,PDF,$@,$(TEXI2PDF) -b -q -o $@ $<)
+
+$(BUILDDIR)/%.html: $(SRCDIR)/%.texi
+	$(call mkdir,$(dir $@))
+	$(call run_cmd,HTML,$@,$(TEXI2HTML) -b -q -o $@ $<)
 
 $(BUILDDIR)/%.sha1: FORCE
 	$(call verify_input,$@,$(SHA1))
@@ -570,7 +602,7 @@ install:
 installcheck: not-implemented
 
 .PHONY: install-html
-install-html: not-implemented
+install-html: html
 
 .PHONY: install-dvi
 install-dvi: dvi
@@ -588,9 +620,6 @@ install-strip: install
 .PHONY: uninstall
 uninstall:
 
-.PHONY: TAGS
-TAGS: not-implemented
-
 .PHONY: info
 info:
 
@@ -598,7 +627,7 @@ info:
 dvi:
 
 .PHONY: html
-html: not-implemented
+html:
 
 .PHONY: pdf
 pdf:
