@@ -1,4 +1,4 @@
-#
+	#
 # Copyright (c) 2016, Mikael Nyström
 # All rights reserved.
 #
@@ -659,6 +659,50 @@ FORCE:
 not-implemented:
 	$(error this target is not implemented)
 
-ifeq (,$(or $(filter clean,$(MAKECMDGOALS)),$(filter distclean,$(MAKECMDGOALS))))
+.PHONY: help
+help:
+	@echo
+	@echo "Build configuration:"
+	@echo
+	@echo " VERBOSE          : If defined, echo commands as they are executed."
+	@echo " BUILDDIR         : If defined, files are generated rooted at BUILDDIR using the same"
+	@echo "                    directory structure as they appear in the source tree."
+	@echo " DESTDIR          : If defined, files are install at DESTDIR"
+	@echo " FORCE_INSTALL    : If defined, 'install' target will install everything even"
+	@echo "                    if none or some of the files have not been rebuilt."
+	@echo
+	@echo "Available targets:"
+	@echo
+	@echo " release          : Build all using RELEASE_CFLAGS, RELEASE_CXXFLAGS and"
+	@echo "                    RELEASE_LDFLAGS."
+	@echo " debug            : Build all using DEBUG_CFLAGS, RELEASE_CXXFLAGS and"
+	@echo "                    DEBUG_LDFLAGS."
+	@echo " gcov             : Build all using GCOV_CFLAGS, GCOV_CXXFLAGS and"
+	@echo "                    GCOV_LDFLAGS."
+	@echo " static           : Build all using STATIC_CFLAGS, STATIC_CXXFLAGS and"
+	@echo "                    STATIC_LDFLAGS."
+	@echo " clean            : Remove all generated objects."
+	@echo " mostlyclean      : Remove all generated objects."
+	@echo " maintainer-clean : Remove all generated objects."
+	@echo " install          : Build and install to DESTDIR."
+	@echo " installcheck     : Run post-install checks."
+	@echo " install-html     : Install target for HTML."
+	@echo " install-dvi      : Install target for DVI."
+	@echo " install-pdf      : Install target for PDF."
+	@echo " install-ps       : Install target for PS."
+	@echo " install-strip    : Install and strip binaries."
+	@echo " uninstall        : Uninstall project."
+	@echo " info             : Generate info files".
+	@echo " dvi              : Generate dvi files."
+	@echo " html             : Generate HTML files."
+	@echo " pdf              : Generate PDF files."
+	@echo " ps               : Generate PostScript files."
+	@echo " dist             : Create a distribution archive."
+	@echo " check            : Run all tests, will build necessary dependencies."
+	@echo
+	@echo "Please see the README for more information."
+	@echo
+
+ifeq (,$(or $(filter clean,$(MAKECMDGOALS)),$(filter distclean,$(MAKECMDGOALS)),$(filter help,$(MAKECMDGOALS))))
     -include $(DEPS)
 endif
