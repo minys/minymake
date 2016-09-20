@@ -26,11 +26,8 @@
 
 # Check required GNU Make features
 REQUIRED_FEATURES := target-specific
-REQUIRED_FEATURES += second-expansion
-REQUIRED_FEATURES += else-if
-REQUIRED_FEATURES += shortest-stem
 
-$(foreach feature,$(REQUIRED_FEATURES),$(if $(filter-out $(feature),$(.FEATURES)),,$(error required GNU Make feature not present: $(feature))))
+$(foreach feature,$(REQUIRED_FEATURES),$(if $(filter $(feature),$(.FEATURES)),,$(error required GNU Make feature not present: $(feature))))
 
 .SUFFIXES:
 .DELETE_ON_ERROR:
