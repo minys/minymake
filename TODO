@@ -8,3 +8,5 @@ TODO default value of LIBDIR in order to install 64/32 bit libs into correct
 
 FIXME install target(s) are most likely not GNU compliant (honoring prefix etc),
       worth fixing?
+
+TODO installcheck target

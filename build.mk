@@ -639,9 +639,6 @@ maintainer-clean: clean
 .PHONY: install
 install:
 
-.PHONY: installcheck
-installcheck: not-implemented
-
 .PHONY: install-html
 install-html: html
 
@@ -688,10 +685,6 @@ check: $(TESTS)
 .PHONY: FORCE
 FORCE:
 
-.PHONY: not-implemented
-not-implemented:
-	$(error this target is not implemented)
-
 .PHONY: help
 help:
 	@echo
@@ -718,7 +711,6 @@ help:
 	@echo " mostlyclean      : Remove all generated objects."
 	@echo " maintainer-clean : Remove all generated objects."
 	@echo " install          : Build and install to DESTDIR."
-	@echo " installcheck     : Run post-install checks."
 	@echo " install-html     : Install target for HTML."
 	@echo " install-dvi      : Install target for DVI."
 	@echo " install-pdf      : Install target for PDF."
