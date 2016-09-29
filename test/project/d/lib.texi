@@ -1,1 +1,51 @@
+\input texinfo   @c -*-texinfo-*-
+@settitle Test document
+@syncodeindex pg cp
 
+@quotation
+Test input
+@end quotation
+
+@dircategory Texinfo
+@direntry
+* example: (example)Invoking example.
+@end direntry
+
+@titlepage
+@title Test page
+@author Someone
+@page
+@vskip 0pt plus 1filll
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top test
+
+Test page
+@end ifnottex
+
+@menu
+* Invoking example::
+* Index::
+@end menu
+
+
+@node Invoking example
+@chapter Invoking example
+
+@pindex example
+@cindex invoking @command{example}
+
+Some stuff.
+
+@appendix test appendix
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@bye

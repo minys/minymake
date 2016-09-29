@@ -352,6 +352,7 @@ define include_module
         PDF                 += $$(target_pdf)
         INSTALL_PDF         += $$($$(target_pdf)_to)
         UNINSTALL           += $$($$(target_pdf)_to)
+        CLEAN               += $$(target_pdf)
 
         ifneq (,$(filter $$($$(target_pdf)_to),$$(INSTALL_PDF)))
             $$(error $$($$(target_pdf)_to) declared in $(1) will overwrite an pdf file from another module)
@@ -554,7 +555,7 @@ $(BUILDDIR)/%.dvi: $(SRCDIR)/%.texi
 
 $(BUILDDIR)/%.pdf: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
-	$(call run_cmd,PDF,$@,$(TEXI2PDF) -b -q -o $@ $<)
+	$(call run_cmd,PDF,$@,$(TEXI2PDF) --build-dir=$(dir $<) -c -q -p -o $@ $<)
 
 $(BUILDDIR)/%.html: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
