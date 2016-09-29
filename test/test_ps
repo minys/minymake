@@ -1,0 +1,17 @@
+#!/bin/bash
+
+TEST=$(readlink -f ${BASH_SOURCE[0]})
+CURDIR=${CURDIR:-$(dirname ${TEST})}
+
+source ${CURDIR}/setup
+source ${CURDIR}/common
+
+test_start ${TEST}
+
+test_step 'make ps'
+make ps
+assert_exist d/lib.ps
+
+test_step 'make clean'
+make clean
+assert_not_exist d/lib.ps

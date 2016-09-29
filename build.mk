@@ -42,6 +42,7 @@ CLEAN                 := # generated objects to be removed
 DEPS                  := # dependency files
 DVI                   := # DVI files
 PDF                   := # PDF files
+PS                    := # PS files
 GCNO                  := # gcov notes
 INFO                  := # info files to generate
 INSTALL_BIN           := # binaries to install
@@ -52,6 +53,7 @@ INSTALL_INFO          := # info files to install
 INSTALL_LIB           := # libraries to install
 INSTALL_MAN           := # man files to install
 INSTALL_PDF           := # pdf files to install
+INSTALL_PS            := # ps files to install
 OBJS                  := # objects
 TARGETS               := # executables/libraries
 TESTS                 := # tests
@@ -89,6 +91,7 @@ INFO_PERM             ?= 644
 LIB_PERM              ?= 644
 MAN_PERM              ?= 644
 PDF_PERM              ?= 644
+PS_PERM               ?= 644
 
 # Distribution variables
 PROJECT               ?= unknown
@@ -200,6 +203,7 @@ define include_module
     info        := # texi file(s) that should be converted to info file(s) (optional)
     man         := # target manual file(s) (optional)
     pdf         := # target pdf files (optional)
+    ps          := # target ps files (optional)
     html        := # target html files (optional)
 
     # Internal variables related to keywords
@@ -208,6 +212,7 @@ define include_module
     target_info :=
     target_man  :=
     target_pdf  :=
+    target_ps   :=
     target_html :=
 
     include $(1)
@@ -360,6 +365,25 @@ define include_module
         endif
     endif
 
+    ifneq (,$$(strip $$(ps)))
+        ifeq (,$$(strip $$(TEXI2DVI)))
+            $$(error 'ps' keyword present in $(1) but 'texi2dvi' tool is not installed or missing from PATH)
+        endif
+
+        target_ps           := $$(abspath $$(output)/$$(patsubst %.texi,%.ps,$$(ps)))
+        $$(target_ps)_to    := $$(abspath $(DESTDIR)/$(PSDIR)/$$(notdir $$(target_ps)))
+        $$(target_ps)_from  := $$(target_ps)
+        $$(target_ps)_perm  := $(PS_PERM)
+        PS                  += $$(target_ps)
+        INSTALL_PS          += $$($$(target_ps)_to)
+        UNINSTALL           += $$($$(target_ps)_to)
+        CLEAN               += $$(target_ps)
+
+        ifneq (,$(filter $$($$(target_ps)_to),$$(INSTALL_PS)))
+            $$(error $$($$(target_ps)_to) declared in $(1) will overwrite a ps file from another module)
+        endif
+    endif
+
     ifneq (,$$(strip $$(html)))
         ifeq (,$$(strip $$(TEXI2HTML)))
             $$(error 'html' keyword present in $(1) but 'texi2html' tool is not installed or missing from PATH)
@@ -460,6 +484,10 @@ define pdf_rule
 pdf: $(1)
 endef
 
+define ps_rule
+ps: $(1)
+endef
+
 define html_rule
 html: $(1)
 endef
@@ -514,6 +542,7 @@ $(foreach target,$(TARGETS),$(eval $(call test_rule,$(target))))
 $(foreach file,$(DVI),$(eval $(call dvi_rule,$(file))))
 $(foreach file,$(INFO),$(eval $(call info_rule,$(file))))
 $(foreach pdf,$(PDF),$(eval $(call pdf_rule,$(pdf))))
+$(foreach ps,$(PS),$(eval $(call ps_rule,$(ps))))
 $(foreach file,$(HTML),$(eval $(call html_rule,$(file))))
 $(foreach file,$(INSTALL_BIN),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(INSTALL_LIB),$(eval $(call install_rule,$(file),install)))
@@ -557,6 +586,10 @@ $(BUILDDIR)/%.dvi: $(SRCDIR)/%.texi
 $(BUILDDIR)/%.pdf: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,PDF,$@,$(TEXI2PDF) --build-dir=$(dir $<) -b -c -q -p -o $@ $<)
+
+$(BUILDDIR)/%.ps: $(SRCDIR)/%.texi
+	$(call mkdir,$(dir $@))
+	$(call run_cmd,PS,$@,$(TEXI2DVI) --build-dir=$(dir $<) -b -c -q --ps -o $@ $<)
 
 $(BUILDDIR)/%.html: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
@@ -618,7 +651,7 @@ install-dvi: dvi
 install-pdf: pdf
 
 .PHONY: install-ps
-install-ps: not-implemented
+install-ps: ps
 
 .PHONY: install-strip
 install-strip: STRIP_FLAG := -s
@@ -640,7 +673,7 @@ html:
 pdf:
 
 .PHONY: ps
-ps: not-implemented
+ps:
 
 .PHONY: dist
 dist: $(DIST_ARCHIVE)

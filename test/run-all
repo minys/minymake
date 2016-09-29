@@ -18,6 +18,7 @@ source ${CURDIR}/test_distclean
 source ${CURDIR}/test_gcov
 source ${CURDIR}/test_check
 source ${CURDIR}/test_pdf
+source ${CURDIR}/test_ps
 source ${CURDIR}/test_dvi
 source ${CURDIR}/test_install
 source ${CURDIR}/test_release
