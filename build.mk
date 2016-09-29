@@ -29,8 +29,8 @@ REQUIRED_FEATURES := target-specific
 
 $(foreach feature,$(REQUIRED_FEATURES),$(if $(filter $(feature),$(.FEATURES)),,$(error required GNU Make feature not present: $(feature))))
 
-.SUFFIXES:
 .DELETE_ON_ERROR:
+.SUFFIXES:
 
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --no-builtin-variables
@@ -334,6 +334,7 @@ define include_module
         DVI                 += $$(target_dvi)
         INSTALL_DVI         += $$($$(target_dvi)_to)
         UNINSTALL           += $$($$(target_dvi)_to)
+        CLEAN               += $$(target_dvi)
 
         ifneq (,$(filter $$($$(target_dvi)_to),$$(INSTALL_DVI)))
             $$(error $$($$(target_dvi)_to) declared in $(1) will overwrite an dvi file from another module)
@@ -551,11 +552,11 @@ $(BUILDDIR)/%.info: $(SRCDIR)/%.texi
 
 $(BUILDDIR)/%.dvi: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
-	$(call run_cmd,DVI,$@,$(TEXI2DVI) -b -q -o $@ $<)
+	$(call run_cmd,DVI,$@,$(TEXI2DVI) --build-dir=$(dir $<) -b -c -q --dvi -o $@ $<)
 
 $(BUILDDIR)/%.pdf: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
-	$(call run_cmd,PDF,$@,$(TEXI2PDF) --build-dir=$(dir $<) -c -q -p -o $@ $<)
+	$(call run_cmd,PDF,$@,$(TEXI2PDF) --build-dir=$(dir $<) -b -c -q -p -o $@ $<)
 
 $(BUILDDIR)/%.html: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
