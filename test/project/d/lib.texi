@@ -27,13 +27,6 @@ Test input
 Test page
 @end ifnottex
 
-@menu
-* Invoking example::
-* Index::
-@end menu
-
-
-@node Invoking example
 @chapter Invoking example
 
 @pindex example
@@ -43,7 +36,6 @@ Some stuff.
 
 @appendix test appendix
 
-@node Index
 @unnumbered Index
 
 @printindex cp

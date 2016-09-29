@@ -309,7 +309,7 @@ define include_module
         endif
     endif
 
-    ifneq (,$$(strip $(info)))
+    ifneq (,$$(strip $$(info)))
         ifeq (,$$(strip $$(MAKEINFO)))
             $$(error 'info' keyword present in $(1) but 'makeinfo' tool is not installed or missing from PATH)
         endif
@@ -321,6 +321,7 @@ define include_module
         INFO                 += $$(target_info)
         INSTALL_INFO         += $$($$(target_info)_to)
         UNINSTALL            += $$($$(target_info)_to)
+        CLEAN                += $$(target_info)
 
         ifneq (,$(filter $$($$(target_info)_to),$$(INSTALL_INFO)))
             $$(error $$($$(target_info)_to) declared in $(1) will overwrite an info file from another module)
@@ -443,10 +444,6 @@ $$($(1)_to): $$($(1)_from)
 	$$(call run_cmd,INSTALL,$(1),$(INSTALL) -m $$($(1)_perm) $$($(1)_from) $$($(1)_to))
 endef
 
-define info_rule
-info: $(1)
-endef
-
 define uninstall_rule
 uninstall: $(1)_uninstall
 .PHONY: $(1)_uninstall
@@ -478,6 +475,10 @@ endef
 
 define dvi_rule
 dvi: $(1)
+endef
+
+define info_rule
+info: $(1)
 endef
 
 define pdf_rule
@@ -577,7 +578,7 @@ $(BUILDDIR)/%.run:
 
 $(BUILDDIR)/%.info: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
-	$(call run_cmd,INFO,$@,$(MAKEINFO) $<)
+	$(call run_cmd,INFO,$@,$(MAKEINFO) -o $@ $<)
 
 $(BUILDDIR)/%.dvi: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
