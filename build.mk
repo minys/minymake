@@ -41,10 +41,15 @@ MAKEFLAGS += --no-builtin-variables
 CLEAN                 := # generated objects to be removed
 DEPS                  := # dependency files
 DVI                   := # DVI files
-PDF                   := # PDF files
-PS                    := # PS files
 GCNO                  := # gcov notes
 INFO                  := # info files to generate
+OBJS                  := # objects
+PDF                   := # PDF files
+PS                    := # PS files
+TARGETS               := # executables/libraries
+TESTS                 := # tests
+
+# Standard GNU variables related to installation
 INSTALL_BIN           := # binaries to install
 NOINSTALL_BIN         := # binaries we should NOT install
 INSTALL_DATA          := # data files to install
@@ -54,14 +59,8 @@ INSTALL_LIB           := # libraries to install
 INSTALL_MAN           := # man files to install
 INSTALL_PDF           := # pdf files to install
 INSTALL_PS            := # ps files to install
-OBJS                  := # objects
-TARGETS               := # executables/libraries
-TESTS                 := # tests
 UNINSTALL             := # things to uninstall
-CC_SUFFIX             ?= c
-CXX_SUFFIX            ?= cc
 
-# Standard GNU variables for installation directories
 BINDIR                ?= bin
 BUILDDIR              ?= $(abspath $(CURDIR))
 DATADIR               ?= share
@@ -119,6 +118,10 @@ TEXI2DVI              := $(shell which $(TEXI2DVI) 2>/dev/null)
 TEXI2PDF              := $(shell which $(TEXI2PDF) 2>/dev/null)
 TEXI2HTML             := $(shell which $(TEXI2HTML) 2>/dev/null)
 
+CC_SUFFIX             ?= c
+CXX_SUFFIX            ?= cc
+
+# Default compiler/linker flags
 DEBUG_CFLAGS          ?= -g
 DEBUG_CXXFLAGS        ?= -g
 GCOV_CFLAGS           ?= -fprofile-arcs -ftest-coverage
@@ -192,28 +195,28 @@ endif
 define include_module
 
     # Module keywords
-    target      := # target executable/library (mandatory)
-    src         := # target executable/library source (mandatory)
-    test        := # target executable/library test (optional)
     cflags      := # target specific CFLAGS (optional)
     cxxflags    := # target specific CXXFLAGS (optional)
     ldflags     := # target specific LDFLAGS (optional)
     data        := # data file(s) (optional)
     dvi         := # texi file(s) that should be converted to dvi file(s) (optional)
+    html        := # target html files (optional)
     info        := # texi file(s) that should be converted to info file(s) (optional)
     man         := # target manual file(s) (optional)
     pdf         := # target pdf files (optional)
     ps          := # target ps files (optional)
-    html        := # target html files (optional)
+    src         := # target executable/library source (mandatory)
+    target      := # target executable/library (mandatory)
+    test        := # target executable/library test (optional)
 
     # Internal variables related to keywords
     target_data :=
     target_dvi  :=
     target_info :=
     target_man  :=
+    target_html :=
     target_pdf  :=
     target_ps   :=
-    target_html :=
 
     include $(1)
 
@@ -477,6 +480,10 @@ define dvi_rule
 dvi: $(1)
 endef
 
+define html_rule
+html: $(1)
+endef
+
 define info_rule
 info: $(1)
 endef
@@ -487,10 +494,6 @@ endef
 
 define ps_rule
 ps: $(1)
-endef
-
-define html_rule
-html: $(1)
 endef
 
 define depends
@@ -576,13 +579,17 @@ $(BUILDDIR)/%.run:
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,TEST,$<,$< && touch $@)
 
-$(BUILDDIR)/%.info: $(SRCDIR)/%.texi
-	$(call mkdir,$(dir $@))
-	$(call run_cmd,INFO,$@,$(MAKEINFO) -o $@ $<)
-
 $(BUILDDIR)/%.dvi: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,DVI,$@,$(TEXI2DVI) --build-dir=$(dir $<) -b -c -q --dvi -o $@ $<)
+
+$(BUILDDIR)/%.html: $(SRCDIR)/%.texi
+	$(call mkdir,$(dir $@))
+	$(call run_cmd,HTML,$@,$(TEXI2HTML) -b -q -o $@ $<)
+
+$(BUILDDIR)/%.info: $(SRCDIR)/%.texi
+	$(call mkdir,$(dir $@))
+	$(call run_cmd,INFO,$@,$(MAKEINFO) -o $@ $<)
 
 $(BUILDDIR)/%.pdf: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
@@ -591,10 +598,6 @@ $(BUILDDIR)/%.pdf: $(SRCDIR)/%.texi
 $(BUILDDIR)/%.ps: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,PS,$@,$(TEXI2DVI) --build-dir=$(dir $<) -b -c -q --ps -o $@ $<)
-
-$(BUILDDIR)/%.html: $(SRCDIR)/%.texi
-	$(call mkdir,$(dir $@))
-	$(call run_cmd,HTML,$@,$(TEXI2HTML) -b -q -o $@ $<)
 
 $(BUILDDIR)/%.sha1: FORCE
 	$(call verify_input,$@,$(SHA1))
