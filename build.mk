@@ -303,7 +303,6 @@ define include_module
         $$(target_man)_to   := $$(target_man)
         $$(target_man)_from := $$(abspath $$(addprefix $$(path)/,$$(man)))
         $$(target_man)_perm := $(MAN_PERM)
-        MAN                 += $$(target_man)
         INSTALL_MAN         += $$($$(target_man)_to)
         UNINSTALL           += $$($$(target_man)_to)
 
