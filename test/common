@@ -94,8 +94,8 @@ assert_not_exist ()
 
 assert_newer_than ()
 {
-	local file_a=$(readlink -f ${1})
-	local file_b=$(readlink -f ${2})
+	local file_a=$(readlink -m ${1})
+	local file_b=$(readlink -m ${2})
 
 	set +o errexit
 	${test} ${file_a} -nt ${file_b}
@@ -109,8 +109,8 @@ assert_newer_than ()
 
 assert_older_than ()
 {
-	local file_a=$(readlink -f ${1})
-	local file_b=$(readlink -f ${2})
+	local file_a=$(readlink -m ${1})
+	local file_b=$(readlink -m ${2})
 
 	set +o errexit
 	${test} ${file_a} -ot ${file_b}
