@@ -550,7 +550,7 @@ $(foreach file,$(HTML),$(eval $(call html_rule,$(file))))
 $(foreach file,$(INSTALL_BIN),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(INSTALL_LIB),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(INSTALL_DATA),$(eval $(call install_nostrip_rule,$(file),install)))
-$(foreach file,$(INSTALL_MAN),$(eval $(call install_nostrip_rule,$(file),install)))
+$(foreach file,$(INSTALL_MAN),$(eval $(call install_nostrip_rule,$(file),install-man)))
 $(foreach file,$(INSTALL_INFO),$(eval $(call install_nostrip_rule,$(file),install)))
 $(foreach file,$(INSTALL_DVI),$(eval $(call install_nostrip_rule,$(file),install_dvi)))
 $(foreach file,$(INSTALL_PDF),$(eval $(call install_nostrip_rule,$(file),install_pdf)))
@@ -647,6 +647,9 @@ install-html: html
 .PHONY: install-dvi
 install-dvi: dvi
 
+.PHONY: install-man
+install-man:
+
 .PHONY: install-pdf
 install-pdf: pdf
 
@@ -715,6 +718,7 @@ help:
 	@echo " install          : Build and install to DESTDIR."
 	@echo " install-html     : Install target for HTML."
 	@echo " install-dvi      : Install target for DVI."
+	@echo " install-man      : Install manual page(s)."
 	@echo " install-pdf      : Install target for PDF."
 	@echo " install-ps       : Install target for PS."
 	@echo " install-strip    : Install and strip binaries."

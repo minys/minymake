@@ -1,0 +1,23 @@
+#!/bin/bash
+
+TEST=$(readlink -f ${BASH_SOURCE[0]})
+CURDIR=${CURDIR:-$(dirname ${TEST})}
+
+source ${CURDIR}/setup
+source ${CURDIR}/common
+
+tmpdir=$(get_tmpdir)
+
+test_start ${TEST}
+
+test_step 'make install-man'
+make DESTDIR=${tmpdir} install-man
+
+test_step 'Verify installation'
+assert_exist ${tmpdir}/share/man/man.1
+
+test_step 'make uninstall'
+make DESTDIR=${tmpdir} uninstall
+
+test_step 'Verify uninstallation of manual pages'
+assert_not_exist ${tmpdir}/share/man/man.1
