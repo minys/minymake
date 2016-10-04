@@ -22,6 +22,8 @@ source ${CURDIR}/test_ps
 source ${CURDIR}/test_dvi
 source ${CURDIR}/test_info
 source ${CURDIR}/test_install
+source ${CURDIR}/test_install-man
+source ${CURDIR}/test_install-dvi
 source ${CURDIR}/test_release
 source ${CURDIR}/test_static
 source ${CURDIR}/test_verbose
