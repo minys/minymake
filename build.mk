@@ -395,7 +395,7 @@ define include_module
         target_html          := $$(abspath $$(output)/$$(patsubst %.texi,%.html,$$(html)))
         $$(target_html)_to   := $$(abspath $(DESTDIR)/$(PDFDIR)/$$(notdir $$(target_html)))
         $$(target_html)_from := $$(target_html)
-        $$(target_html)_perm := $(PDF_PERM)
+        $$(target_html)_perm := $(HTML_PERM)
         HTML                 += $$(target_html)
         INSTALL_HTML         += $$($$(target_html)_to)
         UNINSTALL            += $$($$(target_html)_to)

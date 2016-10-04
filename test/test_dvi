@@ -8,7 +8,7 @@ source ${CURDIR}/common
 
 test_start ${TEST}
 
-test_step 'make pdf'
+test_step 'make dvi'
 make dvi
 assert_exist d/lib.dvi
 
