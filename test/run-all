@@ -4,28 +4,8 @@ CURDIR=$(dirname $(readlink -f $0))
 
 source ${CURDIR}/setup $@
 
-source ${CURDIR}/test_build_dir
-source ${CURDIR}/test_cflag_change
-source ${CURDIR}/test_cxxflag_change
-source ${CURDIR}/test_clean
-source ${CURDIR}/test_c_compiler_change
-source ${CURDIR}/test_cxx_compiler_change
-source ${CURDIR}/test_debug
-source ${CURDIR}/test_default_target
-source ${CURDIR}/test_deps_file
-source ${CURDIR}/test_dist
-source ${CURDIR}/test_distclean
-source ${CURDIR}/test_gcov
-source ${CURDIR}/test_check
-source ${CURDIR}/test_pdf
-source ${CURDIR}/test_ps
-source ${CURDIR}/test_dvi
-source ${CURDIR}/test_info
-source ${CURDIR}/test_install
-source ${CURDIR}/test_install-man
-source ${CURDIR}/test_install-dvi
-source ${CURDIR}/test_release
-source ${CURDIR}/test_static
-source ${CURDIR}/test_verbose
+for test in ${CURDIR}/test_*; do
+	source ${test}
+done
 
 exit 0

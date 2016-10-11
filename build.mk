@@ -50,12 +50,12 @@ TARGETS               := # executables/libraries
 TESTS                 := # tests
 
 # Standard GNU variables related to installation
-INSTALL_BIN           := # binaries to install
 NOINSTALL_BIN         := # binaries we should NOT install
-INSTALL_DATA          := # data files to install
+INSTALL_ALL           := # list of all files to install
+INSTALL_DEFAULT       := # binaries/libraries/data files to install
 INSTALL_DVI           := # dvi files to install
-INSTALL_INFO          := # info files to install
-INSTALL_LIB           := # libraries to install
+INSTALL_HTML          := # html files to install
+INSTALL_MAN           := # man files to install
 INSTALL_MAN           := # man files to install
 INSTALL_PDF           := # pdf files to install
 INSTALL_PS            := # ps files to install
@@ -188,10 +188,6 @@ else
     endef
 endif
 
-# This is the most complex part in this engine, it tries to provide a simple
-# and robust interface for the modules. Parsing a module will generate target
-# specific data, which later is used to generate rules.
-#
 define include_module
 
     # Module keywords
@@ -227,22 +223,33 @@ define include_module
         $$(error src not defined by $(1))
     endif
 
-    path                 := $(dir $(1))
-    output               := $$(BUILDDIR)/$$(path)
-    target               := $$(abspath $$(output)/$$(target))
-    $$(target)_src       := $$(abspath $$(addprefix $$(path)/,$$(src)))
-    $$(target)_test      := $$(abspath $$(addprefix $$(path)/,$$(test)))
-    $$(target)_test      := $$(if $$(wildcard $$($$(target)_test)),$$($$(target)_test),$$(abspath $$(addprefix $$(output)/,$$(test))))
-    $$(target)_run_test  := $$(if $$(test),$$(abspath $$(output)/.$$(notdir $$(test)).run),)
-    $$(target)_obj       := $$(addsuffix .o,$$(basename $$(src)))
-    $$(target)_obj       := $$(abspath $$(addprefix $$(output)/,$$($$(target)_obj)))
-    $$(target)_dep       := $$(patsubst %.o,%.d,$$($$(target)_obj))
-    $$(target)_gcno      := $$(patsubst %.o,%.gcno,$$($$(target)_obj))
-    $$(target)_gcno      += $$(addsuffix .gcno,$$(target))
-    $$(target)_cflags    := $$(cflags)
-    $$(target)_cxxflags  := $$(cxxflags)
-    $$(target)_ldflags   := $$(ldflags)
-    $$(target)_module    := $$(abspath $(1))
+    path                := $(dir $(1))
+    output              := $$(BUILDDIR)/$$(path)
+    target              := $$(abspath $$(output)/$$(target))
+    $$(target)_src      := $$(abspath $$(addprefix $$(path)/,$$(src)))
+    $$(target)_test     := $$(abspath $$(addprefix $$(path)/,$$(test)))
+    $$(target)_test     := $$(if $$(wildcard $$($$(target)_test)),$$($$(target)_test),$$(abspath $$(addprefix $$(output)/,$$(test))))
+    $$(target)_run_test := $$(if $$(test),$$(abspath $$(output)/.$$(notdir $$(test)).run),)
+    $$(target)_obj      := $$(addsuffix .o,$$(basename $$(src)))
+    $$(target)_obj      := $$(abspath $$(addprefix $$(output)/,$$($$(target)_obj)))
+    $$(target)_dep      := $$(patsubst %.o,%.d,$$($$(target)_obj))
+    $$(target)_gcno     := $$(patsubst %.o,%.gcno,$$($$(target)_obj))
+    $$(target)_gcno     += $$(addsuffix .gcno,$$(target))
+    $$(target)_cflags   := $$(cflags)
+    $$(target)_cxxflags := $$(cxxflags)
+    $$(target)_ldflags  := $$(ldflags)
+    $$(target)_module   := $$(abspath $(1))
+
+    CLEAN   += $$(target)
+    CLEAN   += $$($$(target)_obj)
+    CLEAN   += $$($$(target)_dep)
+    CLEAN   += $$($$(target)_gcno)
+    CLEAN   += $$($$(target)_run_test)
+    DEPS    += $$($$(target)_dep)
+    GCNO    += $$($$(target)_gcno)
+    OBJS    += $$($$(target)_obj)
+    TARGETS += $$(target)
+    TESTS   += $$($$(target)_run_test)
 
     ifeq (.$$(CC_SUFFIX),$$(sort $$(suffix $$($$(target)_src))))
         $$(target)_ld           := $$(CC)
@@ -258,56 +265,50 @@ define include_module
         $$(target)_cflags   += -fpic
         $$(target)_cxxflags += -fpic
         $$(target)_ldflags  += -fpic
-        target_lib          := $$(abspath $(DESTDIR)/$(LIBDIR)/$$(notdir $$(target)))
-        $$(target_lib)_to   := $$(target_lib)
-        $$(target_lib)_from := $$(target)
-        $$(target_lib)_perm := $(LIB_PERM)
-        INSTALL_LIB         += $$($$(target_lib)_to)
-        UNINSTALL           += $$($$(target_lib)_to)
+        $$(target)_to       := $$(abspath $(DESTDIR)/$(LIBDIR)/$$(notdir $$(target)))
+        $$(target)_perm     := $(LIB_PERM)
+        INSTALL_DEFAULT     += $$(target)
+        INSTALL_ALL         += $$($$(target)_to)
 
-        ifneq (,$(filter $$($$(target_lib)_to),$$(INSTALL_LIB)))
-            $$(error $$($$(target_lib)_to) declared in $(1) will overwrite binary from another module)
+        ifneq (,$(filter $$($$(target)_to),$$(INSTALL_ALL)))
+            $$(error $$($$(target)_to) declared in $(1) will overwrite a file from another module during install)
         endif
     else
-        target_bin          := $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$(target)))
-        $$(target_bin)_to   := $$(target_bin)
-        $$(target_bin)_from := $$(target)
-        $$(target_bin)_perm := $(BIN_PERM)
-        INSTALL_BIN         += $$($$(target_bin)_to)
-        UNINSTALL           += $$($$(target_bin)_to)
+        $$(target)_to   := $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$(target)))$$(target_bin)
+        $$(target)_perm := $(BIN_PERM)
+        INSTALL_DEFAULT += $$(target)
+        INSTALL_ALL     += $$($$(target)_to)
 
         ifneq (,$(strip $$($$(target)_test)))
-            NOINSTALL_BIN += $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$($$(target)_test)))
+            NOINSTALL_BIN += $$($$(target)_test)
         endif
 
-        ifneq (,$(filter $$($$(target_bin)_to),$$(INSTALL_BIN)))
-            $$(error $$($$(target_bin)_to) declared in $(1) will overwrite binary from another module)
+        ifneq (,$(filter $$($$(target)_to),$$(INSTALL_ALL)))
+            $$(error $$($$(target)_to) declared in $(1) will overwrite a file from another module during install)
         endif
     endif
 
     ifneq (,$$(strip $$(data)))
-        target_data          := $$(abspath $(DESTDIR)/$(DATADIR)/$$(data))
-        $$(target_data)_to   := $$(target_data)
-        $$(target_data)_from := $$(abspath $$(addprefix $$(path)/,$$(data)))
+        target_data          := $$(abspath $$(addprefix $$(path)/,$$(data)))
+        $$(target_data)_to   := $$(abspath $(DESTDIR)/$(DATADIR)/$$(data))
         $$(target_data)_perm := $(DATA_PERM)
-        INSTALL_DATA         += $$($$(target_data)_to)
-        UNINSTALL            += $$($$(target_data)_to)
+        INSTALL_DEFAULT      += $$(target_data)
+        INSTALL_ALL          += $$($$(target_data)_to)
 
-        ifneq (,$(filter $$($$(target_data)_to),$$(INSTALL_DATA)))
-            $$(error $$($$(target_data)_to) declared in $(1) will overwrite data from another module)
+        ifneq (,$(filter $$($$(target_data)_to),$$(INSTALL_ALL)))
+            $$(error $$($$(target_data)_to) declared in $(1) will overwrite a file from another module during install)
         endif
     endif
 
     ifneq (,$$(strip $$(man)))
-        target_man          := $$(abspath $(DESTDIR)/$(MANDIR)/$$(man))
-        $$(target_man)_to   := $$(target_man)
-        $$(target_man)_from := $$(abspath $$(addprefix $$(path)/,$$(man)))
+        target_man          := $$(abspath $$(addprefix $$(path)/,$$(man)))
+        $$(target_man)_to   := $$(abspath $(DESTDIR)/$(MANDIR)/$$(man))
         $$(target_man)_perm := $(MAN_PERM)
-        INSTALL_MAN         += $$($$(target_man)_to)
-        UNINSTALL           += $$($$(target_man)_to)
+        INSTALL_MAN         += $$(target_man)
+        INSTALL_ALL         += $$($$(target_man)_to)
 
-        ifneq (,$(filter $$($$(target_man)_to),$$(INSTALL_MAN)))
-            $$(error $$($$(target_man)_to) declared in $(1) will overwrite manual from another module)
+        ifneq (,$(filter $$($$(target_man)_to),$$(INSTALL_ALL)))
+            $$(error $$($$(target_man)_to) declared in $(1) will overwrite a file from another module during install) 
         endif
     endif
 
@@ -318,15 +319,14 @@ define include_module
 
         target_info          := $$(abspath $$(output)/$$(patsubst %.texi,%.info,$$(info)))
         $$(target_info)_to   := $$(abspath $(DESTDIR)/$(INFODIR)/$(info))
-        $$(target_info)_from := $$(target_info)
         $$(target_info)_perm := $(INFO_PERM)
         INFO                 += $$(target_info)
-        INSTALL_INFO         += $$($$(target_info)_to)
-        UNINSTALL            += $$($$(target_info)_to)
+        INSTALL_INFO         += $$(target_info)
+        INSTALL_ALL          += $$($$(target_info)_to)
         CLEAN                += $$(target_info)
 
-        ifneq (,$(filter $$($$(target_info)_to),$$(INSTALL_INFO)))
-            $$(error $$($$(target_info)_to) declared in $(1) will overwrite an info file from another module)
+        ifneq (,$(filter $$($$(target_info)_to),$$(INSTALL_ALL)))
+            $$(error $$($$(target_info)_to) declared in $(1) will overwrite a file from another module during install)
         endif
     endif
 
@@ -337,15 +337,14 @@ define include_module
 
         target_dvi          := $$(abspath $$(output)/$$(patsubst %.texi,%.dvi,$$(dvi)))
         $$(target_dvi)_to   := $$(abspath $(DESTDIR)/$(DVIDIR)/$$(notdir $$(target_dvi)))
-        $$(target_dvi)_from := $$(target_dvi)
         $$(target_dvi)_perm := $(DVI_PERM)
         DVI                 += $$(target_dvi)
         INSTALL_DVI         += $$(target_dvi)
-        UNINSTALL           += $$($$(target_dvi)_to)
+        INSTALL_ALL         += $$($$(target_dvi)_to)
         CLEAN               += $$(target_dvi)
 
-        ifneq (,$(filter $$($$(target_dvi)_to),$$(INSTALL_DVI)))
-            $$(error $$($$(target_dvi)_to) declared in $(1) will overwrite an dvi file from another module)
+        ifneq (,$(filter $$($$(target_dvi)_to),$$(INSTALL_ALL)))
+            $$(error $$($$(target_dvi)_to) declared in $(1) will overwrite a file from another module during install)
         endif
     endif
 
@@ -356,15 +355,14 @@ define include_module
 
         target_pdf          := $$(abspath $$(output)/$$(patsubst %.texi,%.pdf,$$(pdf)))
         $$(target_pdf)_to   := $$(abspath $(DESTDIR)/$(PDFDIR)/$$(notdir $$(target_pdf)))
-        $$(target_pdf)_from := $$(target_pdf)
         $$(target_pdf)_perm := $(PDF_PERM)
         PDF                 += $$(target_pdf)
-        INSTALL_PDF         += $$($$(target_pdf)_to)
-        UNINSTALL           += $$($$(target_pdf)_to)
+        INSTALL_PDF         += $$(target_pdf)
+        INSTALL_ALL         += $$($$(target_pdf)_to)
         CLEAN               += $$(target_pdf)
 
-        ifneq (,$(filter $$($$(target_pdf)_to),$$(INSTALL_PDF)))
-            $$(error $$($$(target_pdf)_to) declared in $(1) will overwrite an pdf file from another module)
+        ifneq (,$(filter $$($$(target_pdf)_to),$$(INSTALL_ALL)))
+            $$(error $$($$(target_pdf)_to) declared in $(1) will overwrite a file from another module during install)
         endif
     endif
 
@@ -375,15 +373,14 @@ define include_module
 
         target_ps           := $$(abspath $$(output)/$$(patsubst %.texi,%.ps,$$(ps)))
         $$(target_ps)_to    := $$(abspath $(DESTDIR)/$(PSDIR)/$$(notdir $$(target_ps)))
-        $$(target_ps)_from  := $$(target_ps)
         $$(target_ps)_perm  := $(PS_PERM)
         PS                  += $$(target_ps)
-        INSTALL_PS          += $$($$(target_ps)_to)
-        UNINSTALL           += $$($$(target_ps)_to)
+        INSTALL_PS          += $$(target_ps)
+        INSTALL_ALL         += $$($$(target_ps)_to)
         CLEAN               += $$(target_ps)
 
-        ifneq (,$(filter $$($$(target_ps)_to),$$(INSTALL_PS)))
-            $$(error $$($$(target_ps)_to) declared in $(1) will overwrite a ps file from another module)
+        ifneq (,$(filter $$($$(target_ps)_to),$$(INSTALL_ALL)))
+            $$(error $$($$(target_ps)_to) declared in $(1) will overwrite a file from another module during install)
         endif
     endif
 
@@ -394,27 +391,17 @@ define include_module
 
         target_html          := $$(abspath $$(output)/$$(patsubst %.texi,%.html,$$(html)))
         $$(target_html)_to   := $$(abspath $(DESTDIR)/$(PDFDIR)/$$(notdir $$(target_html)))
-        $$(target_html)_from := $$(target_html)
         $$(target_html)_perm := $(HTML_PERM)
         HTML                 += $$(target_html)
-        INSTALL_HTML         += $$($$(target_html)_to)
-        UNINSTALL            += $$($$(target_html)_to)
+        INSTALL_HTML         += $$(target_html)
+        INSTALL_ALL          += $$($$(target_html)_to)
+        CLEAN                += $$(target_html)
 
         ifneq (,$(filter $$($$(target_html)_to),$$(INSTALL_HTML)))
-            $$(error $$($$(target_html)_to) declared in $(1) will overwrite an HTML file from another module)
+            $$(error $$($$(target_html)_to) declared in $(1) will overwrite a file from another module during install)
         endif
     endif
 
-    CLEAN   += $$(target)
-    CLEAN   += $$($$(target)_obj)
-    CLEAN   += $$($$(target)_dep)
-    CLEAN   += $$($$(target)_gcno)
-    CLEAN   += $$($$(target)_run_test)
-    DEPS    += $$($$(target)_dep)
-    GCNO    += $$($$(target)_gcno)
-    OBJS    += $$($$(target)_obj)
-    TARGETS += $$(target)
-    TESTS   += $$($$(target)_run_test)
 endef
 
 define clean_rule
@@ -426,24 +413,24 @@ endef
 
 define install_rule
 $(2): $$($(1)_to)
-$$($(1)_to): $$($(1)_from)
+$$($(1)_to): $(1)
 ifdef FORCE_INSTALL
 $$($(1)_to): FORCE
 endif
-$$($(1)_to): $$($(1)_from)
+$$($(1)_to): $(1)
 	$$(call mkdir,$$(dir $$($(1)_to)))
-	$$(call run_cmd,INSTALL,$(1),$(INSTALL) $$(STRIP_FLAG) -m $$($(1)_perm) $$($(1)_from) $$($(1)_to))
+	$$(call run_cmd,INSTALL,$$($(1)_to),$(INSTALL) $$(STRIP_FLAG) -m $$($(1)_perm) $(1) $$($(1)_to))
 endef
 
 define install_nostrip_rule
 $(2): $$($(1)_to)
-$$($(1)_to): $$($(1)_from)
+$$($(1)_to): $(1)
 ifdef FORCE_INSTALL
 $$($(1)_to): FORCE
 endif
-$$($(1)_to): $$($(1)_from)
+$$($(1)_to): $(1)
 	$$(call mkdir,$$(dir $$($(1)_to)))
-	$$(call run_cmd,INSTALL,$(1),$(INSTALL) -m $$($(1)_perm) $$($(1)_from) $$($(1)_to))
+	$$(call run_cmd,INSTALL,$$($(1)),$(INSTALL) -m $$($(1)_perm) $(1) $$($(1)_to))
 endef
 
 define uninstall_rule
@@ -529,7 +516,7 @@ $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 # all modules have been parsed. A bit ugly, but makes life a little
 # bit easier for the user.
 #
-INSTALL_BIN := $(filter-out $(NOINSTALL_BIN),$(INSTALL_BIN))
+INSTALL_DEFAULT := $(filter-out $(NOINSTALL_BIN),$(INSTALL_DEFAULT))
 
 # In order to create a distribution archive, we list all files in SRCDIR
 # and exclude generated objects.
@@ -547,15 +534,13 @@ $(foreach file,$(INFO),$(eval $(call info_rule,$(file))))
 $(foreach pdf,$(PDF),$(eval $(call pdf_rule,$(pdf))))
 $(foreach ps,$(PS),$(eval $(call ps_rule,$(ps))))
 $(foreach file,$(HTML),$(eval $(call html_rule,$(file))))
-$(foreach file,$(INSTALL_BIN),$(eval $(call install_rule,$(file),install)))
-$(foreach file,$(INSTALL_LIB),$(eval $(call install_rule,$(file),install)))
-$(foreach file,$(INSTALL_DATA),$(eval $(call install_nostrip_rule,$(file),install)))
+$(foreach file,$(INSTALL_DEFAULT),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(INSTALL_MAN),$(eval $(call install_nostrip_rule,$(file),install-man)))
-$(foreach file,$(INSTALL_INFO),$(eval $(call install_nostrip_rule,$(file),install)))
+$(foreach file,$(INSTALL_INFO),$(eval $(call install_nostrip_rule,$(file),install-info)))
 $(foreach file,$(INSTALL_DVI),$(eval $(call install_nostrip_rule,$(file),install-dvi)))
-$(foreach file,$(INSTALL_PDF),$(eval $(call install_nostrip_rule,$(file),install_pdf)))
-$(foreach file,$(INSTALL_HTML),$(eval $(call install_nostrip_rule,$(file),install_html)))
-$(foreach file,$(wildcard $(sort $(UNINSTALL))),$(eval $(call uninstall_rule,$(file))))
+$(foreach file,$(INSTALL_PDF),$(eval $(call install_nostrip_rule,$(file),install-pdf)))
+$(foreach file,$(INSTALL_HTML),$(eval $(call install_nostrip_rule,$(file),install-html)))
+$(foreach file,$(wildcard $(sort $(INSTALL_ALL))),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
 $(BUILDDIR)/%.d: $(SRCDIR)/%.$(CC_SUFFIX)
