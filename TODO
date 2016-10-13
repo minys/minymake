@@ -1,12 +1,5 @@
 TODO add support for exporting interfaces to rest of the project during
      build
 
-TODO hooks for post build
-
 TODO default value of LIBDIR in order to install 64/32 bit libs into correct
      location
-
-FIXME install target(s) are most likely not GNU compliant (honoring prefix etc),
-      worth fixing?
-
-TODO installcheck target
