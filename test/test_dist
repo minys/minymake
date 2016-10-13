@@ -25,6 +25,7 @@ tmp=$(mktemp)
 	echo b/d/d.h
 	echo b/main.c
 	echo b/module.mk
+	echo b/post.sh
 	echo build.mk
 	echo c/c.cc
 	echo c/module.mk

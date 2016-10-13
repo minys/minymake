@@ -200,6 +200,8 @@ define include_module
     info        := # texi file(s) that should be converted to info file(s) (optional)
     man         := # target manual file(s) (optional)
     pdf         := # target pdf files (optional)
+    post        := # post build command (optional)
+    pre         := # pre build command (optional)
     ps          := # target ps files (optional)
     src         := # target executable/library source (mandatory)
     target      := # target executable/library (mandatory)
@@ -232,6 +234,7 @@ define include_module
     $$(target)_run_test := $$(if $$(test),$$(abspath $$(output)/.$$(notdir $$(test)).run),)
     $$(target)_obj      := $$(addsuffix .o,$$(basename $$(src)))
     $$(target)_obj      := $$(abspath $$(addprefix $$(output)/,$$($$(target)_obj)))
+    $$(target)_post     := $$(abspath $$(addprefix $$(path)/,$$(post)))
     $$(target)_dep      := $$(patsubst %.o,%.d,$$($$(target)_obj))
     $$(target)_gcno     := $$(patsubst %.o,%.gcno,$$($$(target)_obj))
     $$(target)_gcno     += $$(addsuffix .gcno,$$(target))
@@ -455,6 +458,7 @@ $(1): $$($(1)_module)
 $(1): $$($(1)_link_sha1)
 $(1): $$($(1)_obj)
 	$$(call run_cmd_green,LD,$(1),$$($(1)_ld) $$(LDFLAGS) -o $(1) $$($(1)_obj))
+	$$(if $$($(1)_post),$$(call run_cmd,POST,$(1),$$($(1)_post) $(1)),)
 endef
 
 define test_rule
@@ -540,7 +544,7 @@ $(foreach file,$(INSTALL_INFO),$(eval $(call install_nostrip_rule,$(file),instal
 $(foreach file,$(INSTALL_DVI),$(eval $(call install_nostrip_rule,$(file),install-dvi)))
 $(foreach file,$(INSTALL_PDF),$(eval $(call install_nostrip_rule,$(file),install-pdf)))
 $(foreach file,$(INSTALL_HTML),$(eval $(call install_nostrip_rule,$(file),install-html)))
-$(foreach file,$(wildcard $(sort $(INSTALL_ALL))),$(eval $(call uninstall_rule,$(file))))
+$(foreach file,$(wildcard $(INSTALL_ALL)),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
 $(BUILDDIR)/%.d: $(SRCDIR)/%.$(CC_SUFFIX)
