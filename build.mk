@@ -443,15 +443,14 @@ $(1)_uninstall:
 	$$(call run_cmd,RM,$(1),$(RM) $(1))
 endef
 
-define object_rule
+define target_rule
 $$($(1)_obj): override CFLAGS += $$($(1)_cflags)
 $$($(1)_obj): override CXXFLAGS += $$($(1)_cxxflags)
 $$($(1)_obj): $$($(1)_module)
 $$($(1)_obj): $$($(1)_compile_sha1)
-endef
-
-define target_rule
 $$($(1)_dep): $$($(1)_module)
+$$($(1)_test): $(1)
+$$($(1)_run_test): $$($(1)_test)
 $(1): override LD := $$($(1)_ld)
 $(1): override LDFLAGS += $$($(1)_ldflags)
 $(1): $$($(1)_module)
@@ -459,11 +458,6 @@ $(1): $$($(1)_link_sha1)
 $(1): $$($(1)_obj)
 	$$(call run_cmd_green,LD,$(1),$$($(1)_ld) $$(LDFLAGS) -o $(1) $$($(1)_obj))
 	$$(if $$($(1)_post),$$(call run_cmd,POST,$(1),$$($(1)_post) $(1)),)
-endef
-
-define test_rule
-$$($(1)_test): $(1)
-$$($(1)_run_test): $$($(1)_test)
 endef
 
 define dvi_rule
@@ -531,8 +525,6 @@ DIST_INCLUDE := $(filter-out $(DIST_ARCHIVE),$(DIST_INCLUDE))
 DIST_INCLUDE := $(patsubst $(SRCDIR)/%,%,$(DIST_INCLUDE))
 
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
-$(foreach target,$(TARGETS),$(eval $(call object_rule,$(target))))
-$(foreach target,$(TARGETS),$(eval $(call test_rule,$(target))))
 $(foreach file,$(DVI),$(eval $(call dvi_rule,$(file))))
 $(foreach file,$(INFO),$(eval $(call info_rule,$(file))))
 $(foreach pdf,$(PDF),$(eval $(call pdf_rule,$(pdf))))
