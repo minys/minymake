@@ -14,3 +14,4 @@ test/project/c/test_cc
 test/project/e/program_e
 test/project/e/test_program
 test/project/program
+test/project/f/test_libshared

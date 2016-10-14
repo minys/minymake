@@ -35,6 +35,8 @@ $(foreach feature,$(REQUIRED_FEATURES),$(if $(filter $(feature),$(.FEATURES)),,$
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --no-builtin-variables
 
+TOPDIR := $(CURDIR)
+
 
 # -- [ Variables ] -------------------------------------------------------------
 
@@ -277,6 +279,7 @@ define include_module
             $$(error $$($$(target)_to) declared in $(1) will overwrite a file from another module during install)
         endif
     else
+        $$(target)_bin  := 1
         $$(target)_to   := $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$(target)))$$(target_bin)
         $$(target)_perm := $(BIN_PERM)
         INSTALL_DEFAULT += $$(target)
@@ -448,6 +451,8 @@ $$($(1)_obj): override CFLAGS += $$($(1)_cflags)
 $$($(1)_obj): override CXXFLAGS += $$($(1)_cxxflags)
 $$($(1)_obj): $$($(1)_module)
 $$($(1)_obj): $$($(1)_compile_sha1)
+$$($(1)_dep): override CFLAGS += $$($(1)_cflags)
+$$($(1)_dep): override CXXFLAGS += $$($(1)_cxxflags)
 $$($(1)_dep): $$($(1)_module)
 $$($(1)_test): $(1)
 $$($(1)_run_test): $$($(1)_test)
@@ -456,7 +461,7 @@ $(1): override LDFLAGS += $$($(1)_ldflags)
 $(1): $$($(1)_module)
 $(1): $$($(1)_link_sha1)
 $(1): $$($(1)_obj)
-	$$(call run_cmd_green,LD,$(1),$$($(1)_ld) $$(LDFLAGS) -o $(1) $$($(1)_obj))
+	$$(if $$($(1)_bin),$$(call run_cmd_green,LD,$(1),$$($(1)_ld) -o $(1) $$($(1)_obj) $$(LDFLAGS)),$$(call run_cmd_green,SHARED,$(1),$$($(1)_ld) -shared -o $(1) $$($(1)_obj)))
 	$$(if $$($(1)_post),$$(call run_cmd,POST,$(1),$$($(1)_post) $(1)),)
 endef
 

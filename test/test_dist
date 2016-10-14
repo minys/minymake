@@ -30,14 +30,17 @@ tmp=$(mktemp)
 	echo c/c.cc
 	echo c/module.mk
 	echo c/test.sh
-	echo d/lib.c
-	echo d/libdata.dat
-	echo d/lib.texi
+	echo d/libshared.c
+	echo d/libshareddata.dat
+	echo d/libshared.h
+	echo d/libshared.texi
 	echo d/module.mk
 	echo e/main.c
 	echo e/module.mk
 	echo e/test.c
 	echo e/test.mk
+	echo f/main.c
+	echo f/module.mk
 	echo GNUmakefile
 	echo main.c
 	echo module.mk
