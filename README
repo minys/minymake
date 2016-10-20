@@ -122,7 +122,6 @@
      DATAROOTDIR    : installation directory for data (default: share).
      DOCDIR         : installation directory for docs (default: doc).
      DVIDIR         : installation directory for dvi (default: doc).
-     HTMLDIR        : installation directory for HTML (default: doc).
      INCLUDEDIR     : installation directory for header files (default: include).
      INFODIR        : installation directory for info files (default: DATAROOTDIR/info).
      LIBDIR         : installation directory for libraries (default: lib).
@@ -165,7 +164,6 @@
      maintainer-clean : Remove all generated objects.
      install          : Build and install to DESTDIR.
      installcheck     : Run post-install checks.
-     install-html     : Install target for HTML.
      install-dvi      : Install target for DVI.
      install-pdf      : Install target for PDF.
      install-ps       : Install target for PS.
@@ -173,7 +171,6 @@
      uninstall        : Uninstall project.
      info             : Generate info files.
      dvi              : Generate dvi files.
-     html             : Generate HTML files.
      pdf              : Generate PDF files.
      ps               : Generate PostScript files.
      dist             : Create a distribution archive.

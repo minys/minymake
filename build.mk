@@ -56,7 +56,6 @@ NOINSTALL_BIN         := # binaries we should NOT install
 INSTALL_ALL           := # list of all files to install
 INSTALL_DEFAULT       := # binaries/libraries/data files to install
 INSTALL_DVI           := # dvi files to install
-INSTALL_HTML          := # html files to install
 INSTALL_MAN           := # man files to install
 INSTALL_MAN           := # man files to install
 INSTALL_PDF           := # pdf files to install
@@ -69,7 +68,6 @@ DATADIR               ?= share
 DATAROOTDIR           ?= share
 DOCDIR                ?= doc
 DVIDIR                ?= $(DOCDIR)
-HTMLDIR               ?= $(DOCDIR)
 INCLUDEDIR            ?= include
 INFODIR               ?= $(DATAROOTDIR)/info
 LIBDIR                ?= lib
@@ -109,7 +107,6 @@ MAKEINFO              ?= makeinfo
 PRINTF                ?= printf
 TEXI2DVI              ?= texi2dvi
 TEXI2PDF              ?= texi2pdf
-TEXI2HTML             ?= texi2html
 
 CC                    := $(shell which $(CC) 2>/dev/null)
 CXX                   := $(shell which $(CXX) 2>/dev/null)
@@ -118,7 +115,6 @@ MAKEINFO              := $(shell which $(MAKEINFO) 2>/dev/null)
 PRINTF                := $(shell which $(PRINTF) 2>/dev/null)
 TEXI2DVI              := $(shell which $(TEXI2DVI) 2>/dev/null)
 TEXI2PDF              := $(shell which $(TEXI2PDF) 2>/dev/null)
-TEXI2HTML             := $(shell which $(TEXI2HTML) 2>/dev/null)
 
 CC_SUFFIX             ?= c
 CXX_SUFFIX            ?= cc
@@ -198,7 +194,6 @@ define include_module
     ldflags     := # target specific LDFLAGS (optional)
     data        := # data file(s) (optional)
     dvi         := # texi file(s) that should be converted to dvi file(s) (optional)
-    html        := # target html files (optional)
     info        := # texi file(s) that should be converted to info file(s) (optional)
     man         := # target manual file(s) (optional)
     pdf         := # target pdf files (optional)
@@ -214,7 +209,6 @@ define include_module
     target_dvi  :=
     target_info :=
     target_man  :=
-    target_html :=
     target_pdf  :=
     target_ps   :=
 
@@ -390,24 +384,6 @@ define include_module
         endif
     endif
 
-    ifneq (,$$(strip $$(html)))
-        ifeq (,$$(strip $$(TEXI2HTML)))
-            $$(error 'html' keyword present in $(1) but 'texi2html' tool is not installed or missing from PATH)
-        endif
-
-        target_html          := $$(abspath $$(output)/$$(patsubst %.texi,%.html,$$(html)))
-        $$(target_html)_to   := $$(abspath $(DESTDIR)/$(PDFDIR)/$$(notdir $$(target_html)))
-        $$(target_html)_perm := $(HTML_PERM)
-        HTML                 += $$(target_html)
-        INSTALL_HTML         += $$(target_html)
-        INSTALL_ALL          += $$($$(target_html)_to)
-        CLEAN                += $$(target_html)
-
-        ifneq (,$(filter $$($$(target_html)_to),$$(INSTALL_HTML)))
-            $$(error $$($$(target_html)_to) declared in $(1) will overwrite a file from another module during install)
-        endif
-    endif
-
 endef
 
 define clean_rule
@@ -467,10 +443,6 @@ endef
 
 define dvi_rule
 dvi: $(1)
-endef
-
-define html_rule
-html: $(1)
 endef
 
 define info_rule
@@ -534,13 +506,11 @@ $(foreach file,$(DVI),$(eval $(call dvi_rule,$(file))))
 $(foreach file,$(INFO),$(eval $(call info_rule,$(file))))
 $(foreach pdf,$(PDF),$(eval $(call pdf_rule,$(pdf))))
 $(foreach ps,$(PS),$(eval $(call ps_rule,$(ps))))
-$(foreach file,$(HTML),$(eval $(call html_rule,$(file))))
 $(foreach file,$(INSTALL_DEFAULT),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(INSTALL_MAN),$(eval $(call install_nostrip_rule,$(file),install-man)))
 $(foreach file,$(INSTALL_INFO),$(eval $(call install_nostrip_rule,$(file),install-info)))
 $(foreach file,$(INSTALL_DVI),$(eval $(call install_nostrip_rule,$(file),install-dvi)))
 $(foreach file,$(INSTALL_PDF),$(eval $(call install_nostrip_rule,$(file),install-pdf)))
-$(foreach file,$(INSTALL_HTML),$(eval $(call install_nostrip_rule,$(file),install-html)))
 $(foreach file,$(wildcard $(INSTALL_ALL)),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
@@ -567,10 +537,6 @@ $(BUILDDIR)/%.run:
 $(BUILDDIR)/%.dvi: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,DVI,$@,$(TEXI2DVI) --build-dir=$(dir $<) -b -c -q --dvi -o $@ $<)
-
-$(BUILDDIR)/%.html: $(SRCDIR)/%.texi
-	$(call mkdir,$(dir $@))
-	$(call run_cmd,HTML,$@,$(TEXI2HTML) -b -q -o $@ $<)
 
 $(BUILDDIR)/%.info: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
@@ -627,9 +593,6 @@ maintainer-clean: clean
 .PHONY: install
 install:
 
-.PHONY: install-html
-install-html: html
-
 .PHONY: install-dvi
 install-dvi: dvi
 
@@ -654,9 +617,6 @@ info:
 
 .PHONY: dvi
 dvi:
-
-.PHONY: html
-html:
 
 .PHONY: pdf
 pdf:
@@ -702,7 +662,6 @@ help:
 	@echo " mostlyclean      : Remove all generated objects."
 	@echo " maintainer-clean : Remove all generated objects."
 	@echo " install          : Build and install to DESTDIR."
-	@echo " install-html     : Install target for HTML."
 	@echo " install-dvi      : Install target for DVI."
 	@echo " install-man      : Install manual page(s)."
 	@echo " install-pdf      : Install target for PDF."
@@ -711,7 +670,6 @@ help:
 	@echo " uninstall        : Uninstall project."
 	@echo " info             : Generate info files".
 	@echo " dvi              : Generate dvi files."
-	@echo " html             : Generate HTML files."
 	@echo " pdf              : Generate PDF files."
 	@echo " ps               : Generate PostScript files."
 	@echo " dist             : Create a distribution archive."
