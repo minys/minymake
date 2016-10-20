@@ -15,8 +15,14 @@ touch ${tmp}
 test_step 'make'
 make CC=${MYCC}
 
+test_step 'Verify that C dependency files was rebuilt'
+assert_newer_than main.d ${tmp}
+
 test_step 'Verify that C program(s) was rebuilt'
 assert_newer_than program ${tmp}
 
-test_step 'Verify that C++ program(s) was no rebuilt'
+test_step 'Verify that C++ dependency files was not rebuilt'
+assert_older_than c/main.d ${tmp}
+
+test_step 'Verify that C++ program(s) was not rebuilt'
 assert_older_than c/test_cc ${tmp}
