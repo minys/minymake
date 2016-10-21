@@ -10,8 +10,8 @@ test_start ${TEST}
 
 test_step 'make pdf'
 make pdf
-assert_exist d/lib.pdf
+assert_exist d/libshared.pdf
 
 test_step 'make clean'
 make clean
-assert_not_exist d/lib.pdf
+assert_not_exist d/libshared.pdf

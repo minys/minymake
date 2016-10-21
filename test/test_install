@@ -24,9 +24,14 @@ done
 for data in ${data} ${libdata}; do
 	assert_exist ${tmpdir}/share/$(basename ${data})
 done
+echo ${programs} | tr ' ' '\n' | sort > ${tmpdir}/expected.programs
+ls -1 ${tmpdir}/bin/ | sort > ${tmpdir}/installed.programs
 built_programs=$(echo ${programs} | wc -w)
 installed_programs=$(ls -1 ${tmpdir}/bin/ | wc -l)
-assert_equal ${built_programs} ${installed_programs} "Expected ${built_programs} programs to be installed, found ${installed_programs}"
+diff -u ${tmpdir}/expected.programs ${tmpdir}/installed.programs > ${tmpdir}/diff.programs || true
+diff=$(sed -n '/^[+-][a-zA-Z]/p' < ${tmpdir}/diff.programs)
+
+assert_equal ${built_programs} ${installed_programs} "Difference compared to expected result: ${diff}"
 
 test_step "make DESTDIR=${tmpdir} uninstall"
 make DESTDIR=${tmpdir} uninstall
