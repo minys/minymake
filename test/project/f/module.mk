@@ -1,4 +1,4 @@
 target := test_libshared
 src := main.c
-cflags := -I$(TOPDIR)/d
+cflags := -I$(SRCDIR)/d
 ldflags := -L$(BUILDDIR)/d -lshared

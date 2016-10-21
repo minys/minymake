@@ -35,8 +35,6 @@ $(foreach feature,$(REQUIRED_FEATURES),$(if $(filter $(feature),$(.FEATURES)),,$
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --no-builtin-variables
 
-TOPDIR := $(CURDIR)
-
 
 # -- [ Variables ] -------------------------------------------------------------
 
