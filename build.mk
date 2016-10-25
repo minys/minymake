@@ -436,7 +436,7 @@ $(1): override LDFLAGS += $$($(1)_ldflags)
 $(1): $$($(1)_module)
 $(1): $$($(1)_link_sha1)
 $(1): $$($(1)_obj)
-	$$(if $$($(1)_bin),$$(call run_cmd_green,LD,$(1),$$($(1)_ld) -o $(1) $$($(1)_obj) $$(LDFLAGS)),$$(call run_cmd_green,SHARED,$(1),$$($(1)_ld) -shared -o $(1) $$($(1)_obj)))
+	$$(if $$($(1)_bin),$$(call run_cmd_green,LD,$(1),$$(LD) -o $(1) $$($(1)_obj) $$(LDFLAGS)),$$(call run_cmd_green,SHARED,$(1),$$(LD) -shared -o $(1) $$($(1)_obj) $$(LDFLAGS)))
 	$$(if $$($(1)_post),$$(call run_cmd,POST,$(1),$$($(1)_post) $(1)),)
 endef
 
