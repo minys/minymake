@@ -25,12 +25,13 @@
 #
 
 # Check required GNU Make features
-REQUIRED_FEATURES := target-specific
+REQUIRED_FEATURES := target-specific second-expansion
 
 $(foreach feature,$(REQUIRED_FEATURES),$(if $(filter $(feature),$(.FEATURES)),,$(error required GNU Make feature not present: $(feature))))
 
 .DELETE_ON_ERROR:
 .SUFFIXES:
+.SECONDEXPANSION:
 
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --no-builtin-variables
@@ -98,6 +99,7 @@ DIST_ARCHIVE          := $(BUILDDIR)/$(PROJECT)-$(MAJOR_VERSION).$(MINOR_VERSION
 CLEAN                 += $(DIST_ARCHIVE)
 
 # External tools
+AR                    ?= ar
 CC                    ?= gcc
 CXX                   ?= g++
 INSTALL               ?= install
@@ -106,6 +108,7 @@ PRINTF                ?= printf
 TEXI2DVI              ?= texi2dvi
 TEXI2PDF              ?= texi2pdf
 
+AR                    := $(shell which $(AR) 2>/dev/null)
 CC                    := $(shell which $(CC) 2>/dev/null)
 CXX                   := $(shell which $(CXX) 2>/dev/null)
 INSTALL               := $(shell which $(INSTALL) 2>/dev/null)
@@ -164,7 +167,7 @@ ifdef VERBOSE
         $(strip $(3))
     endef
     define run_cmd_silent
-        $(strip $(1))
+        @$(strip $(1))
     endef
 else
     define run_cmd
@@ -215,6 +218,10 @@ define include_module
     ifeq (,$$(strip $$(target)))
         $$(error target not defined by $(1))
     endif
+    ifneq (,$(filter static,$(MAKECMDGOALS)))
+        target := $$(patsubst %.so,%.a,$$(target))
+    endif
+
     ifeq (,$$(strip $$(src)))
         $$(error src not defined by $(1))
     endif
@@ -266,6 +273,7 @@ define include_module
         $$(target)_perm     := $(LIB_PERM)
         INSTALL_DEFAULT     += $$(target)
         INSTALL_ALL         += $$($$(target)_to)
+        CLEAN               += $$(patsubst %.so,%.a,$$(target))
 
         ifneq (,$(filter $$($$(target)_to),$$(INSTALL_ALL)))
             $$(error $$($$(target)_to) declared in $(1) will overwrite a file from another module during install)
@@ -436,8 +444,6 @@ $(1): override LDFLAGS += $$($(1)_ldflags)
 $(1): $$($(1)_module)
 $(1): $$($(1)_link_sha1)
 $(1): $$($(1)_obj)
-	$$(if $$($(1)_bin),$$(call run_cmd_green,LD,$(1),$$(LD) -o $(1) $$($(1)_obj) $$(LDFLAGS)),$$(call run_cmd_green,SHARED,$(1),$$(LD) -shared -o $(1) $$($(1)_obj) $$(LDFLAGS)))
-	$$(if $$($(1)_post),$$(call run_cmd,POST,$(1),$$($(1)_post) $(1)),)
 endef
 
 define dvi_rule
@@ -457,7 +463,7 @@ ps: $(1)
 endef
 
 define depends
-    $(call run_cmd,DEP,$(1),$(strip $(2) $(3) -MT "$(patsubst %.d,%.o,$(1))" -M $(4) | sed 's,\(^.*.o:\),$@ \1,' > $(1)))
+    $(call run_cmd_silent,$(strip $(2) $(3) -MT "$(patsubst %.d,%.o,$(1))" -M $(4) | sed 's,\(^.*.o:\),$@ \1,' > $(1)))
 endef
 
 define mkdir
@@ -529,6 +535,21 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.$(CXX_SUFFIX)
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
 
+$(BUILDDIR)/%.so:
+	$(call mkdir,$(dir $@))
+	$(call run_cmd_green,LD,$@,$(LD) -o $@ $($(@)_obj) -shared $(LDFLAGS))
+	$(if $($(@)_post),$(call run_cmd,POST,$@,$($(@)_post) $@),)
+
+$(BUILDDIR)/%.a:
+	$(call mkdir,$(dir $@))
+	$(call run_cmd,AR,$@,$(AR) cr $@ $($(@)_obj))
+	$(if $($(@)_post),$(call run_cmd,POST,$@,$($(@)_post) $@),)
+
+$(BUILDDIR)/%:
+	$(call mkdir,$(dir $@))
+	$(call run_cmd_green,LD,$@,$(LD) -o $@ $($(@)_obj) $(LDFLAGS))
+	$(if $($(@)_post),$(call run_cmd,POST,$@,$($(@)_post) $@),)
+
 $(BUILDDIR)/%.run:
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,TEST,$<,$< && touch $@)
@@ -553,7 +574,7 @@ $(BUILDDIR)/%.sha1: FORCE
 	$(call verify_input,$@,$(SHA1))
 
 .PHONY: all
-all: $(TARGETS)
+all: $$(TARGETS)
 
 .PHONY: release
 release: CFLAGS += $(RELEASE_CFLAGS)

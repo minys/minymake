@@ -10,7 +10,7 @@ test_start ${TEST}
 
 test_step 'make static'
 make static
-assert_full_build
+assert_full_static_build
 
 # FIXME Is it enough to make sure we do not have a .dynamic section in ELF?
 test_step 'Verify that built binaries are statically linked'
