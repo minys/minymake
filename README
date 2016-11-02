@@ -40,12 +40,13 @@
                 the test binary name. Example, module A declares:
 
                   target := foo
+                  src    := foo.c
                   test   := bar
 
                 where 'bar' is a shell script. Nothing else needs to be done in
                 order for tests to be run as target in module A is rebuilt. If
                 however, 'bar' is the name of a binary which is yet to be built,
-                a separate module needs to define foo as a target:
+                a separate module needs to define 'bar' as a target:
 
                   target := bar
                   src    := bar.c
@@ -96,7 +97,6 @@
      TEXI2DVI : texi2dvi command
      TEXI2PDF : texi2pdf command
 
-
  Compiler and linker variables:
 
      CC_SUFFIX        : Suffix for C files (default: c).
@@ -115,33 +115,35 @@
      STATIC_CXXFLAGS  : C++ compiler flags added when 'static' target is invoked.
      STATIC_LDFLAGS   : Linker flags added when 'static' target is invoked.
 
- Installation variables, override the default if neccesary:
+ Installation directories:
 
-     BINDIR         : installation directory for binaries (default: bin).
-     DATADIR        : installation directory for data (default: share).
-     DATAROOTDIR    : installation directory for data (default: share).
-     DOCDIR         : installation directory for docs (default: doc).
-     DVIDIR         : installation directory for dvi (default: doc).
-     INCLUDEDIR     : installation directory for header files (default: include).
-     INFODIR        : installation directory for info files (default: DATAROOTDIR/info).
-     LIBDIR         : installation directory for libraries (default: lib).
-     LIBEXECDIR     : installation directory for libexec (default: libexec).
-     LOCALSTATEDIR  : installation directory for logs (default: var).
-     MANDIR         : installation directory for manuals (default: DATAROOTDIR/man).
-     PDFDIR         : installation directory for pdf files (default: doc).
-     PSDIR          : installation directory for ps files(default: doc).
-     RUNSTATEDIR    : installation directory for running state (default: run).
-     SBINDIR        : installation directory for system binaries (default: sbin).
-     SHAREDSTATEDIR : installation directory for shared state (default: com).
-     SYSCONFDIR     : installation directory for configuration files (default: etc).
+     BINDIR         : binaries (default: bin)
+     DATADIR        : data (default: share)
+     DATAROOTDIR    : data (default: share)
+     DOCDIR         : docs (default: doc)
+     DVIDIR         : dvi (default: doc)
+     INCLUDEDIR     : header files (default: include)
+     INFODIR        : info files (default: DATAROOTDIR/info)
+     LIBDIR         : libraries (default: lib)
+     LIBEXECDIR     : libexec (default: libexec)
+     LOCALSTATEDIR  : logs (default: var)
+     MANDIR         : manuals (default: DATAROOTDIR/man)
+     PDFDIR         : pdf files (default: doc)
+     PSDIR          : ps files(default: doc)
+     RUNSTATEDIR    : running state (default: run)
+     SBINDIR        : system binaries (default: sbin)
+     SHAREDSTATEDIR : shared state (default: com)
+     SYSCONFDIR     : configuration files (default: etc)
      
-     BIN_PERM       : permissions for binaries (default: 755).
-     DATA_PERM      : permissions for data (default: 644).
-     DVI_PERM       : permissions for dvi (default: 644).
-     INFO_PERM      : permissions for info (default: 644).
-     LIB_PERM       : permissions for libraries (default: 644).
-     MAN_PERM       : permissions for manuals (default: 644).
-     PDF_PERM       : permissions for pdfs (default: 644).
+ Permissions used while installing:
+
+     BIN_PERM       : binaries (default: 755)
+     DATA_PERM      : data (default: 644)
+     DVI_PERM       : dvi (default: 644)
+     INFO_PERM      : info (default: 644)
+     LIB_PERM       : libraries (default: 644)
+     MAN_PERM       : manuals (default: 644)
+     PDF_PERM       : pdfs (default: 644)
 
      FORCE_INSTALL  : If defined, 'install' target will install everything even
                       if none or some of the files have not been rebuilt.
@@ -149,7 +151,7 @@
 
 ## Building
 
- minymake provides the standard GNU targets with some additions:
+ minymake provides the standard GNU targets with some exceptions/additions:
 
      release          : Build all using RELEASE_CFLAGS, RELEASE_CXXFLAGS and
                         RELEASE_LDFLAGS.
