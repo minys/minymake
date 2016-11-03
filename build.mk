@@ -24,10 +24,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-# Check required GNU Make features
-REQUIRED_FEATURES := target-specific second-expansion
-
-$(foreach feature,$(REQUIRED_FEATURES),$(if $(filter $(feature),$(.FEATURES)),,$(error required GNU Make feature not present: $(feature))))
+ifeq (,$(filter target-specific,$(.FEATURES)))
+    $(error required GNU Make feature not present: target-specific)
+endif
+ifeq (,$(filter second-expansion,$(.FEATURES)))
+    $(error required GNU Make feature not present: second-expansion)
+endif
 
 .DELETE_ON_ERROR:
 .SUFFIXES:
