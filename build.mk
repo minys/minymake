@@ -295,11 +295,12 @@ define include_module
     endif
 
     ifneq (,$$(strip $$(data)))
-        target_data          := $$(abspath $$(addprefix $$(path)/,$$(data)))
-        $$(target_data)_to   := $$(abspath $(DESTDIR)/$(DATADIR)/$$(data))
-        $$(target_data)_perm := $(DATA_PERM)
-        INSTALL_DEFAULT      += $$(target_data)
-        INSTALL_ALL          += $$($$(target_data)_to)
+        target_data             := $$(abspath $$(addprefix $$(path)/,$$(data)))
+        $$(target_data)_to      := $$(abspath $(DESTDIR)/$(DATADIR)/$$(data))
+        $$(target_data)_perm    := $(DATA_PERM)
+        $$(target_data)_nostrip := 1
+        INSTALL_DEFAULT         += $$(target_data)
+        INSTALL_ALL             += $$($$(target_data)_to)
 
         ifneq (,$(filter $$($$(target_data)_to),$$(INSTALL_ALL)))
             $$(error $$($$(target_data)_to) declared in $(1) will overwrite a file from another module during install)
@@ -307,11 +308,12 @@ define include_module
     endif
 
     ifneq (,$$(strip $$(man)))
-        target_man          := $$(abspath $$(addprefix $$(path)/,$$(man)))
-        $$(target_man)_to   := $$(abspath $(DESTDIR)/$(MANDIR)/$$(man))
-        $$(target_man)_perm := $(MAN_PERM)
-        INSTALL_MAN         += $$(target_man)
-        INSTALL_ALL         += $$($$(target_man)_to)
+        target_man             := $$(abspath $$(addprefix $$(path)/,$$(man)))
+        $$(target_man)_to      := $$(abspath $(DESTDIR)/$(MANDIR)/$$(man))
+        $$(target_man)_perm    := $(MAN_PERM)
+        $$(target_man)_nostrip := 1
+        INSTALL_MAN            += $$(target_man)
+        INSTALL_ALL            += $$($$(target_man)_to)
 
         ifneq (,$(filter $$($$(target_man)_to),$$(INSTALL_ALL)))
             $$(error $$($$(target_man)_to) declared in $(1) will overwrite a file from another module during install) 
@@ -323,13 +325,14 @@ define include_module
             $$(error 'info' keyword present in $(1) but 'makeinfo' tool is not installed or missing from PATH)
         endif
 
-        target_info          := $$(abspath $$(output)/$$(patsubst %.texi,%.info,$$(info)))
-        $$(target_info)_to   := $$(abspath $(DESTDIR)/$(INFODIR)/$(info))
-        $$(target_info)_perm := $(INFO_PERM)
-        INFO                 += $$(target_info)
-        INSTALL_INFO         += $$(target_info)
-        INSTALL_ALL          += $$($$(target_info)_to)
-        CLEAN                += $$(target_info)
+        target_info             := $$(abspath $$(output)/$$(patsubst %.texi,%.info,$$(info)))
+        $$(target_info)_to      := $$(abspath $(DESTDIR)/$(INFODIR)/$(info))
+        $$(target_info)_perm    := $(INFO_PERM)
+        $$(target_info)_nostrip := 1
+        INFO                    += $$(target_info)
+        INSTALL_INFO            += $$(target_info)
+        INSTALL_ALL             += $$($$(target_info)_to)
+        CLEAN                   += $$(target_info)
 
         ifneq (,$(filter $$($$(target_info)_to),$$(INSTALL_ALL)))
             $$(error $$($$(target_info)_to) declared in $(1) will overwrite a file from another module during install)
@@ -341,13 +344,14 @@ define include_module
             $$(error 'dvi' keyword present in $(1) but 'texi2dvi' tool is not installed or missing from PATH)
         endif
 
-        target_dvi          := $$(abspath $$(output)/$$(patsubst %.texi,%.dvi,$$(dvi)))
-        $$(target_dvi)_to   := $$(abspath $(DESTDIR)/$(DVIDIR)/$$(notdir $$(target_dvi)))
-        $$(target_dvi)_perm := $(DVI_PERM)
-        DVI                 += $$(target_dvi)
-        INSTALL_DVI         += $$(target_dvi)
-        INSTALL_ALL         += $$($$(target_dvi)_to)
-        CLEAN               += $$(target_dvi)
+        target_dvi             := $$(abspath $$(output)/$$(patsubst %.texi,%.dvi,$$(dvi)))
+        $$(target_dvi)_to      := $$(abspath $(DESTDIR)/$(DVIDIR)/$$(notdir $$(target_dvi)))
+        $$(target_dvi)_perm    := $(DVI_PERM)
+        $$(target_dvi)_nostrip := 1
+        DVI                    += $$(target_dvi)
+        INSTALL_DVI            += $$(target_dvi)
+        INSTALL_ALL            += $$($$(target_dvi)_to)
+        CLEAN                  += $$(target_dvi)
 
         ifneq (,$(filter $$($$(target_dvi)_to),$$(INSTALL_ALL)))
             $$(error $$($$(target_dvi)_to) declared in $(1) will overwrite a file from another module during install)
@@ -359,13 +363,14 @@ define include_module
             $$(error 'pdf' keyword present in $(1) but 'texi2pdf' tool is not installed or missing from PATH)
         endif
 
-        target_pdf          := $$(abspath $$(output)/$$(patsubst %.texi,%.pdf,$$(pdf)))
-        $$(target_pdf)_to   := $$(abspath $(DESTDIR)/$(PDFDIR)/$$(notdir $$(target_pdf)))
-        $$(target_pdf)_perm := $(PDF_PERM)
-        PDF                 += $$(target_pdf)
-        INSTALL_PDF         += $$(target_pdf)
-        INSTALL_ALL         += $$($$(target_pdf)_to)
-        CLEAN               += $$(target_pdf)
+        target_pdf             := $$(abspath $$(output)/$$(patsubst %.texi,%.pdf,$$(pdf)))
+        $$(target_pdf)_to      := $$(abspath $(DESTDIR)/$(PDFDIR)/$$(notdir $$(target_pdf)))
+        $$(target_pdf)_perm    := $(PDF_PERM)
+        $$(target_pdf)_nostrip := 1
+        PDF                    += $$(target_pdf)
+        INSTALL_PDF            += $$(target_pdf)
+        INSTALL_ALL            += $$($$(target_pdf)_to)
+        CLEAN                  += $$(target_pdf)
 
         ifneq (,$(filter $$($$(target_pdf)_to),$$(INSTALL_ALL)))
             $$(error $$($$(target_pdf)_to) declared in $(1) will overwrite a file from another module during install)
@@ -377,13 +382,14 @@ define include_module
             $$(error 'ps' keyword present in $(1) but 'texi2dvi' tool is not installed or missing from PATH)
         endif
 
-        target_ps           := $$(abspath $$(output)/$$(patsubst %.texi,%.ps,$$(ps)))
-        $$(target_ps)_to    := $$(abspath $(DESTDIR)/$(PSDIR)/$$(notdir $$(target_ps)))
-        $$(target_ps)_perm  := $(PS_PERM)
-        PS                  += $$(target_ps)
-        INSTALL_PS          += $$(target_ps)
-        INSTALL_ALL         += $$($$(target_ps)_to)
-        CLEAN               += $$(target_ps)
+        target_ps             := $$(abspath $$(output)/$$(patsubst %.texi,%.ps,$$(ps)))
+        $$(target_ps)_to      := $$(abspath $(DESTDIR)/$(PSDIR)/$$(notdir $$(target_ps)))
+        $$(target_ps)_perm    := $(PS_PERM)
+        $$(target_ps)_nostrip := 1
+        PS                    += $$(target_ps)
+        INSTALL_PS            += $$(target_ps)
+        INSTALL_ALL           += $$($$(target_ps)_to)
+        CLEAN                 += $$(target_ps)
 
         ifneq (,$(filter $$($$(target_ps)_to),$$(INSTALL_ALL)))
             $$(error $$($$(target_ps)_to) declared in $(1) will overwrite a file from another module during install)
@@ -405,20 +411,12 @@ $$($(1)_to): $(1)
 ifdef FORCE_INSTALL
 $$($(1)_to): FORCE
 endif
-$$($(1)_to): $(1)
-	$$(call mkdir,$$(dir $$($(1)_to)))
-	$$(call run_cmd,INSTALL,$$($(1)_to),$(INSTALL) $$(STRIP_FLAG) -m $$($(1)_perm) $(1) $$($(1)_to))
-endef
-
-define install_nostrip_rule
-$(2): $$($(1)_to)
-$$($(1)_to): $(1)
-ifdef FORCE_INSTALL
-$$($(1)_to): FORCE
+ifneq (1,$$($(1)_nostrip))
+$$($(1)_to): INSTALL_FLAGS += $$(STRIP_FLAG)
 endif
 $$($(1)_to): $(1)
 	$$(call mkdir,$$(dir $$($(1)_to)))
-	$$(call run_cmd,INSTALL,$$($(1)),$(INSTALL) -m $$($(1)_perm) $(1) $$($(1)_to))
+	$$(call run_cmd,INSTALL,$$($(1)_to),$(INSTALL) $$(INSTALL_FLAGS) -m $$($(1)_perm) $(1) $$($(1)_to))
 endef
 
 define uninstall_rule
@@ -511,10 +509,10 @@ $(foreach file,$(INFO),$(eval $(call info_rule,$(file))))
 $(foreach pdf,$(PDF),$(eval $(call pdf_rule,$(pdf))))
 $(foreach ps,$(PS),$(eval $(call ps_rule,$(ps))))
 $(foreach file,$(INSTALL_DEFAULT),$(eval $(call install_rule,$(file),install)))
-$(foreach file,$(INSTALL_MAN),$(eval $(call install_nostrip_rule,$(file),install-man)))
-$(foreach file,$(INSTALL_INFO),$(eval $(call install_nostrip_rule,$(file),install-info)))
-$(foreach file,$(INSTALL_DVI),$(eval $(call install_nostrip_rule,$(file),install-dvi)))
-$(foreach file,$(INSTALL_PDF),$(eval $(call install_nostrip_rule,$(file),install-pdf)))
+$(foreach file,$(INSTALL_MAN),$(eval $(call install_rule,$(file),install-man)))
+$(foreach file,$(INSTALL_INFO),$(eval $(call install_rule,$(file),install-info)))
+$(foreach file,$(INSTALL_DVI),$(eval $(call install_rule,$(file),install-dvi)))
+$(foreach file,$(INSTALL_PDF),$(eval $(call install_rule,$(file),install-pdf)))
 $(foreach file,$(wildcard $(INSTALL_ALL)),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
