@@ -68,7 +68,9 @@
  Project wide configuration can be done in a top level makefile (see
  test/project for an example). Header files needs to be handled through
  cflags, cxxflags and ldflags, there is no mechanism to automatically export
- header files to the rest of the project.
+ header files to the rest of the project. Include directives should use SRCDIR
+ as base directory, paths to libraries during linking should use BUILDDIR as
+ base.
 
 
 ## Configuration
@@ -84,8 +86,8 @@
      MINOR_VERSION : Minor version (default: 0).
 
      VERBOSE       : If defined, echo commands as they are executed.
-     BUILDDIR      : If defined, files are generated rooted at BUILDDIR using the same
-                     directory structure as they appear in the source tree.
+     BUILDDIR      : If defined, files are generated rooted at BUILDDIR using the
+                     same directory structure as they appear in the source tree.
 
  External tools, override if needed:
 
