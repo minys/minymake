@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, Mikael Nyström
+# Copyright (c) 2016-2017, Mikael Nyström
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@ INFO                  := # info files to generate
 OBJS                  := # objects
 PDF                   := # PDF files
 PS                    := # PS files
-TARGETS               := # executables/libraries
+TARGETS               := # all executables/libraries
 TESTS                 := # tests
 
 # Standard GNU variables related to installation
@@ -192,22 +192,27 @@ endif
 define include_module
 
     # Module keywords
+    bin         := # target binary (mandatory xor lib)
     cflags      := # target specific CFLAGS (optional)
     cxxflags    := # target specific CXXFLAGS (optional)
     ldflags     := # target specific LDFLAGS (optional)
     data        := # data file(s) (optional)
     dvi         := # texi file(s) that should be converted to dvi file(s) (optional)
     info        := # texi file(s) that should be converted to info file(s) (optional)
+    lib         := # target library (mandatory xor bin)
+    link_with   := # link target within the project
     man         := # target manual file(s) (optional)
     pdf         := # target pdf files (optional)
     post        := # post build command (optional)
     pre         := # pre build command (optional)
     ps          := # target ps files (optional)
     src         := # target executable/library source (mandatory)
-    target      := # target executable/library (mandatory)
     test        := # target executable/library test (optional)
 
     # Internal variables related to keywords
+    inc_dir     :=
+    lib_dir     :=
+    target      :=
     target_data :=
     target_dvi  :=
     target_info :=
@@ -217,19 +222,35 @@ define include_module
 
     include $(1)
 
-    ifeq (,$$(strip $$(target)))
-        $$(error target not defined by $(1))
+    path   := $(dir $(1))
+    output := $$(BUILDDIR)/$$(path)
+
+    ifneq (,$$(strip $$(bin)))
+        target := $$(bin)
     endif
-    ifneq (,$(filter static,$(MAKECMDGOALS)))
-        target := $$(patsubst %.so,%.a,$$(target))
+    ifneq (,$$(strip $$(lib)))
+        target  := lib$$(lib).so
+	lib_dir := $$(abspath $$(output))
+        inc_dir := $$(abspath $$(path))
+
+        link_with_$$(lib)_obj      := $$(abspath $$(output)/$$(target))
+        link_with_$$(lib)_cflags   := -I$$(inc_dir)
+        link_with_$$(lib)_cxxflags := -I$$(inc_dir)
+        link_with_$$(lib)_ldflags  := -L$$(lib_dir) -l$$(lib)
     endif
 
+    ifneq (,$(filter static,$(MAKECMDGOALS)))
+        target := $$(patsubst %.so,%.a,$$(target))
+        link_with_$$(lib)_obj := $$(abspath $$(output)/$$(target))
+    endif
+
+    ifeq (,$$(strip $$(target)))
+        $$(error target bin or lib not defined by $(1))
+    endif
     ifeq (,$$(strip $$(src)))
         $$(error src not defined by $(1))
     endif
 
-    path                := $(dir $(1))
-    output              := $$(BUILDDIR)/$$(path)
     target              := $$(abspath $$(output)/$$(target))
     $$(target)_src      := $$(abspath $$(addprefix $$(path)/,$$(src)))
     $$(target)_test     := $$(abspath $$(addprefix $$(path)/,$$(test)))
@@ -294,6 +315,16 @@ define include_module
         ifneq (,$(filter $$($$(target)_to),$$(INSTALL_ALL)))
             $$(error $$($$(target)_to) declared in $(1) will overwrite a file from another module during install)
         endif
+    endif
+
+    ifneq (,$$(strip $$(lib)))
+        link_with_$$(lib)_obj := $$(target)
+    endif
+    ifneq (,$$(strip $$(link_with)))
+        $$(target)_obj      += $$(link_with_$$(link_with)_obj)
+        $$(target)_cflags   += $$(link_with_$$(link_with)_cflags)
+        $$(target)_cxxflags += $$(link_with_$$(link_with)_cxxflags)
+        $$(target)_ldflags  += $$(link_with_$$(link_with)_ldflags)
     endif
 
     ifneq (,$$(strip $$(data)))
@@ -440,6 +471,7 @@ $$($(1)_dep): $$($(1)_compile_sha1)
 $$($(1)_run_test): $$($(1)_test) $(1)
 $(1): override LD := $$($(1)_ld)
 $(1): override LDFLAGS += $$($(1)_ldflags)
+$(1): $$($(1)_link_with)
 $(1): $$($(1)_module)
 $(1): $$($(1)_link_sha1)
 $(1): $$($(1)_obj)

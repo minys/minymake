@@ -1,8 +1,7 @@
-target := libshared.so
-src := libshared.c
+lib := shared
+src := shared.c
 dvi := libshared.texi
-info := libshared.texi
+info := libshared.info
 data := libshareddata.dat
-pdf := libshared.texi
-ps := libshared.texi
-html := libshared.texi
+pdf := libshared.pdf
+ps := libshared.ps

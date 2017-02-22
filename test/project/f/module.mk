@@ -1,4 +1,3 @@
-target := test_libshared
+bin := test_shared
 src := main.c
-cflags := -I$(SRCDIR)/d
-ldflags := -L$(BUILDDIR)/d -lshared
+link_with := shared
