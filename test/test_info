@@ -10,8 +10,8 @@ test_start ${TEST}
 
 test_step 'make info'
 make info
-assert_exist d/libshared.info
+assert_exist d/shared.info
 
 test_step 'make clean'
 make clean
-assert_not_exist d/libshared.info
+assert_not_exist d/shared.info

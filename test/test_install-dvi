@@ -14,10 +14,10 @@ test_step "make DESTDIR=${tmpdir} install-dvi"
 make DESTDIR=${tmpdir} install-dvi
 
 test_step 'Verify installation'
-assert_exist ${tmpdir}/doc/libshared.dvi
+assert_exist ${tmpdir}/doc/shared.dvi
 
 test_step "make DESTDIR=${tmpdir} uninstall"
 make DESTDIR=${tmpdir} uninstall
 
 test_step 'Verify uninstallation of manual pages'
-assert_not_exist ${tmpdir}/doc/libshared.dvi
+assert_not_exist ${tmpdir}/doc/shared.dvi

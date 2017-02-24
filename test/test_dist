@@ -30,11 +30,11 @@ tmp=$(mktemp)
 	echo c/c.cc
 	echo c/module.mk
 	echo c/test.sh
-	echo d/libshared.c
-	echo d/libshareddata.dat
-	echo d/libshared.h
-	echo d/libshared.texi
 	echo d/module.mk
+	echo d/shared.c
+	echo d/shared.dat
+	echo d/shared.h
+	echo d/shared.texi
 	echo e/main.c
 	echo e/module.mk
 	echo e/test.c
