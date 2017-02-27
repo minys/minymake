@@ -12,12 +12,6 @@
  and add module files (make fragments). See the test/project for an example
  deployment.
 
-## Dependencies
-
- Not thoroghly verified, but it seems the minimal version of make is 4.0. 3.82
- on Red Hat enters an infinite loop (and requires changes to how texi files are
- handled).
-
 
 ## Modules
 

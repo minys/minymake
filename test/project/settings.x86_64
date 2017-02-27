@@ -1,5 +1,2 @@
 CFLAGS += -mtune=native 
 CFLAGS += -march=native 
-
-TEXI2DVI := texi2any --dvi
-TEXI2PDF := texi2any --pdf
