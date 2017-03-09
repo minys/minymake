@@ -80,7 +80,7 @@ PSDIR                 ?= $(DOCDIR)
 RUNSTATEDIR           ?= run
 SBINDIR               ?= sbin
 SHAREDSTATEDIR        ?= com
-SRCDIR                := $(CURDIR)
+SRCDIR                := $(abspath $(CURDIR))
 SYSCONFDIR            ?= etc
 
 # Default permissions when installing files
