@@ -45,7 +45,6 @@ CLEAN                 := # generated objects to be removed
 DEPS                  := # dependency files
 GCNO                  := # gcov notes
 INFO                  := # info files to generate
-OBJS                  := # objects
 TARGETS               := # all executables/libraries
 TESTS                 := # tests
 
@@ -251,7 +250,6 @@ define include_module
     CLEAN   += $$($$(target)_run_test)
     DEPS    += $$($$(target)_dep)
     GCNO    += $$($$(target)_gcno)
-    OBJS    += $$($$(target)_obj)
     TARGETS += $$(target)
     TESTS   += $$($$(target)_run_test)
 
