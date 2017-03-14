@@ -43,12 +43,9 @@ MAKEFLAGS += --no-builtin-variables
 
 CLEAN                 := # generated objects to be removed
 DEPS                  := # dependency files
-DVI                   := # DVI files
 GCNO                  := # gcov notes
 INFO                  := # info files to generate
 OBJS                  := # objects
-PDF                   := # PDF files
-PS                    := # PS files
 TARGETS               := # all executables/libraries
 TESTS                 := # tests
 
@@ -56,11 +53,7 @@ TESTS                 := # tests
 NOINSTALL_BIN         := # binaries we should NOT install
 INSTALL_ALL           := # list of all files to install
 INSTALL_DEFAULT       := # binaries/libraries/data files to install
-INSTALL_DVI           := # dvi files to install
 INSTALL_MAN           := # man files to install
-INSTALL_MAN           := # man files to install
-INSTALL_PDF           := # pdf files to install
-INSTALL_PS            := # ps files to install
 UNINSTALL             := # things to uninstall
 
 BINDIR                ?= bin
@@ -68,15 +61,12 @@ BUILDDIR              ?= $(abspath $(CURDIR))
 DATADIR               ?= share
 DATAROOTDIR           ?= share
 DOCDIR                ?= doc
-DVIDIR                ?= $(DOCDIR)
 INCLUDEDIR            ?= include
 INFODIR               ?= $(DATAROOTDIR)/info
 LIBDIR                ?= lib
 LIBEXECDIR            ?= libexec
 LOCALSTATEDIR         ?= var
 MANDIR                ?= $(DATAROOTDIR)/man
-PDFDIR                ?= $(DOCDIR)
-PSDIR                 ?= $(DOCDIR)
 RUNSTATEDIR           ?= run
 SBINDIR               ?= sbin
 SHAREDSTATEDIR        ?= com
@@ -86,12 +76,9 @@ SYSCONFDIR            ?= etc
 # Default permissions when installing files
 BIN_PERM              ?= 755
 DATA_PERM             ?= 644
-DVI_PERM              ?= 644
 INFO_PERM             ?= 644
 LIB_PERM              ?= 644
 MAN_PERM              ?= 644
-PDF_PERM              ?= 644
-PS_PERM               ?= 644
 
 # Distribution variables
 PROJECT               ?= unknown
@@ -107,8 +94,6 @@ CXX                   ?= g++
 INSTALL               ?= install
 MAKEINFO              ?= makeinfo
 PRINTF                ?= printf
-TEXI2DVI              ?= texi2dvi
-TEXI2PDF              ?= texi2pdf
 
 AR                    := $(shell which $(AR) 2>/dev/null)
 CC                    := $(shell which $(CC) 2>/dev/null)
@@ -116,8 +101,6 @@ CXX                   := $(shell which $(CXX) 2>/dev/null)
 INSTALL               := $(shell which $(INSTALL) 2>/dev/null)
 MAKEINFO              := $(shell which $(MAKEINFO) 2>/dev/null)
 PRINTF                := $(shell which $(PRINTF) 2>/dev/null)
-TEXI2DVI              := $(shell which $(TEXI2DVI) 2>/dev/null)
-TEXI2PDF              := $(shell which $(TEXI2PDF) 2>/dev/null)
 
 CC_SUFFIX             ?= c
 CXX_SUFFIX            ?= cc
@@ -197,15 +180,12 @@ define include_module
     cxxflags    := # target specific CXXFLAGS (optional)
     ldflags     := # target specific LDFLAGS (optional)
     data        := # data file(s) (optional)
-    dvi         := # texi file(s) that should be converted to dvi file(s) (optional)
     info        := # texi file(s) that should be converted to info file(s) (optional)
     lib         := # target library (mandatory xor bin)
     link_with   := # link target within the project
     man         := # target manual file(s) (optional)
-    pdf         := # target pdf files (optional)
     post        := # post build command (optional)
     pre         := # pre build command (optional)
-    ps          := # target ps files (optional)
     src         := # target executable/library source (mandatory)
     test        := # target executable/library test (optional)
 
@@ -214,11 +194,8 @@ define include_module
     lib_dir     :=
     target      :=
     target_data :=
-    target_dvi  :=
     target_info :=
     target_man  :=
-    target_pdf  :=
-    target_ps   :=
 
     include $(1)
 
@@ -372,63 +349,6 @@ define include_module
         endif
     endif
 
-    ifneq (,$$(strip $$(dvi)))
-        ifeq (,$$(strip $$(TEXI2DVI)))
-            $$(error 'dvi' keyword present in $(1) but 'texi2dvi' tool is not installed or missing from PATH)
-        endif
-
-        target_dvi             := $$(abspath $$(output)/$$(patsubst %.texi,%.dvi,$$(dvi)))
-        $$(target_dvi)_to      := $$(abspath $(DESTDIR)/$(DVIDIR)/$$(notdir $$(target_dvi)))
-        $$(target_dvi)_perm    := $(DVI_PERM)
-        $$(target_dvi)_nostrip := 1
-        DVI                    += $$(target_dvi)
-        INSTALL_DVI            += $$(target_dvi)
-        INSTALL_ALL            += $$($$(target_dvi)_to)
-        CLEAN                  += $$(target_dvi)
-
-        ifneq (,$(filter $$($$(target_dvi)_to),$$(INSTALL_ALL)))
-            $$(error $$($$(target_dvi)_to) declared in $(1) will overwrite a file from another module during install)
-        endif
-    endif
-
-    ifneq (,$$(strip $$(pdf)))
-        ifeq (,$$(strip $$(TEXI2PDF)))
-            $$(error 'pdf' keyword present in $(1) but 'texi2pdf' tool is not installed or missing from PATH)
-        endif
-
-        target_pdf             := $$(abspath $$(output)/$$(patsubst %.texi,%.pdf,$$(pdf)))
-        $$(target_pdf)_to      := $$(abspath $(DESTDIR)/$(PDFDIR)/$$(notdir $$(target_pdf)))
-        $$(target_pdf)_perm    := $(PDF_PERM)
-        $$(target_pdf)_nostrip := 1
-        PDF                    += $$(target_pdf)
-        INSTALL_PDF            += $$(target_pdf)
-        INSTALL_ALL            += $$($$(target_pdf)_to)
-        CLEAN                  += $$(target_pdf)
-
-        ifneq (,$(filter $$($$(target_pdf)_to),$$(INSTALL_ALL)))
-            $$(error $$($$(target_pdf)_to) declared in $(1) will overwrite a file from another module during install)
-        endif
-    endif
-
-    ifneq (,$$(strip $$(ps)))
-        ifeq (,$$(strip $$(TEXI2DVI)))
-            $$(error 'ps' keyword present in $(1) but 'texi2dvi' tool is not installed or missing from PATH)
-        endif
-
-        target_ps             := $$(abspath $$(output)/$$(patsubst %.texi,%.ps,$$(ps)))
-        $$(target_ps)_to      := $$(abspath $(DESTDIR)/$(PSDIR)/$$(notdir $$(target_ps)))
-        $$(target_ps)_perm    := $(PS_PERM)
-        $$(target_ps)_nostrip := 1
-        PS                    += $$(target_ps)
-        INSTALL_PS            += $$(target_ps)
-        INSTALL_ALL           += $$($$(target_ps)_to)
-        CLEAN                 += $$(target_ps)
-
-        ifneq (,$(filter $$($$(target_ps)_to),$$(INSTALL_ALL)))
-            $$(error $$($$(target_ps)_to) declared in $(1) will overwrite a file from another module during install)
-        endif
-    endif
-
 endef
 
 define clean_rule
@@ -477,20 +397,8 @@ $(1): $$($(1)_link_sha1)
 $(1): $$($(1)_obj)
 endef
 
-define dvi_rule
-dvi: $(1)
-endef
-
 define info_rule
 info: $(1)
-endef
-
-define pdf_rule
-pdf: $(1)
-endef
-
-define ps_rule
-ps: $(1)
 endef
 
 define depends
@@ -538,10 +446,7 @@ DIST_INCLUDE := $(filter-out $(DIST_ARCHIVE),$(DIST_INCLUDE))
 DIST_INCLUDE := $(patsubst $(SRCDIR)/%,%,$(DIST_INCLUDE))
 
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
-$(foreach file,$(DVI),$(eval $(call dvi_rule,$(file))))
 $(foreach file,$(INFO),$(eval $(call info_rule,$(file))))
-$(foreach pdf,$(PDF),$(eval $(call pdf_rule,$(pdf))))
-$(foreach ps,$(PS),$(eval $(call ps_rule,$(ps))))
 $(foreach file,$(INSTALL_DEFAULT),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(INSTALL_MAN),$(eval $(call install_rule,$(file),install-man)))
 $(foreach file,$(INSTALL_INFO),$(eval $(call install_rule,$(file),install-info)))
@@ -585,21 +490,9 @@ $(BUILDDIR)/%.run:
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,TEST,$<,$< && touch $@)
 
-$(BUILDDIR)/%.dvi: $(SRCDIR)/%.texi
-	$(call mkdir,$(dir $@))
-	$(call run_cmd,DVI,$@,$(TEXI2DVI) --build-dir=$(dir $<) -b -c -q --dvi -o $@ $<)
-
 $(BUILDDIR)/%.info: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,INFO,$@,$(MAKEINFO) -o $@ $<)
-
-$(BUILDDIR)/%.pdf: $(SRCDIR)/%.texi
-	$(call mkdir,$(dir $@))
-	$(call run_cmd,PDF,$@,$(TEXI2PDF) --build-dir=$(dir $<) -b -c -q -p -o $@ $<)
-
-$(BUILDDIR)/%.ps: $(SRCDIR)/%.texi
-	$(call mkdir,$(dir $@))
-	$(call run_cmd,PS,$@,$(TEXI2DVI) --build-dir=$(dir $<) -b -c -q --ps -o $@ $<)
 
 $(BUILDDIR)/%.sha1: FORCE
 	$(call verify_input,$@,$(SHA1))
@@ -644,17 +537,8 @@ maintainer-clean: clean
 .PHONY: install
 install:
 
-.PHONY: install-dvi
-install-dvi: dvi
-
 .PHONY: install-man
 install-man:
-
-.PHONY: install-pdf
-install-pdf: pdf
-
-.PHONY: install-ps
-install-ps: ps
 
 .PHONY: install-strip
 install-strip: STRIP_FLAG := -s
@@ -665,15 +549,6 @@ uninstall:
 
 .PHONY: info
 info:
-
-.PHONY: dvi
-dvi:
-
-.PHONY: pdf
-pdf:
-
-.PHONY: ps
-ps:
 
 .PHONY: dist
 dist: $(DIST_ARCHIVE)
@@ -713,16 +588,10 @@ help:
 	@echo " mostlyclean      : Remove all generated objects."
 	@echo " maintainer-clean : Remove all generated objects."
 	@echo " install          : Build and install to DESTDIR."
-	@echo " install-dvi      : Install target for DVI."
 	@echo " install-man      : Install manual page(s)."
-	@echo " install-pdf      : Install target for PDF."
-	@echo " install-ps       : Install target for PS."
 	@echo " install-strip    : Install and strip binaries."
 	@echo " uninstall        : Uninstall project."
 	@echo " info             : Generate info files".
-	@echo " dvi              : Generate dvi files."
-	@echo " pdf              : Generate PDF files."
-	@echo " ps               : Generate PostScript files."
 	@echo " dist             : Create a distribution archive."
 	@echo " check            : Run all tests, will build necessary dependencies."
 	@echo
