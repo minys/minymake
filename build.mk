@@ -204,11 +204,11 @@ define include_module
         target := $$(bin)
     endif
     ifneq (,$$(strip $$(lib)))
-        target  := lib$$(lib).so
-	lib_dir := $$(abspath $$(output))
+        target := lib$$(lib).so
+        lib_dir := $$(abspath $$(output))
         inc_dir := $$(abspath $$(path))
 
-        link_with_$$(lib)_obj      := $$(abspath $$(output)/$$(target))
+        link_with_$$(lib)_dep      := $$(abspath $$(output)/$$(target))
         link_with_$$(lib)_cflags   := -I$$(inc_dir)
         link_with_$$(lib)_cxxflags := -I$$(inc_dir)
         link_with_$$(lib)_ldflags  := -L$$(lib_dir) -l$$(lib)
@@ -290,11 +290,8 @@ define include_module
         endif
     endif
 
-    ifneq (,$$(strip $$(lib)))
-        link_with_$$(lib)_obj := $$(target)
-    endif
     ifneq (,$$(strip $$(link_with)))
-        $$(target)_obj      += $$(link_with_$$(link_with)_obj)
+        $$(target)_link_dep += $$(link_with_$$(link_with)_dep)
         $$(target)_cflags   += $$(link_with_$$(link_with)_cflags)
         $$(target)_cxxflags += $$(link_with_$$(link_with)_cxxflags)
         $$(target)_ldflags  += $$(link_with_$$(link_with)_ldflags)
@@ -387,7 +384,7 @@ $$($(1)_dep): $$($(1)_compile_sha1)
 $$($(1)_run_test): $$($(1)_test) $(1)
 $(1): override LD := $$($(1)_ld)
 $(1): override LDFLAGS += $$($(1)_ldflags)
-$(1): $$($(1)_link_with)
+$(1): $$($(1)_link_dep)
 $(1): $$($(1)_module)
 $(1): $$($(1)_link_sha1)
 $(1): $$($(1)_obj)
