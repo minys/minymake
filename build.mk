@@ -43,7 +43,6 @@ MAKEFLAGS += --no-builtin-variables
 
 CLEAN                 := # generated objects to be removed
 DEPS                  := # dependency files
-GCNO                  := # gcov notes
 INFO                  := # info files to generate
 TARGETS               := # all executables/libraries
 TESTS                 := # tests
@@ -249,7 +248,6 @@ define include_module
     CLEAN   += $$($$(target)_gcno)
     CLEAN   += $$($$(target)_run_test)
     DEPS    += $$($$(target)_dep)
-    GCNO    += $$($$(target)_gcno)
     TARGETS += $$(target)
     TESTS   += $$($$(target)_run_test)
 
