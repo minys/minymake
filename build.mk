@@ -521,15 +521,6 @@ static: all
 .PHONY: clean
 clean:
 
-.PHONY: distclean
-distclean: clean
-
-.PHONY: mostlyclean
-mostlyclean: clean
-
-.PHONY: maintainer-clean
-maintainer-clean: clean
-
 .PHONY: install
 install:
 
@@ -581,8 +572,6 @@ help:
 	@echo " static           : Build all using STATIC_CFLAGS, STATIC_CXXFLAGS and"
 	@echo "                    STATIC_LDFLAGS."
 	@echo " clean            : Remove all generated objects."
-	@echo " mostlyclean      : Remove all generated objects."
-	@echo " maintainer-clean : Remove all generated objects."
 	@echo " install          : Build and install to DESTDIR."
 	@echo " install-man      : Install manual page(s)."
 	@echo " install-strip    : Install and strip binaries."
