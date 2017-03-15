@@ -46,7 +46,7 @@ test_start ()
 {
 	CURRENT_TEST=$(basename ${1})
 	printf '\n\e[1;34m%s\e[0m %s\n' TEST "$(basename ${1})"
-	make distclean >/dev/null
+	make clean >/dev/null
 }
 
 test_step ()
