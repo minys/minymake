@@ -22,7 +22,7 @@
 
  Modules are listed in a top level makefile in the MODULES variable.
 
- A module *must* declare the following variables:
+ A module *might* declare the following variables:
 
      target   : Name of the executable or library that this module is
                 responsible for. Only one executable or library is allowed per
@@ -30,9 +30,7 @@
                 '.so'.
 
      src      : Whitespace separated list of source files used to build
-                'target'.
-
- A module *might* declare the following variables:
+                'target'. Mandatory if 'target' is defined.
 
      test     : Test program that will be run whenever the module target is
                 rebuilt. Unless the test program is pre-compiled, a separate
@@ -96,8 +94,6 @@
      INSTALL  : install command
      MAKEINFO : makeinfo command
      PRINTF   : printf command
-     TEXI2DVI : texi2dvi command
-     TEXI2PDF : texi2pdf command
 
  Compiler and linker variables:
 
@@ -123,15 +119,12 @@
      DATADIR        : data (default: share)
      DATAROOTDIR    : data (default: share)
      DOCDIR         : docs (default: doc)
-     DVIDIR         : dvi (default: doc)
      INCLUDEDIR     : header files (default: include)
      INFODIR        : info files (default: DATAROOTDIR/info)
      LIBDIR         : libraries (default: lib)
      LIBEXECDIR     : libexec (default: libexec)
      LOCALSTATEDIR  : logs (default: var)
      MANDIR         : manuals (default: DATAROOTDIR/man)
-     PDFDIR         : pdf files (default: doc)
-     PSDIR          : ps files(default: doc)
      RUNSTATEDIR    : running state (default: run)
      SBINDIR        : system binaries (default: sbin)
      SHAREDSTATEDIR : shared state (default: com)
@@ -141,11 +134,9 @@
 
      BIN_PERM       : binaries (default: 755)
      DATA_PERM      : data (default: 644)
-     DVI_PERM       : dvi (default: 644)
      INFO_PERM      : info (default: 644)
      LIB_PERM       : libraries (default: 644)
      MAN_PERM       : manuals (default: 644)
-     PDF_PERM       : pdfs (default: 644)
 
      FORCE_INSTALL  : If defined, 'install' target will install everything even
                       if none or some of the files have not been rebuilt.
@@ -164,19 +155,11 @@
      static           : Build all using STATIC_CFLAGS, STATIC_CXXFLAGS and
                         STATIC_LDFLAGS.
      clean            : Remove all generated objects.
-     mostlyclean      : Remove all generated objects.
-     maintainer-clean : Remove all generated objects.
      install          : Build and install to DESTDIR.
      installcheck     : Run post-install checks.
-     install-dvi      : Install target for DVI.
-     install-pdf      : Install target for PDF.
-     install-ps       : Install target for PS.
      install-strip    : Install and strip binaries.
      uninstall        : Uninstall project.
      info             : Generate info files.
-     dvi              : Generate dvi files.
-     pdf              : Generate PDF files.
-     ps               : Generate PostScript files.
      dist             : Create a distribution archive.
      check            : Run all tests, will build necessary dependencies.
 

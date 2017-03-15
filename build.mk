@@ -138,7 +138,7 @@ CLEAN                 += $(LINK_CXX_SHA1_FILE)
 
 IS_GOAL_STATIC        := $(filter static,$(MAKECMDGOALS))
 IS_GOAL_CLEAN         := $(filter clean,$(MAKECMDGOALS))
-IS_GOAL_HELP          := $(filter clean,$(MAKECMDGOALS))
+IS_GOAL_HELP          := $(filter help,$(MAKECMDGOALS))
 
 
 # -- [ Macros ] ----------------------------------------------------------------
