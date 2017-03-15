@@ -95,11 +95,15 @@
 
  Compiler and linker variables:
 
+     ARCHIVE_PREFIX   : Object archive (default: lib).
+     ARCHIVE_SUFFIX   : Object archive suffix (default: a)
      CC_SUFFIX        : Suffix for C files (default: c).
      CXX_SUFFIX       : Suffix for C++ files (default: cc).
      CFLAGS           : C compiler options, always applied.
      CXXFLAGS         : C++ compiler options, always applied.
      LDFLAGS          : Linker options, always applied.
+     LIB_PREFIX       : Library prefix (default: lib).
+     LIB_SUFIX        : Library suffix (default: so).
      DEBUG_CFLAGS     : C compiler flags added when 'debug' target is invoked.
      DEBUG_CXXFLAGS   : C++ compiler flags added when 'debug' target is invoked.
      GCOV_CFLAGS      : C compiler flags added when 'gcov' target is invoked.

@@ -102,6 +102,10 @@ PRINTF                := $(shell which $(PRINTF) 2>/dev/null)
 
 CC_SUFFIX             ?= c
 CXX_SUFFIX            ?= cc
+LIB_PREFIX            ?= lib
+LIB_SUFFIX            ?= so
+ARCHIVE_PREFIX        ?= lib
+ARCHIVE_SUFFIX        ?= a
 
 # Default compiler/linker flags
 DEBUG_CFLAGS          ?= -g
@@ -209,12 +213,12 @@ define include_module
     endif
 
     ifneq (,$$(strip $$(lib)))
-        target  := lib$$(lib).so
+        target  := $$(LIB_PREFIX)$$(lib).$$(LIB_SUFFIX)
         lib_dir := $$(abspath $$(output))
         inc_dir := $$(abspath $$(path))
 
         ifneq (,$$(strip $$(IS_GOAL_STATIC)))
-            target := $$(patsubst %.so,%.a,$$(target))
+            target := $$(patsubst %.$$(LIB_SUFFIX),%.$$(ARCHIVE_SUFFIX),$$(target))
         endif
 
         link_with_$$(lib)_dep      := $$(abspath $$(output)/$$(target))
@@ -264,7 +268,7 @@ define include_module
         $$(target)_link_sha1    := $$(LINK_CXX_SHA1_FILE)
     endif
 
-    ifeq (.so,$$(suffix $$(target)))
+    ifeq (.$$(LIB_SUFFIX),$$(suffix $$(target)))
         $$(target)_cflags   += -fpic
         $$(target)_cxxflags += -fpic
         $$(target)_ldflags  += -fpic
@@ -272,7 +276,7 @@ define include_module
         $$(target)_perm     := $(LIB_PERM)
         INSTALL_DEFAULT     += $$(target)
         INSTALL_ALL         += $$($$(target)_to)
-        CLEAN               += $$(patsubst %.so,%.a,$$(target))
+        CLEAN               += $$(patsubst %.$$(LIB_SUFFIX),%.$$(ARCHIVE_SUFFIX),$$(target))
 
         ifneq (,$(filter $$($$(target)_to),$$(INSTALL_ALL)))
             $$(error $$($$(target)_to) declared in $(1) will overwrite a file from another module during install)
@@ -465,12 +469,12 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.$(CXX_SUFFIX)
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
 
-$(BUILDDIR)/%.so:
+$(BUILDDIR)/%.$(LIB_SUFFIX):
 	$(call mkdir,$(dir $@))
 	$(call run_cmd_green,LD,$@,$(LD) -o $@ $($(@)_obj) -shared $(LDFLAGS))
 	$(if $($(@)_post),$(call run_cmd,POST,$@,$($(@)_post) $@),)
 
-$(BUILDDIR)/%.a:
+$(BUILDDIR)/%.$(ARCHIVE_SUFFIX):
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,AR,$@,$(AR) cr $@ $($(@)_obj))
 	$(if $($(@)_post),$(call run_cmd,POST,$@,$($(@)_post) $@),)
