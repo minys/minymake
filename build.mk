@@ -136,6 +136,10 @@ CLEAN                 += $(COMPILE_CXX_SHA1_FILE)
 CLEAN                 += $(LINK_CC_SHA1_FILE)
 CLEAN                 += $(LINK_CXX_SHA1_FILE)
 
+IS_GOAL_STATIC        := $(filter static,$(MAKECMDGOALS))
+IS_GOAL_CLEAN         := $(filter clean,$(MAKECMDGOALS))
+IS_GOAL_HELP          := $(filter clean,$(MAKECMDGOALS))
+
 
 # -- [ Macros ] ----------------------------------------------------------------
 
@@ -203,10 +207,15 @@ define include_module
     ifneq (,$$(strip $$(bin)))
         target := $$(bin)
     endif
+
     ifneq (,$$(strip $$(lib)))
-        target := lib$$(lib).so
+        target  := lib$$(lib).so
         lib_dir := $$(abspath $$(output))
         inc_dir := $$(abspath $$(path))
+
+        ifneq (,$$(strip $$(IS_GOAL_STATIC)))
+            target := $$(patsubst %.so,%.a,$$(target))
+        endif
 
         link_with_$$(lib)_dep      := $$(abspath $$(output)/$$(target))
         link_with_$$(lib)_cflags   := -I$$(inc_dir)
@@ -214,16 +223,10 @@ define include_module
         link_with_$$(lib)_ldflags  := -L$$(lib_dir) -l$$(lib)
     endif
 
-    ifneq (,$(filter static,$(MAKECMDGOALS)))
-        target := $$(patsubst %.so,%.a,$$(target))
-        link_with_$$(lib)_obj := $$(abspath $$(output)/$$(target))
-    endif
-
-    ifeq (,$$(strip $$(target)))
-        $$(error target bin or lib not defined by $(1))
-    endif
-    ifeq (,$$(strip $$(src)))
-        $$(error src not defined by $(1))
+    ifneq (,$$(strip $$(target)))
+        ifeq (,$$(strip $$(src)))
+            $$(error 'src' not defined by $(1))
+        endif
     endif
 
     target              := $$(abspath $$(output)/$$(target))
@@ -591,6 +594,6 @@ help:
 	@echo "Please see the README for more information."
 	@echo
 
-ifeq (,$(or $(filter clean,$(MAKECMDGOALS)),$(filter distclean,$(MAKECMDGOALS)),$(filter help,$(MAKECMDGOALS))))
+ifeq (,$(or $(IS_GOAL_CLEAN),$(IS_GOAL_HELP)))
     -include $(DEPS)
 endif
