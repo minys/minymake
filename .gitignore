@@ -3,6 +3,7 @@
 *.d
 *.gcno
 *.so
+*.a
 *.guard
 *.sha1
 *.run
