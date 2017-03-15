@@ -54,10 +54,8 @@
      cxxflags : Target specific CXXFLAGS.
      ldflags  : Target specific LDFLAGS.
      data     : Target data.
-     dvi      : Target (or project) documentation in DVI format.
      info     : Target documentation in GNU info format.
      man      : Target documentation in man format.
-     pdf      : Target documentation in PDF format.
 
  Note that targets, source files etc should be referenced through a relative
  path preferable from a module file reciding in the same location as the source

@@ -446,8 +446,6 @@ $(foreach file,$(INFO),$(eval $(call info_rule,$(file))))
 $(foreach file,$(INSTALL_DEFAULT),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(INSTALL_MAN),$(eval $(call install_rule,$(file),install-man)))
 $(foreach file,$(INSTALL_INFO),$(eval $(call install_rule,$(file),install-info)))
-$(foreach file,$(INSTALL_DVI),$(eval $(call install_rule,$(file),install-dvi)))
-$(foreach file,$(INSTALL_PDF),$(eval $(call install_rule,$(file),install-pdf)))
 $(foreach file,$(wildcard $(INSTALL_ALL)),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
