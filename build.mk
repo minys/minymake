@@ -100,12 +100,12 @@ INSTALL               := $(shell which $(INSTALL) 2>/dev/null)
 MAKEINFO              := $(shell which $(MAKEINFO) 2>/dev/null)
 PRINTF                := $(shell which $(PRINTF) 2>/dev/null)
 
-CC_SUFFIX             ?= c
-CXX_SUFFIX            ?= cc
+CC_SUFFIX             ?= .c
+CXX_SUFFIX            ?= .cc
 LIB_PREFIX            ?= lib
-LIB_SUFFIX            ?= so
+LIB_SUFFIX            ?= .so
 ARCHIVE_PREFIX        ?= lib
-ARCHIVE_SUFFIX        ?= a
+ARCHIVE_SUFFIX        ?= .a
 
 # Default compiler/linker flags
 DEBUG_CFLAGS          ?= -g
@@ -216,12 +216,12 @@ define include_module
     endif
 
     ifneq (,$$(strip $$(lib)))
-        target  := $$(LIB_PREFIX)$$(lib).$$(LIB_SUFFIX)
+        target  := $$(LIB_PREFIX)$$(lib)$$(LIB_SUFFIX)
         lib_dir := $$(abspath $$(output))
         inc_dir := $$(abspath $$(path))
 
         ifneq (,$$(strip $$(IS_GOAL_STATIC)))
-            target := $$(patsubst %.$$(LIB_SUFFIX),%.$$(ARCHIVE_SUFFIX),$$(target))
+            target := $$(patsubst %$$(LIB_SUFFIX),%$$(ARCHIVE_SUFFIX),$$(target))
         endif
 
         link_with_$$(lib)_dep      := $$(abspath $$(output)/$$(target))
@@ -262,7 +262,7 @@ define include_module
     TARGETS += $$(target)
     TESTS   += $$($$(target)_run_test)
 
-    ifeq (.$$(CC_SUFFIX),$$(sort $$(suffix $$($$(target)_src))))
+    ifeq ($$(CC_SUFFIX),$$(sort $$(suffix $$($$(target)_src))))
         $$(target)_ld           := $$(CC)
         $$(target)_compile_sha1 := $$(COMPILE_CC_SHA1_FILE)
         $$(target)_link_sha1    := $$(LINK_CC_SHA1_FILE)
@@ -272,7 +272,7 @@ define include_module
         $$(target)_link_sha1    := $$(LINK_CXX_SHA1_FILE)
     endif
 
-    ifeq (.$$(LIB_SUFFIX),$$(suffix $$(target)))
+    ifeq ($$(LIB_SUFFIX),$$(suffix $$(target)))
         $$(target)_cflags   += -fpic
         $$(target)_cxxflags += -fpic
         $$(target)_ldflags  += -fpic
@@ -280,7 +280,7 @@ define include_module
         $$(target)_perm     := $(LIB_PERM)
         INSTALL_DEFAULT     += $$(target)
         INSTALL_ALL         += $$($$(target)_to)
-        CLEAN               += $$(patsubst %.$$(LIB_SUFFIX),%.$$(ARCHIVE_SUFFIX),$$(target))
+        CLEAN               += $$(patsubst %$$(LIB_SUFFIX),%$$(ARCHIVE_SUFFIX),$$(target))
 
         ifneq (,$(filter $$($$(target)_to),$$(INSTALL_ALL)))
             $$(error $$($$(target)_to) declared in $(1) will overwrite a file from another module during install)
@@ -458,28 +458,28 @@ $(foreach file,$(INSTALL_INFO),$(eval $(call install_rule,$(file),install-info))
 $(foreach file,$(wildcard $(INSTALL_ALL)),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
-$(BUILDDIR)/%.d: $(SRCDIR)/%.$(CC_SUFFIX)
+$(BUILDDIR)/%.d: $(SRCDIR)/%$(CC_SUFFIX)
 	$(call mkdir,$(dir $@))
 	$(call depends,$@,$(CC),$(CFLAGS),$<)
 
-$(BUILDDIR)/%.o: $(SRCDIR)/%.$(CC_SUFFIX)
+$(BUILDDIR)/%.o: $(SRCDIR)/%$(CC_SUFFIX)
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CC,$@,$(CC) $(CFLAGS) -o $@ -c $<)
 
-$(BUILDDIR)/%.d: $(SRCDIR)/%.$(CXX_SUFFIX)
+$(BUILDDIR)/%.d: $(SRCDIR)/%$(CXX_SUFFIX)
 	$(call mkdir,$(dir $@))
 	$(call depends,$@,$(CXX),$(CXXFLAGS),$<)
 
-$(BUILDDIR)/%.o: $(SRCDIR)/%.$(CXX_SUFFIX)
+$(BUILDDIR)/%.o: $(SRCDIR)/%$(CXX_SUFFIX)
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
 
-$(BUILDDIR)/%.$(LIB_SUFFIX):
+$(BUILDDIR)/%$(LIB_SUFFIX):
 	$(call mkdir,$(dir $@))
 	$(call run_cmd_green,LD,$@,$(LD) -o $@ $($(@)_obj) -shared $(LDFLAGS))
 	$(if $($(@)_post),$(call run_cmd,POST,$@,$($(@)_post) $@),)
 
-$(BUILDDIR)/%.$(ARCHIVE_SUFFIX):
+$(BUILDDIR)/%$(ARCHIVE_SUFFIX):
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,AR,$@,$(AR) cr $@ $($(@)_obj))
 	$(if $($(@)_post),$(call run_cmd,POST,$@,$($(@)_post) $@),)
