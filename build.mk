@@ -189,6 +189,9 @@ define include_module
     info        := # texi file(s) that should be converted to info file(s) (optional)
     lib         := # target library (mandatory xor bin)
     link_with   := # link target within the project
+    private_cflags :=
+    private_cxxflags :=
+    private_ldflags :=
     man         := # target manual file(s) (optional)
     post        := # post build command (optional)
     pre         := # pre build command (optional)
@@ -222,9 +225,10 @@ define include_module
         endif
 
         link_with_$$(lib)_dep      := $$(abspath $$(output)/$$(target))
-        link_with_$$(lib)_cflags   := -I$$(inc_dir)
-        link_with_$$(lib)_cxxflags := -I$$(inc_dir)
-        link_with_$$(lib)_ldflags  := -L$$(lib_dir) -l$$(lib)
+        link_with_$$(lib)_cflags   := -I$$(inc_dir) $$(cflags)
+        link_with_$$(lib)_cxxflags := -I$$(inc_dir) $$(cxxflags)
+        link_with_$$(lib)_ldflags  := $$(ldflags) -L$$(lib_dir) -l$$(lib)
+        link_with_$$(lib)_module   := $$(abspath $(1))
     endif
 
     ifneq (,$$(strip $$(target)))
@@ -302,6 +306,7 @@ define include_module
         $$(target)_cflags   += $$(link_with_$$(link_with)_cflags)
         $$(target)_cxxflags += $$(link_with_$$(link_with)_cxxflags)
         $$(target)_ldflags  += $$(link_with_$$(link_with)_ldflags)
+        $$(target)_module   += $$(link_with_$$(link_with)_module)
     endif
 
     ifneq (,$$(strip $$(data)))

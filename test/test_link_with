@@ -1,0 +1,18 @@
+#!/bin/bash
+
+TEST=$(readlink -f ${BASH_SOURCE[0]})
+CURDIR=${CURDIR:-$(dirname ${TEST})}
+
+source ${CURDIR}/setup
+source ${CURDIR}/common
+
+test_start ${TEST}
+
+test_step 'make'
+make
+assert_full_build
+
+test_step 'Verify that definition of TEST was propagated from link target'
+file=$(get_tmpfile)
+LD_LIBRARY_PATH=d ./f/test_shared > ${file}
+grep "TEST enabled" ${file}
