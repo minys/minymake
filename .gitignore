@@ -5,7 +5,7 @@
 *.so
 *.a
 *.guard
-*.sha1
+*.checksum
 *.run
 
 test/project/a/program_a

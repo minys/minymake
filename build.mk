@@ -88,6 +88,7 @@ CLEAN                 += $(DIST_ARCHIVE)
 # External tools
 AR                    ?= ar
 CC                    ?= gcc
+CHECKSUM              ?= sha1sum
 CXX                   ?= g++
 INSTALL               ?= install
 MAKEINFO              ?= makeinfo
@@ -95,6 +96,7 @@ PRINTF                ?= printf
 
 AR                    := $(shell which $(AR) 2>/dev/null)
 CC                    := $(shell which $(CC) 2>/dev/null)
+CHECKSUM              := $(shell which $(CHECKSUM) 2>/dev/null)
 CXX                   := $(shell which $(CXX) 2>/dev/null)
 INSTALL               := $(shell which $(INSTALL) 2>/dev/null)
 MAKEINFO              := $(shell which $(MAKEINFO) 2>/dev/null)
@@ -123,22 +125,22 @@ STATIC_LDFLAGS        ?= -static
 # compiler and/or compiler flags passed on the command line. In case a change
 # is detected, affected targets will be rebuilt.
 #
-CC_SHA1               := $(shell sha1sum $(CC))
-CXX_SHA1              := $(shell sha1sum $(CXX))
-COMPILE_CC_SHA1       := $(shell echo $(CC_SHA1) $(CFLAGS) | sha1sum | awk '{print $$1}')
-COMPILE_CXX_SHA1      := $(shell echo $(CXX_SHA1) $(CXXFLAGS) | sha1sum | awk '{print $$1}')
-LINK_CC_SHA1          := $(shell echo $(CC_SHA1) $(LDFLAGS) | sha1sum | awk '{print $$1}')
-LINK_CXX_SHA1         := $(shell echo $(CXX_SHA1) $(LDFLAGS) | sha1sum | awk '{print $$1}')
+CC_CHECKSUM           := $(shell $(CHECKSUM) $(CC))
+CXX_CHECKSUM          := $(shell $(CHECKSUM) $(CXX))
+COMPILE_CC_CHECKSUM   := $(shell echo $(CC_CHECKSUM) $(CFLAGS) | $(CHECKSUM) | awk '{print $$1}')
+COMPILE_CXX_CHECKSUM  := $(shell echo $(CXX_CHECKSUM) $(CXXFLAGS) | $(CHECKSUM) | awk '{print $$1}')
+LINK_CC_CHECKSUM      := $(shell echo $(CC_CHECKSUM) $(LDFLAGS) | $(CHECKSUM) | awk '{print $$1}')
+LINK_CXX_CHECKSUM     := $(shell echo $(CXX_CHECKSUM) $(LDFLAGS) | $(CHECKSUM) | awk '{print $$1}')
 
-COMPILE_CC_SHA1_FILE  := $(BUILDDIR)/.compile.cc.sha1
-COMPILE_CXX_SHA1_FILE := $(BUILDDIR)/.compile.cxx.sha1
-LINK_CC_SHA1_FILE     := $(BUILDDIR)/.link.cc.sha1
-LINK_CXX_SHA1_FILE    := $(BUILDDIR)/.link.cxx.sha1
+COMPILE_CC_CHECKSUM_FILE  := $(BUILDDIR)/.compile.cc.checksum
+COMPILE_CXX_CHECKSUM_FILE := $(BUILDDIR)/.compile.cxx.checksum
+LINK_CC_CHECKSUM_FILE     := $(BUILDDIR)/.link.cc.checksum
+LINK_CXX_CHECKSUM_FILE    := $(BUILDDIR)/.link.cxx.checksum
 
-CLEAN                 += $(COMPILE_CC_SHA1_FILE)
-CLEAN                 += $(COMPILE_CXX_SHA1_FILE)
-CLEAN                 += $(LINK_CC_SHA1_FILE)
-CLEAN                 += $(LINK_CXX_SHA1_FILE)
+CLEAN                 += $(COMPILE_CC_CHECKSUM_FILE)
+CLEAN                 += $(COMPILE_CXX_CHECKSUM_FILE)
+CLEAN                 += $(LINK_CC_CHECKSUM_FILE)
+CLEAN                 += $(LINK_CXX_CHECKSUM_FILE)
 
 IS_GOAL_STATIC        := $(filter static,$(MAKECMDGOALS))
 IS_GOAL_CLEAN         := $(filter clean,$(MAKECMDGOALS))
@@ -263,13 +265,13 @@ define include_module
     TESTS   += $$($$(target)_run_test)
 
     ifeq ($$(CC_SUFFIX),$$(sort $$(suffix $$($$(target)_src))))
-        $$(target)_ld           := $$(CC)
-        $$(target)_compile_sha1 := $$(COMPILE_CC_SHA1_FILE)
-        $$(target)_link_sha1    := $$(LINK_CC_SHA1_FILE)
+        $$(target)_ld               := $$(CC)
+        $$(target)_compile_checksum := $$(COMPILE_CC_CHECKSUM_FILE)
+        $$(target)_link_checksum    := $$(LINK_CC_CHECKSUM_FILE)
     else
-        $$(target)_ld           := $$(CXX)
-        $$(target)_compile_sha1 := $$(COMPILE_CXX_SHA1_FILE)
-        $$(target)_link_sha1    := $$(LINK_CXX_SHA1_FILE)
+        $$(target)_ld               := $$(CXX)
+        $$(target)_compile_checksum := $$(COMPILE_CXX_CHECKSUM_FILE)
+        $$(target)_link_checksum    := $$(LINK_CXX_CHECKSUM_FILE)
     endif
 
     ifeq ($$(LIB_SUFFIX),$$(suffix $$(target)))
@@ -388,17 +390,17 @@ define target_rule
 $$($(1)_obj): override CFLAGS += $$($(1)_cflags)
 $$($(1)_obj): override CXXFLAGS += $$($(1)_cxxflags)
 $$($(1)_obj): $$($(1)_module)
-$$($(1)_obj): $$($(1)_compile_sha1)
+$$($(1)_obj): $$($(1)_compile_checksum)
 $$($(1)_dep): override CFLAGS += $$($(1)_cflags)
 $$($(1)_dep): override CXXFLAGS += $$($(1)_cxxflags)
 $$($(1)_dep): $$($(1)_module)
-$$($(1)_dep): $$($(1)_compile_sha1)
+$$($(1)_dep): $$($(1)_compile_checksum)
 $$($(1)_run_test): $$($(1)_test) $(1)
 $(1): override LD := $$($(1)_ld)
 $(1): override LDFLAGS += $$($(1)_ldflags)
 $(1): $$($(1)_link_dep)
 $(1): $$($(1)_module)
-$(1): $$($(1)_link_sha1)
+$(1): $$($(1)_link_checksum)
 $(1): $$($(1)_obj)
 endef
 
@@ -423,10 +425,10 @@ endef
 
 default: release
 
-$(COMPILE_CC_SHA1_FILE): SHA1 := $(COMPILE_CC_SHA1)
-$(COMPILE_CXX_SHA1_FILE): SHA1 := $(COMPILE_CXX_SHA1)
-$(LINK_CC_SHA1_FILE): SHA1 := $(LINK_CC_SHA1)
-$(LINK_CXX_SHA1_FILE): SHA1 := $(LINK_CXX_SHA1)
+$(COMPILE_CC_CHECKSUM_FILE): CHECKSUM := $(COMPILE_CC_CHECKSUM)
+$(COMPILE_CXX_CHECKSUM_FILE): CHECKSUM := $(COMPILE_CXX_CHECKSUM)
+$(LINK_CC_CHECKSUM_FILE): CHECKSUM := $(LINK_CC_CHECKSUM)
+$(LINK_CXX_CHECKSUM_FILE): CHECKSUM := $(LINK_CXX_CHECKSUM)
 
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 
@@ -445,7 +447,7 @@ INSTALL_DEFAULT := $(filter-out $(NOINSTALL_BIN),$(INSTALL_DEFAULT))
 # In order to create a distribution archive, we list all files in SRCDIR
 # and exclude generated objects.
 #
-DIST_INCLUDE := $(shell find $(SRCDIR) ! -type d -a ! -name '*.gcno' -a ! -name '*.o' -a ! -name '*.gz' -a ! -name '*.so' -a ! -name '*.d' -a ! -name '*.sha1')
+DIST_INCLUDE := $(shell find $(SRCDIR) ! -type d -a ! -name '*.gcno' -a ! -name '*.o' -a ! -name '*.gz' -a ! -name '*.so' -a ! -name '*.d' -a ! -name '*.checksum')
 DIST_INCLUDE := $(filter-out $(TARGETS),$(DIST_INCLUDE))
 DIST_INCLUDE := $(filter-out $(DIST_ARCHIVE),$(DIST_INCLUDE))
 DIST_INCLUDE := $(patsubst $(SRCDIR)/%,%,$(DIST_INCLUDE))
@@ -497,8 +499,8 @@ $(BUILDDIR)/%.info: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,INFO,$@,$(MAKEINFO) -o $@ $<)
 
-$(BUILDDIR)/%.sha1: FORCE
-	$(call verify_input,$@,$(SHA1))
+$(BUILDDIR)/%.checksum: FORCE
+	$(call verify_input,$@,$(CHECKSUM))
 
 .PHONY: all
 all: $$(TARGETS)
