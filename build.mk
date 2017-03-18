@@ -41,110 +41,110 @@ MAKEFLAGS += --no-builtin-variables
 
 # -- [ Variables ] -------------------------------------------------------------
 
-CLEAN                     := # generated objects to be removed
-DEPS                      := # dependency files
-INFO                      := # info files to generate
-TARGETS                   := # all executables/libraries
-TESTS                     := # tests
+CLEAN                 := # generated objects to be removed
+DEPS                  := # dependency files
+INFO                  := # info files to generate
+TARGETS               := # all executables/libraries
+TESTS                 := # tests
 
 # Standard GNU variables related to installation
-NOINSTALL_BIN             := # binaries we should NOT install
-INSTALL_ALL               := # list of all files to install
-INSTALL_DEFAULT           := # binaries/libraries/data files to install
-INSTALL_MAN               := # man files to install
-UNINSTALL                 := # things to uninstall
+NOINSTALL_BIN         := # binaries we should NOT install
+INSTALL_ALL           := # list of all files to install
+INSTALL_DEFAULT       := # binaries/libraries/data files to install
+INSTALL_MAN           := # man files to install
+UNINSTALL             := # things to uninstall
 
-BINDIR                    ?= bin
-BUILDDIR                  ?= $(abspath $(CURDIR))
-DATADIR                   ?= share
-DATAROOTDIR               ?= share
-DOCDIR                    ?= doc
-INCLUDEDIR                ?= include
-INFODIR                   ?= $(DATAROOTDIR)/info
-LIBDIR                    ?= lib
-LIBEXECDIR                ?= libexec
-LOCALSTATEDIR             ?= var
-MANDIR                    ?= $(DATAROOTDIR)/man
-RUNSTATEDIR               ?= run
-SBINDIR                   ?= sbin
-SHAREDSTATEDIR            ?= com
-SRCDIR                    := $(abspath $(CURDIR))
-SYSCONFDIR                ?= etc
+BINDIR                ?= bin
+BUILDDIR              ?= $(abspath $(CURDIR))
+DATADIR               ?= share
+DATAROOTDIR           ?= share
+DOCDIR                ?= doc
+INCLUDEDIR            ?= include
+INFODIR               ?= $(DATAROOTDIR)/info
+LIBDIR                ?= lib
+LIBEXECDIR            ?= libexec
+LOCALSTATEDIR         ?= var
+MANDIR                ?= $(DATAROOTDIR)/man
+RUNSTATEDIR           ?= run
+SBINDIR               ?= sbin
+SHAREDSTATEDIR        ?= com
+SRCDIR                := $(abspath $(CURDIR))
+SYSCONFDIR            ?= etc
 
 # Default permissions when installing files
-BIN_PERM                  ?= 755
-DATA_PERM                 ?= 644
-INFO_PERM                 ?= 644
-LIB_PERM                  ?= 644
-MAN_PERM                  ?= 644
+BIN_PERM              ?= 755
+DATA_PERM             ?= 644
+INFO_PERM             ?= 644
+LIB_PERM              ?= 644
+MAN_PERM              ?= 644
 
 # Distribution variables
-PROJECT                   ?= unknown
-MAJOR_VERSION             ?= 0
-MINOR_VERSION             ?= 0
-DIST_ARCHIVE              := $(BUILDDIR)/$(PROJECT)-$(MAJOR_VERSION).$(MINOR_VERSION).tar.gz
-CLEAN                     += $(DIST_ARCHIVE)
+PROJECT               ?= unknown
+MAJOR_VERSION         ?= 0
+MINOR_VERSION         ?= 0
+DIST_ARCHIVE          := $(BUILDDIR)/$(PROJECT)-$(MAJOR_VERSION).$(MINOR_VERSION).tar.gz
+CLEAN                 += $(DIST_ARCHIVE)
 
 # External tools
-AR                        ?= ar
-CC                        ?= gcc
-CHECKSUM                  ?= sha1sum
-CXX                       ?= g++
-INSTALL                   ?= install
-MAKEINFO                  ?= makeinfo
-PRINTF                    ?= printf
+AR                    ?= ar
+CC                    ?= gcc
+CSUM                  ?= sha1sum
+CXX                   ?= g++
+INSTALL               ?= install
+MAKEINFO              ?= makeinfo
+PRINTF                ?= printf
 
-AR                        := $(shell which $(AR) 2>/dev/null)
-CC                        := $(shell which $(CC) 2>/dev/null)
-CHECKSUM                  := $(shell which $(CHECKSUM) 2>/dev/null)
-CXX                       := $(shell which $(CXX) 2>/dev/null)
-INSTALL                   := $(shell which $(INSTALL) 2>/dev/null)
-MAKEINFO                  := $(shell which $(MAKEINFO) 2>/dev/null)
-PRINTF                    := $(shell which $(PRINTF) 2>/dev/null)
+AR                    := $(shell which $(AR) 2>/dev/null)
+CC                    := $(shell which $(CC) 2>/dev/null)
+CSUM                  := $(shell which $(CSUM) 2>/dev/null)
+CXX                   := $(shell which $(CXX) 2>/dev/null)
+INSTALL               := $(shell which $(INSTALL) 2>/dev/null)
+MAKEINFO              := $(shell which $(MAKEINFO) 2>/dev/null)
+PRINTF                := $(shell which $(PRINTF) 2>/dev/null)
 
-CC_SUFFIX                 ?= .c
-CXX_SUFFIX                ?= .cc
-LIB_PREFIX                ?= lib
-LIB_SUFFIX                ?= .so
-ARCHIVE_PREFIX            ?= lib
-ARCHIVE_SUFFIX            ?= .a
+CC_SUFFIX             ?= .c
+CXX_SUFFIX            ?= .cc
+LIB_PREFIX            ?= lib
+LIB_SUFFIX            ?= .so
+ARCHIVE_PREFIX        ?= lib
+ARCHIVE_SUFFIX        ?= .a
 
 # Default compiler/linker flags
-DEBUG_CFLAGS              ?= -g
-DEBUG_CXXFLAGS            ?= -g
-GCOV_CFLAGS               ?= -fprofile-arcs -ftest-coverage
-GCOV_CXXFLAGS             ?= -fprofile-arcs -ftest-coverage
-GCOV_LDFLAGS              ?= -fprofile-arcs
-RELEASE_CFLAGS            ?= -O2
-RELEASE_CXXFLAGS          ?= -O2
-STATIC_CFLAGS             ?= -static
-STATIC_CXXFLAGS           ?= -static
-STATIC_LDFLAGS            ?= -static
+DEBUG_CFLAGS          ?= -g
+DEBUG_CXXFLAGS        ?= -g
+GCOV_CFLAGS           ?= -fprofile-arcs -ftest-coverage
+GCOV_CXXFLAGS         ?= -fprofile-arcs -ftest-coverage
+GCOV_LDFLAGS          ?= -fprofile-arcs
+RELEASE_CFLAGS        ?= -O2
+RELEASE_CXXFLAGS      ?= -O2
+STATIC_CFLAGS         ?= -static
+STATIC_CXXFLAGS       ?= -static
+STATIC_LDFLAGS        ?= -static
 
 # Input data is hashed and stored between builds in order to detect changes to
 # compiler and/or compiler flags passed on the command line. In case a change
 # is detected, affected targets will be rebuilt.
 #
-CC_CHECKSUM               := $(shell $(CHECKSUM) $(CC))
-CXX_CHECKSUM              := $(shell $(CHECKSUM) $(CXX))
-COMPILE_CC_CHECKSUM       := $(shell echo $(CC_CHECKSUM) $(CFLAGS) | $(CHECKSUM) | awk '{print $$1}')
-COMPILE_CXX_CHECKSUM      := $(shell echo $(CXX_CHECKSUM) $(CXXFLAGS) | $(CHECKSUM) | awk '{print $$1}')
-LINK_CC_CHECKSUM          := $(shell echo $(CC_CHECKSUM) $(LDFLAGS) | $(CHECKSUM) | awk '{print $$1}')
-LINK_CXX_CHECKSUM         := $(shell echo $(CXX_CHECKSUM) $(LDFLAGS) | $(CHECKSUM) | awk '{print $$1}')
+CC_CSUM               := $(shell $(CSUM) $(CC))
+CXX_CSUM              := $(shell $(CSUM) $(CXX))
+COMPILE_CC_CSUM       := $(shell echo $(CC_CSUM) $(CFLAGS) | $(CSUM) | awk '{print $$1}')
+COMPILE_CXX_CSUM      := $(shell echo $(CXX_CSUM) $(CXXFLAGS) | $(CSUM) | awk '{print $$1}')
+LINK_CC_CSUM          := $(shell echo $(CC_CSUM) $(LDFLAGS) | $(CSUM) | awk '{print $$1}')
+LINK_CXX_CSUM         := $(shell echo $(CXX_CSUM) $(LDFLAGS) | $(CSUM) | awk '{print $$1}')
 
-COMPILE_CC_CHECKSUM_FILE  := $(BUILDDIR)/.compile.cc.checksum
-COMPILE_CXX_CHECKSUM_FILE := $(BUILDDIR)/.compile.cxx.checksum
-LINK_CC_CHECKSUM_FILE     := $(BUILDDIR)/.link.cc.checksum
-LINK_CXX_CHECKSUM_FILE    := $(BUILDDIR)/.link.cxx.checksum
+COMPILE_CC_CSUM_FILE  := $(BUILDDIR)/.compile.cc.checksum
+COMPILE_CXX_CSUM_FILE := $(BUILDDIR)/.compile.cxx.checksum
+LINK_CC_CSUM_FILE     := $(BUILDDIR)/.link.cc.checksum
+LINK_CXX_CSUM_FILE    := $(BUILDDIR)/.link.cxx.checksum
 
-CLEAN                     += $(COMPILE_CC_CHECKSUM_FILE)
-CLEAN                     += $(COMPILE_CXX_CHECKSUM_FILE)
-CLEAN                     += $(LINK_CC_CHECKSUM_FILE)
-CLEAN                     += $(LINK_CXX_CHECKSUM_FILE)
+CLEAN                 += $(COMPILE_CC_CSUM_FILE)
+CLEAN                 += $(COMPILE_CXX_CSUM_FILE)
+CLEAN                 += $(LINK_CC_CSUM_FILE)
+CLEAN                 += $(LINK_CXX_CSUM_FILE)
 
-IS_GOAL_STATIC            := $(filter static,$(MAKECMDGOALS))
-IS_GOAL_CLEAN             := $(filter clean,$(MAKECMDGOALS))
-IS_GOAL_HELP              := $(filter help,$(MAKECMDGOALS))
+IS_GOAL_STATIC        := $(filter static,$(MAKECMDGOALS))
+IS_GOAL_CLEAN         := $(filter clean,$(MAKECMDGOALS))
+IS_GOAL_HELP          := $(filter help,$(MAKECMDGOALS))
 
 
 # -- [ Macros ] ----------------------------------------------------------------
@@ -266,12 +266,12 @@ define include_module
 
     ifeq ($$(CC_SUFFIX),$$(sort $$(suffix $$($$(target)_src))))
         $$(target)_ld               := $$(CC)
-        $$(target)_compile_checksum := $$(COMPILE_CC_CHECKSUM_FILE)
-        $$(target)_link_checksum    := $$(LINK_CC_CHECKSUM_FILE)
+        $$(target)_compile_checksum := $$(COMPILE_CC_CSUM_FILE)
+        $$(target)_link_checksum    := $$(LINK_CC_CSUM_FILE)
     else
         $$(target)_ld               := $$(CXX)
-        $$(target)_compile_checksum := $$(COMPILE_CXX_CHECKSUM_FILE)
-        $$(target)_link_checksum    := $$(LINK_CXX_CHECKSUM_FILE)
+        $$(target)_compile_checksum := $$(COMPILE_CXX_CSUM_FILE)
+        $$(target)_link_checksum    := $$(LINK_CXX_CSUM_FILE)
     endif
 
     ifeq ($$(LIB_SUFFIX),$$(suffix $$(target)))
@@ -425,10 +425,10 @@ endef
 
 default: release
 
-$(COMPILE_CC_CHECKSUM_FILE): CHECKSUM := $(COMPILE_CC_CHECKSUM)
-$(COMPILE_CXX_CHECKSUM_FILE): CHECKSUM := $(COMPILE_CXX_CHECKSUM)
-$(LINK_CC_CHECKSUM_FILE): CHECKSUM := $(LINK_CC_CHECKSUM)
-$(LINK_CXX_CHECKSUM_FILE): CHECKSUM := $(LINK_CXX_CHECKSUM)
+$(COMPILE_CC_CSUM_FILE): CSUM := $(COMPILE_CC_CSUM)
+$(COMPILE_CXX_CSUM_FILE): CSUM := $(COMPILE_CXX_CSUM)
+$(LINK_CC_CSUM_FILE): CSUM := $(LINK_CC_CSUM)
+$(LINK_CXX_CSUM_FILE): CSUM := $(LINK_CXX_CSUM)
 
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 
@@ -500,7 +500,7 @@ $(BUILDDIR)/%.info: $(SRCDIR)/%.texi
 	$(call run_cmd,INFO,$@,$(MAKEINFO) -o $@ $<)
 
 $(BUILDDIR)/%.checksum: FORCE
-	$(call verify_input,$@,$(CHECKSUM))
+	$(call verify_input,$@,$(CSUM))
 
 .PHONY: all
 all: $$(TARGETS)
