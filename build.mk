@@ -127,10 +127,10 @@ STATIC_LDFLAGS        ?= -static
 #
 CC_CSUM               := $(shell $(CSUM) $(CC))
 CXX_CSUM              := $(shell $(CSUM) $(CXX))
-COMPILE_CC_CSUM       := $(shell echo $(CC_CSUM) $(CFLAGS) | $(CSUM) | awk '{print $$1}')
-COMPILE_CXX_CSUM      := $(shell echo $(CXX_CSUM) $(CXXFLAGS) | $(CSUM) | awk '{print $$1}')
-LINK_CC_CSUM          := $(shell echo $(CC_CSUM) $(LDFLAGS) | $(CSUM) | awk '{print $$1}')
-LINK_CXX_CSUM         := $(shell echo $(CXX_CSUM) $(LDFLAGS) | $(CSUM) | awk '{print $$1}')
+COMPILE_CC_CSUM       := $(shell echo $(CC_CSUM) $(CFLAGS) | $(CSUM))
+COMPILE_CXX_CSUM      := $(shell echo $(CXX_CSUM) $(CXXFLAGS) | $(CSUM))
+LINK_CC_CSUM          := $(shell echo $(CC_CSUM) $(LDFLAGS) | $(CSUM))
+LINK_CXX_CSUM         := $(shell echo $(CXX_CSUM) $(LDFLAGS) | $(CSUM))
 
 COMPILE_CC_CSUM_FILE  := $(BUILDDIR)/.compile.cc.checksum
 COMPILE_CXX_CSUM_FILE := $(BUILDDIR)/.compile.cxx.checksum
