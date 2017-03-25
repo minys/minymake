@@ -48,7 +48,6 @@ TARGETS               := # all executables/libraries
 TESTS                 := # tests
 
 # Standard GNU variables related to installation
-NOINSTALL_BIN         := # binaries we should NOT install
 INSTALL_ALL           := # list of all files to install
 INSTALL_DEFAULT       := # binaries/libraries/data files to install
 INSTALL_MAN           := # man files to install
@@ -294,10 +293,6 @@ define include_module
         INSTALL_DEFAULT += $$(target)
         INSTALL_ALL     += $$($$(target)_to)
 
-        ifneq (,$(strip $$($$(target)_test)))
-            NOINSTALL_BIN += $$($$(target)_test)
-        endif
-
         ifneq (,$(filter $$($$(target)_to),$$(INSTALL_ALL)))
             $$(error $$($$(target)_to) declared in $(1) will overwrite a file from another module during install)
         endif
@@ -442,7 +437,7 @@ $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 # all modules have been parsed. A bit ugly, but makes life a little
 # bit easier for the user.
 #
-INSTALL_DEFAULT := $(filter-out $(NOINSTALL_BIN),$(INSTALL_DEFAULT))
+INSTALL_DEFAULT := $(filter-out $(TESTS),$(INSTALL_DEFAULT))
 
 # In order to create a distribution archive, we list all files in SRCDIR
 # and exclude generated objects.
