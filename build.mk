@@ -213,10 +213,16 @@ define include_module
     output := $$(BUILDDIR)/$$(path)
 
     ifneq (,$$(strip $$(bin)))
+        ifeq (,$$(strip $$(src)))
+            $$(error 'src' not defined by $(1))
+        endif
         target := $$(bin)
     endif
 
     ifneq (,$$(strip $$(lib)))
+        ifeq (,$$(strip $$(src)))
+            $$(error 'src' not defined by $(1))
+        endif
         target  := $$(LIB_PREFIX)$$(lib)$$(LIB_SUFFIX)
         lib_dir := $$(abspath $$(output))
         inc_dir := $$(abspath $$(path))
@@ -232,17 +238,15 @@ define include_module
         link_with_$$(lib)_module   := $$(abspath $(1))
     endif
 
-    ifneq (,$$(strip $$(target)))
+    ifneq (,$$(strip $$(test)))
         ifeq (,$$(strip $$(src)))
             $$(error 'src' not defined by $(1))
         endif
+        target := $$(test)
     endif
 
     target              := $$(abspath $$(output)/$$(target))
     $$(target)_src      := $$(abspath $$(addprefix $$(path)/,$$(src)))
-    $$(target)_test     := $$(abspath $$(addprefix $$(path)/,$$(test)))
-    $$(target)_test     := $$(if $$(wildcard $$($$(target)_test)),$$($$(target)_test),$$(abspath $$(addprefix $$(output)/,$$(test))))
-    $$(target)_run_test := $$(if $$(test),$$(abspath $$(output)/.$$(notdir $$(test)).run),)
     $$(target)_obj      := $$(addsuffix .o,$$(basename $$(src)))
     $$(target)_obj      := $$(abspath $$(addprefix $$(output)/,$$($$(target)_obj)))
     $$(target)_post     := $$(abspath $$(addprefix $$(path)/,$$(post)))
@@ -253,6 +257,7 @@ define include_module
     $$(target)_cxxflags := $$(cxxflags)
     $$(target)_ldflags  := $$(ldflags)
     $$(target)_module   := $$(abspath $(1))
+    $$(target)_test_script := $$(abspath $$(addprefix $$(path)/,$$(test_script)))
 
     CLEAN   += $$(target)
     CLEAN   += $$($$(target)_obj)
@@ -261,7 +266,6 @@ define include_module
     CLEAN   += $$($$(target)_run_test)
     DEPS    += $$($$(target)_dep)
     TARGETS += $$(target)
-    TESTS   += $$($$(target)_run_test)
 
     ifeq ($$(CC_SUFFIX),$$(sort $$(suffix $$($$(target)_src))))
         $$(target)_ld               := $$(CC)
@@ -286,9 +290,10 @@ define include_module
         ifneq (,$(filter $$($$(target)_to),$$(INSTALL_ALL)))
             $$(error $$($$(target)_to) declared in $(1) will overwrite a file from another module during install)
         endif
-    else
-        $$(target)_bin  := 1
-        $$(target)_to   := $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$(target)))$$(target_bin)
+    endif
+
+    ifneq (,$$(strip $$(bin)))
+        $$(target)_to   := $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$(target)))
         $$(target)_perm := $(BIN_PERM)
         INSTALL_DEFAULT += $$(target)
         INSTALL_ALL     += $$($$(target)_to)
@@ -427,18 +432,6 @@ $(LINK_CXX_CSUM_FILE): CSUM := $(LINK_CXX_CSUM)
 
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 
-# A quirk, since we use the same keyword to build both program
-# and test executables and later add install targets for these, we
-# have to filter out all binaries referenced with the 'test' keyword.
-#
-# Since we allow inter-module references we have to handle the
-# case where a target is specified in one module and later referenced
-# with 'test', so we have to filter out all test binaries after
-# all modules have been parsed. A bit ugly, but makes life a little
-# bit easier for the user.
-#
-INSTALL_DEFAULT := $(filter-out $(TESTS),$(INSTALL_DEFAULT))
-
 # In order to create a distribution archive, we list all files in SRCDIR
 # and exclude generated objects.
 #
@@ -448,6 +441,7 @@ DIST_INCLUDE := $(filter-out $(DIST_ARCHIVE),$(DIST_INCLUDE))
 DIST_INCLUDE := $(patsubst $(SRCDIR)/%,%,$(DIST_INCLUDE))
 
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
+$(foreach test,$(TESTS),$(eval $(call test_rule,$(test))))
 $(foreach file,$(INFO),$(eval $(call info_rule,$(file))))
 $(foreach file,$(INSTALL_DEFAULT),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(INSTALL_MAN),$(eval $(call install_rule,$(file),install-man)))
@@ -485,10 +479,6 @@ $(BUILDDIR)/%:
 	$(call mkdir,$(dir $@))
 	$(call run_cmd_green,LD,$@,$(LD) -o $@ $($(@)_obj) $(LDFLAGS))
 	$(if $($(@)_post),$(call run_cmd,POST,$@,$($(@)_post) $@),)
-
-$(BUILDDIR)/%.run:
-	$(call mkdir,$(dir $@))
-	$(call run_cmd,TEST,$<,$< && touch $@)
 
 $(BUILDDIR)/%.info: $(SRCDIR)/%.texi
 	$(call mkdir,$(dir $@))
@@ -547,9 +537,6 @@ dist: $(DIST_ARCHIVE)
 $(DIST_ARCHIVE): $(DIST_INCLUDE)
 	$(call run_cmd_green,TAR,$@,tar czf $@ $^)
 
-.PHONY: check
-check: $(TESTS)
-
 .PHONY: FORCE
 FORCE:
 
@@ -582,7 +569,6 @@ help:
 	@echo " uninstall        : Uninstall project."
 	@echo " info             : Generate info files".
 	@echo " dist             : Create a distribution archive."
-	@echo " check            : Run all tests, will build necessary dependencies."
 	@echo
 	@echo "Please see the README for more information."
 	@echo

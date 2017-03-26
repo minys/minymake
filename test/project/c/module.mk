@@ -1,4 +1,4 @@
-target := test_cc
+bin := test_cc
 src := c.cc
-test := test.sh
 cflags := -pipe
+test_script := test.sh

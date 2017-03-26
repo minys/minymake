@@ -1,2 +1,2 @@
-target := test_dupl
+bin := test_dupl
 src := main.c

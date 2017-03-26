@@ -1,3 +1,2 @@
-target := program_e
+bin := program_e
 src := main.c
-test := test_program

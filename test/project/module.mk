@@ -1,2 +1,2 @@
-target := program
+bin := program
 src := main.c

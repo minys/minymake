@@ -1,2 +1,2 @@
-target := test_program
+test := test_program
 src := test.c
