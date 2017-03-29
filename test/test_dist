@@ -41,6 +41,8 @@ tmp=$(mktemp)
 	echo e/test.mk
 	echo f/main.c
 	echo f/module.mk
+    echo g/main.c
+    echo g/module.mk
 	echo GNUmakefile
 	echo main.c
 	echo module.mk

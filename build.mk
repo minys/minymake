@@ -91,6 +91,7 @@ CSUM                  ?= sha1sum
 CXX                   ?= g++
 INSTALL               ?= install
 MAKEINFO              ?= makeinfo
+PKG_CONFIG            ?= pkg-config
 PRINTF                ?= printf
 
 AR                    := $(shell which $(AR) 2>/dev/null)
@@ -99,6 +100,7 @@ CSUM                  := $(shell which $(CSUM) 2>/dev/null)
 CXX                   := $(shell which $(CXX) 2>/dev/null)
 INSTALL               := $(shell which $(INSTALL) 2>/dev/null)
 MAKEINFO              := $(shell which $(MAKEINFO) 2>/dev/null)
+PKG_CONFIG            := $(shell which $(PKG_CONFIG) 2>/dev/null)
 PRINTF                := $(shell which $(PRINTF) 2>/dev/null)
 
 CC_SUFFIX             ?= .c
@@ -182,22 +184,23 @@ endif
 define include_module
 
     # Module keywords
-    bin              := # target binary (mandatory xor lib)
-    cflags           := # target specific CFLAGS (optional)
-    cxxflags         := # target specific CXXFLAGS (optional)
-    ldflags          := # target specific LDFLAGS (optional)
-    data             := # data file(s) (optional)
-    info             := # texi file(s) that should be converted to info file(s) (optional)
-    lib              := # target library (mandatory xor bin)
-    link_with        := # link target within the project
-    private_cflags   := # library private cflags
-    private_cxxflags := # library private cxxflags
-    private_ldflags  := # library private ldflags
-    man              := # target manual file(s) (optional)
-    post             := # post build command (optional)
-    pre              := # pre build command (optional)
-    src              := # target executable/library source (mandatory)
-    test             := # target executable/library test (optional)
+    bin                := # target binary (mandatory xor lib)
+    cflags             := # target specific CFLAGS (optional)
+    cxxflags           := # target specific CXXFLAGS (optional)
+    ldflags            := # target specific LDFLAGS (optional)
+    data               := # data file(s) (optional)
+    info               := # texi file(s) that should be converted to info file(s) (optional)
+    lib                := # target library (mandatory xor bin)
+    link_with          := # link target within the project
+    link_with_external := # link with external package using pkg-config (optional)
+    private_cflags     := # library private cflags
+    private_cxxflags   := # library private cxxflags
+    private_ldflags    := # library private ldflags
+    man                := # target manual file(s) (optional)
+    post               := # post build command (optional)
+    pre                := # pre build command (optional)
+    src                := # target executable/library source (mandatory)
+    test               := # target executable/library test (optional)
 
     # Internal variables related to keywords
     inc_dir     :=
@@ -309,6 +312,19 @@ define include_module
         $$(target)_cxxflags += $$(link_with_$$(link_with)_cxxflags)
         $$(target)_ldflags  += $$(link_with_$$(link_with)_ldflags)
         $$(target)_module   += $$(link_with_$$(link_with)_module)
+    endif
+
+    ifneq (,$$(strip $$(link_with_external)))
+        ifeq (,$$(strip $$(PKG_CONFIG)))
+            $$(error 'link_with_external' keyword present in $(1) but 'pkg-config' tool is not installed or missing from PATH)
+        endif
+        ifeq (,$$(shell $$(PKG_CONFIG) --exists $$(link_with_external) && echo exists))
+            $$(error $$(link_with_external) used in $(1) does not match any installed modules)
+        endif
+        
+        $$(target)_cflags   += $$(shell $$(PKG_CONFIG) --cflags $$(link_with_external))
+        $$(target)_cxxflags += $$($$(target)_cflags)
+        $$(target)_ldflags  += $$(shell $$(PKG_CONFIG) --libs $$(link_with_external))
     endif
 
     ifneq (,$$(strip $$(data)))
