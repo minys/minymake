@@ -94,14 +94,23 @@ MAKEINFO              ?= makeinfo
 PKG_CONFIG            ?= pkg-config
 PRINTF                ?= printf
 
-AR                    := $(shell which $(AR) 2>/dev/null)
-CC                    := $(shell which $(CC) 2>/dev/null)
-CSUM                  := $(shell which $(CSUM) 2>/dev/null)
-CXX                   := $(shell which $(CXX) 2>/dev/null)
-INSTALL               := $(shell which $(INSTALL) 2>/dev/null)
-MAKEINFO              := $(shell which $(MAKEINFO) 2>/dev/null)
-PKG_CONFIG            := $(shell which $(PKG_CONFIG) 2>/dev/null)
-PRINTF                := $(shell which $(PRINTF) 2>/dev/null)
+AR                    := $(if $(wildcard $(AR)),$(AR),$(shell which $(AR)))
+CC                    := $(if $(wildcard $(CC)),$(CC),$(shell which $(CC)))
+CSUM                  := $(if $(wildcard $(CSUM)),$(CSUM),$(shell which $(CSUM) 2>/dev/null))
+CXX                   := $(if $(wildcard $(CXX)),$(CXX),$(shell which $(CXX) 2>/dev/null))
+INSTALL               := $(if $(wildcard $(INSTALL)),$(INSTALL),$(shell which $(INSTALL) 2>/dev/null))
+MAKEINFO              := $(if $(wildcard $(MAKEINFO)),$(MAKEINFO),$(shell which $(MAKEINFO) 2>/dev/null))
+PKG_CONFIG            := $(if $(wildcard $(PKG_CONFIG)),$(PKG_CONFIG),$(shell which $(PKG_CONFIG) 2>/dev/null))
+PRINTF                := $(if $(wildcard $(PRINTF)),$(PRINTF),$(shell which $(PRINTF) 2>/dev/null))
+
+$(if $(AR),,$(error Unable to localte archiver (AR)))
+$(if $(CC),,$(error Unable to localte C compiler (CC)))
+$(if $(CSUM),,$(error Unable to localte checksum command(CSUM)))
+$(if $(CXX),,$(error Unable to localte C++ compiler (CXX)))
+$(if $(INSTALL),,$(error Unable to localte install command (INSTALL)))
+$(if $(MAKEINFO),,$(error Unable to localte makeinfo command (MAKEINFO)))
+$(if $(PKG_CONFIG),,$(error Unable to localte pkg_config command (PKG_CONFIG)))
+$(if $(PRINTF),,$(error Unable to localte printf command (PRINTF)))
 
 CC_SUFFIX             ?= .c
 CXX_SUFFIX            ?= .cc
