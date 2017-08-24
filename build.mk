@@ -246,7 +246,7 @@ define include_module
         link_with_$$(lib)_dep      := $$(abspath $$(output)/$$(target))
         link_with_$$(lib)_cflags   := -I$$(inc_dir) $$(cflags)
         link_with_$$(lib)_cxxflags := -I$$(inc_dir) $$(cxxflags)
-        link_with_$$(lib)_ldflags  := $$(ldflags) -L$$(lib_dir) -l$$(lib)
+        link_with_$$(lib)_ldflags  := -L$$(lib_dir) -l$$(lib)
         link_with_$$(lib)_module   := $$(abspath $(1))
     endif
 
@@ -270,6 +270,7 @@ define include_module
     $$(target)_ldflags  := $$(ldflags)
     $$(target)_module   := $$(abspath $(1))
     $$(target)_test_script := $$(abspath $$(addprefix $$(path)/,$$(test_script)))
+    $$(target)_link_with := $$(link_with)
 
     CLEAN   += $$(target)
     CLEAN   += $$($$(target)_obj)
@@ -292,7 +293,7 @@ define include_module
     ifeq ($$(LIB_SUFFIX),$$(suffix $$(target)))
         $$(target)_cflags   += -fpic
         $$(target)_cxxflags += -fpic
-        $$(target)_ldflags  += -fpic
+        $$(target)_ldflags  += -fpic -shared
         $$(target)_to       := $$(abspath $(DESTDIR)/$(LIBDIR)/$$(notdir $$(target)))
         $$(target)_perm     := $(LIB_PERM)
         INSTALL_DEFAULT     += $$(target)
@@ -313,14 +314,6 @@ define include_module
         ifneq (,$(filter $$($$(target)_to),$$(INSTALL_ALL)))
             $$(error $$($$(target)_to) declared in $(1) will overwrite a file from another module during install)
         endif
-    endif
-
-    ifneq (,$$(strip $$(link_with)))
-        $$(target)_link_dep += $$(link_with_$$(link_with)_dep)
-        $$(target)_cflags   += $$(link_with_$$(link_with)_cflags)
-        $$(target)_cxxflags += $$(link_with_$$(link_with)_cxxflags)
-        $$(target)_ldflags  += $$(link_with_$$(link_with)_ldflags)
-        $$(target)_module   += $$(link_with_$$(link_with)_module)
     endif
 
     ifneq (,$$(strip $$(link_with_external)))
@@ -412,19 +405,20 @@ $(1)_uninstall:
 endef
 
 define target_rule
-$$($(1)_obj): override CFLAGS += $$($(1)_cflags)
-$$($(1)_obj): override CXXFLAGS += $$($(1)_cxxflags)
+$$($(1)_obj): override CFLAGS += $$($(1)_cflags) $$(link_with_$$($(1)_link_with)_cflags)
+$$($(1)_obj): override CXXFLAGS += $$($(1)_cxxflags) $$(link_with_$$($(1)_link_with)_cxxflags)
 $$($(1)_obj): $$($(1)_module)
 $$($(1)_obj): $$($(1)_compile_checksum)
-$$($(1)_dep): override CFLAGS += $$($(1)_cflags)
-$$($(1)_dep): override CXXFLAGS += $$($(1)_cxxflags)
+$$($(1)_dep): override CFLAGS += $$($(1)_cflags) $$(link_with_$$($(1)_link_with)_cflags)
+$$($(1)_dep): override CXXFLAGS += $$($(1)_cxxflags) $$(link_with_$$($(1)_link_with)_cxxflags)
 $$($(1)_dep): $$($(1)_module)
 $$($(1)_dep): $$($(1)_compile_checksum)
 $$($(1)_run_test): $$($(1)_test) $(1)
 $(1): override LD := $$($(1)_ld)
-$(1): override LDFLAGS += $$($(1)_ldflags)
-$(1): $$($(1)_link_dep)
+$(1): override LDFLAGS += $$($(1)_ldflags) $$(link_with_$$($(1)_link_with)_ldflags)
+$(1): $$(link_with_$$($(1)_link_with)_dep)
 $(1): $$($(1)_module)
+$(1): $$(link_with_$$($(1)_link_with)_module)
 $(1): $$($(1)_link_checksum)
 $(1): $$($(1)_obj)
 endef
@@ -492,7 +486,8 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%$(CXX_SUFFIX)
 
 $(BUILDDIR)/%$(LIB_SUFFIX):
 	$(call mkdir,$(dir $@))
-	$(call run_cmd_green,LD,$@,$(LD) -o $@ $($(@)_obj) -shared $(LDFLAGS))
+	$(info LDFLAGS in rule $(LDFLAGS))
+	$(call run_cmd_green,LD,$@,$(LD) -o $@ $($(@)_obj) $(LDFLAGS))
 	$(if $($(@)_post),$(call run_cmd,POST,$@,$($(@)_post) $@),)
 
 $(BUILDDIR)/%$(ARCHIVE_SUFFIX):
