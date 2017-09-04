@@ -376,17 +376,22 @@ $(1)_uninstall:
 endef
 
 define target_rule
-$$($(1)_obj): override CFLAGS += $$($(1)_cflags) $$(link_with_$$($(1)_link_with)_cflags)
-$$($(1)_obj): override CXXFLAGS += $$($(1)_cxxflags) $$(link_with_$$($(1)_link_with)_cxxflags)
+$$($(1)_obj): override CFLAGS += $$($(1)_cflags)
+$$($(1)_obj): private EXTRA_CFLAGS := $$(link_with_$$($(1)_link_with)_cflags)
+$$($(1)_obj): override CXXFLAGS += $$($(1)_cxxflags)
+$$($(1)_obj): private EXTRA_CXXFLAGS += $$(link_with_$$($(1)_link_with)_cxxflags)
 $$($(1)_obj): $$($(1)_module)
 $$($(1)_obj): $$($(1)_compile_checksum)
-$$($(1)_dep): override CFLAGS += $$($(1)_cflags) $$(link_with_$$($(1)_link_with)_cflags)
-$$($(1)_dep): override CXXFLAGS += $$($(1)_cxxflags) $$(link_with_$$($(1)_link_with)_cxxflags)
+$$($(1)_dep): override CFLAGS += $$($(1)_cflags)
+$$($(1)_dep): private EXTRA_CFLAGS := $$(link_with_$$($(1)_link_with)_cflags)
+$$($(1)_dep): override CXXFLAGS += $$($(1)_cxxflags)
+$$($(1)_dep): private EXTRA_CXXFLAGS := $$(link_with_$$($(1)_link_with)_cxxflags)
 $$($(1)_dep): $$($(1)_module)
 $$($(1)_dep): $$($(1)_compile_checksum)
 $$($(1)_run_test): $$($(1)_test) $(1)
 $(1): override LD := $$($(1)_ld)
-$(1): override LDFLAGS += $$($(1)_ldflags) $$(link_with_$$($(1)_link_with)_ldflags)
+$(1): override LDFLAGS += $$($(1)_ldflags)
+$(1): private EXTRA_LDFLAGS := $$(link_with_$$($(1)_link_with)_ldflags)
 $(1): $$(link_with_$$($(1)_link_with)_dep)
 $(1): $$($(1)_module)
 $(1): $$(link_with_$$($(1)_link_with)_module)
@@ -395,7 +400,7 @@ $(1): $$($(1)_obj)
 endef
 
 define depends
-    $(call run_cmd_silent,$(strip $(2) $(3) -MT "$(patsubst %.d,%.o,$(1))" -M $(4) | sed 's,\(^.*.o:\),$@ \1,' > $(1)))
+    $(call run_cmd_silent,$(strip $(2) $(3) $(4) -MT "$(patsubst %.d,%.o,$(1))" -M $(5) | sed 's,\(^.*.o:\),$@ \1,' > $(1)))
 endef
 
 define mkdir
@@ -435,23 +440,22 @@ $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
 $(BUILDDIR)/%.d: $(SRCDIR)/%$(CC_SUFFIX)
 	$(call mkdir,$(dir $@))
-	$(call depends,$@,$(CC),$(CFLAGS),$<)
+	$(call depends,$@,$(CC),$(CFLAGS),$(EXTRA_CFLAGS),$<)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%$(CC_SUFFIX)
 	$(call mkdir,$(dir $@))
-	$(call run_cmd,CC,$@,$(CC) $(CFLAGS) -o $@ -c $<)
+	$(call run_cmd,CC,$@,$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -o $@ -c $<)
 
 $(BUILDDIR)/%.d: $(SRCDIR)/%$(CXX_SUFFIX)
 	$(call mkdir,$(dir $@))
-	$(call depends,$@,$(CXX),$(CXXFLAGS),$<)
+	$(call depends,$@,$(CXX),$(CXXFLAGS),$(EXTRA_CXXFLAGS),$<)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%$(CXX_SUFFIX)
 	$(call mkdir,$(dir $@))
-	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) -o $@ -c $<)
+	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) $(EXTRA_CXXFLAGS) -o $@ -c $<)
 
 $(BUILDDIR)/%$(LIB_SUFFIX):
 	$(call mkdir,$(dir $@))
-	$(info LDFLAGS in rule $(LDFLAGS))
 	$(call run_cmd_green,LD,$@,$(LD) -o $@ $($(@)_obj) $(LDFLAGS))
 	$(if $($(@)_post),$(call run_cmd,POST,$@,$($(@)_post) $@),)
 
@@ -462,7 +466,7 @@ $(BUILDDIR)/%$(ARCHIVE_SUFFIX):
 
 $(BUILDDIR)/%:
 	$(call mkdir,$(dir $@))
-	$(call run_cmd_green,LD,$@,$(LD) -o $@ $($(@)_obj) $(LDFLAGS))
+	$(call run_cmd_green,LD,$@,$(LD) -o $@ $($(@)_obj) $(LDFLAGS) $(EXTRA_LDFLAGS))
 	$(if $($(@)_post),$(call run_cmd,POST,$@,$($(@)_post) $@),)
 
 $(BUILDDIR)/%.checksum: FORCE
