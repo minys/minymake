@@ -24,10 +24,11 @@
 
  A module *might* declare the following variables:
 
-     target   : Name of the executable or library that this module is
-                responsible for. Only one executable or library is allowed per
-                module file and type is deducted from the precense of the suffix
-                '.so'.
+     bin      : Name of the executable that this module is responsible for. Only
+                one executable is allowed per module file.
+
+     lib      : Name of the library that this module is responsible for. Only
+                one executable is allowed per module file.
 
      src      : Whitespace separated list of source files used to build
                 'target'. Mandatory if 'target' is defined.
@@ -54,7 +55,6 @@
      cxxflags : Target specific CXXFLAGS.
      ldflags  : Target specific LDFLAGS.
      data     : Target data.
-     info     : Target documentation in GNU info format.
      man      : Target documentation in man format.
 
  Note that targets, source files etc should be referenced through a relative
@@ -90,7 +90,6 @@
      CC       : C compiler
      CXX      : C++ compiler
      INSTALL  : install command
-     MAKEINFO : makeinfo command
      PRINTF   : printf command
 
  Compiler and linker variables:
@@ -122,7 +121,6 @@
      DATAROOTDIR    : data (default: share)
      DOCDIR         : docs (default: doc)
      INCLUDEDIR     : header files (default: include)
-     INFODIR        : info files (default: DATAROOTDIR/info)
      LIBDIR         : libraries (default: lib)
      LIBEXECDIR     : libexec (default: libexec)
      LOCALSTATEDIR  : logs (default: var)
@@ -136,7 +134,6 @@
 
      BIN_PERM       : binaries (default: 755)
      DATA_PERM      : data (default: 644)
-     INFO_PERM      : info (default: 644)
      LIB_PERM       : libraries (default: 644)
      MAN_PERM       : manuals (default: 644)
 
@@ -161,7 +158,6 @@
      installcheck     : Run post-install checks.
      install-strip    : Install and strip binaries.
      uninstall        : Uninstall project.
-     info             : Generate info files.
      dist             : Create a distribution archive.
      check            : Run all tests, will build necessary dependencies.
 
