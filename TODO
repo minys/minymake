@@ -1,7 +1,3 @@
-TODO it is quite cumbersome to handle includes/libraries during build and
-     linking, is it possible to automagically calculate the needed flags by
-     analyzing the source?
-
 TODO default value of LIBDIR in order to install 64/32 bit libs into correct
      location
 

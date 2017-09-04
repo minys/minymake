@@ -74,13 +74,6 @@ DATA_PERM             ?= 644
 LIB_PERM              ?= 644
 MAN_PERM              ?= 644
 
-# Distribution variables
-PROJECT               ?= unknown
-MAJOR_VERSION         ?= 0
-MINOR_VERSION         ?= 0
-DIST_ARCHIVE          := $(BUILDDIR)/$(PROJECT)-$(MAJOR_VERSION).$(MINOR_VERSION).tar.gz
-CLEAN                 += $(DIST_ARCHIVE)
-
 # External tools
 AR                    ?= ar
 AR                    := $(if $(wildcard $(AR)),$(AR),$(shell which $(AR)))
@@ -422,15 +415,6 @@ $(LINK_CC_CSUM_FILE): CSUM := $(LINK_CC_CSUM)
 $(LINK_CXX_CSUM_FILE): CSUM := $(LINK_CXX_CSUM)
 
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
-
-# In order to create a distribution archive, we list all files in SRCDIR
-# and exclude generated objects.
-#
-DIST_INCLUDE := $(shell find $(SRCDIR) ! -type d -a ! -name '*.gcno' -a ! -name '*.o' -a ! -name '*.gz' -a ! -name '*.so' -a ! -name '*.d' -a ! -name '*.checksum')
-DIST_INCLUDE := $(filter-out $(TARGETS),$(DIST_INCLUDE))
-DIST_INCLUDE := $(filter-out $(DIST_ARCHIVE),$(DIST_INCLUDE))
-DIST_INCLUDE := $(patsubst $(SRCDIR)/%,%,$(DIST_INCLUDE))
-
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
 $(foreach test,$(TESTS),$(eval $(call test_rule,$(test))))
 $(foreach file,$(INSTALL_DEFAULT),$(eval $(call install_rule,$(file),install)))
@@ -512,12 +496,6 @@ install-strip: install
 
 .PHONY: uninstall
 uninstall:
-
-.PHONY: dist
-dist: $(DIST_ARCHIVE)
-
-$(DIST_ARCHIVE): $(DIST_INCLUDE)
-	$(call run_cmd_green,TAR,$@,tar czf $@ $^)
 
 .PHONY: FORCE
 FORCE:
