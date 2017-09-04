@@ -43,7 +43,6 @@ MAKEFLAGS += --no-builtin-variables
 
 CLEAN                 := # generated objects to be removed
 DEPS                  := # dependency files
-INFO                  := # info files to generate
 TARGETS               := # all executables/libraries
 TESTS                 := # tests
 
@@ -59,7 +58,6 @@ DATADIR               ?= share
 DATAROOTDIR           ?= share
 DOCDIR                ?= doc
 INCLUDEDIR            ?= include
-INFODIR               ?= $(DATAROOTDIR)/info
 LIBDIR                ?= lib
 LIBEXECDIR            ?= libexec
 LOCALSTATEDIR         ?= var
@@ -73,7 +71,6 @@ SYSCONFDIR            ?= etc
 # Default permissions when installing files
 BIN_PERM              ?= 755
 DATA_PERM             ?= 644
-INFO_PERM             ?= 644
 LIB_PERM              ?= 644
 MAN_PERM              ?= 644
 
@@ -100,9 +97,6 @@ CXX                   := $(if $(wildcard $(CXX)),$(CXX),$(shell which $(CXX) 2>/
 INSTALL               ?= install
 INSTALL               := $(if $(wildcard $(INSTALL)),$(INSTALL),$(shell which $(INSTALL) 2>/dev/null))
                          $(if $(INSTALL),,$(error Unable to localte install command (INSTALL)))
-MAKEINFO              ?= makeinfo
-MAKEINFO              := $(if $(wildcard $(MAKEINFO)),$(MAKEINFO),$(shell which $(MAKEINFO) 2>/dev/null))
-                         $(if $(MAKEINFO),,$(error Unable to localte makeinfo command (MAKEINFO)))
 PKG_CONFIG            ?= pkg-config
 PKG_CONFIG            := $(if $(wildcard $(PKG_CONFIG)),$(PKG_CONFIG),$(shell which $(PKG_CONFIG) 2>/dev/null))
                          $(if $(PKG_CONFIG),,$(error Unable to localte pkg_config command (PKG_CONFIG)))
@@ -196,7 +190,6 @@ define include_module
     cxxflags           := # target specific CXXFLAGS (optional)
     ldflags            := # target specific LDFLAGS (optional)
     data               := # data file(s) (optional)
-    info               := # texi file(s) that should be converted to info file(s) (optional)
     lib                := # target library (mandatory xor bin)
     link_with          := # link target within the project
     link_with_external := # link with external package using pkg-config (optional)
@@ -214,7 +207,6 @@ define include_module
     lib_dir     :=
     target      :=
     target_data :=
-    target_info :=
     target_man  :=
 
     include $(1)
@@ -353,25 +345,6 @@ define include_module
         endif
     endif
 
-    ifneq (,$$(strip $$(info)))
-        ifeq (,$$(strip $$(MAKEINFO)))
-            $$(error 'info' keyword present in $(1) but 'makeinfo' tool is not installed or missing from PATH)
-        endif
-
-        target_info             := $$(abspath $$(output)/$$(patsubst %.texi,%.info,$$(info)))
-        $$(target_info)_to      := $$(abspath $(DESTDIR)/$(INFODIR)/$(info))
-        $$(target_info)_perm    := $(INFO_PERM)
-        $$(target_info)_nostrip := 1
-        INFO                    += $$(target_info)
-        INSTALL_INFO            += $$(target_info)
-        INSTALL_ALL             += $$($$(target_info)_to)
-        CLEAN                   += $$(target_info)
-
-        ifneq (,$(filter $$($$(target_info)_to),$$(INSTALL_ALL)))
-            $$(error $$($$(target_info)_to) declared in $(1) will overwrite a file from another module during install)
-        endif
-    endif
-
 endef
 
 define clean_rule
@@ -421,10 +394,6 @@ $(1): $$($(1)_link_checksum)
 $(1): $$($(1)_obj)
 endef
 
-define info_rule
-info: $(1)
-endef
-
 define depends
     $(call run_cmd_silent,$(strip $(2) $(3) -MT "$(patsubst %.d,%.o,$(1))" -M $(4) | sed 's,\(^.*.o:\),$@ \1,' > $(1)))
 endef
@@ -459,10 +428,8 @@ DIST_INCLUDE := $(patsubst $(SRCDIR)/%,%,$(DIST_INCLUDE))
 
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
 $(foreach test,$(TESTS),$(eval $(call test_rule,$(test))))
-$(foreach file,$(INFO),$(eval $(call info_rule,$(file))))
 $(foreach file,$(INSTALL_DEFAULT),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(INSTALL_MAN),$(eval $(call install_rule,$(file),install-man)))
-$(foreach file,$(INSTALL_INFO),$(eval $(call install_rule,$(file),install-info)))
 $(foreach file,$(wildcard $(INSTALL_ALL)),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
@@ -497,10 +464,6 @@ $(BUILDDIR)/%:
 	$(call mkdir,$(dir $@))
 	$(call run_cmd_green,LD,$@,$(LD) -o $@ $($(@)_obj) $(LDFLAGS))
 	$(if $($(@)_post),$(call run_cmd,POST,$@,$($(@)_post) $@),)
-
-$(BUILDDIR)/%.info: $(SRCDIR)/%.texi
-	$(call mkdir,$(dir $@))
-	$(call run_cmd,INFO,$@,$(MAKEINFO) -o $@ $<)
 
 $(BUILDDIR)/%.checksum: FORCE
 	$(call verify_input,$@,$(CSUM))
@@ -546,9 +509,6 @@ install-strip: install
 .PHONY: uninstall
 uninstall:
 
-.PHONY: info
-info:
-
 .PHONY: dist
 dist: $(DIST_ARCHIVE)
 
@@ -585,7 +545,6 @@ help:
 	@echo " install-man      : Install manual page(s)."
 	@echo " install-strip    : Install and strip binaries."
 	@echo " uninstall        : Uninstall project."
-	@echo " info             : Generate info files".
 	@echo " dist             : Create a distribution archive."
 	@echo
 	@echo "Please see the README for more information."
