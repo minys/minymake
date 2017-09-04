@@ -86,31 +86,29 @@ CLEAN                 += $(DIST_ARCHIVE)
 
 # External tools
 AR                    ?= ar
-CC                    ?= gcc
-CSUM                  ?= sha1sum
-CXX                   ?= g++
-INSTALL               ?= install
-MAKEINFO              ?= makeinfo
-PKG_CONFIG            ?= pkg-config
-PRINTF                ?= printf
-
 AR                    := $(if $(wildcard $(AR)),$(AR),$(shell which $(AR)))
+                         $(if $(AR),,$(error Unable to localte archiver (AR)))
+CC                    ?= gcc
 CC                    := $(if $(wildcard $(CC)),$(CC),$(shell which $(CC)))
+                         $(if $(CC),,$(error Unable to localte C compiler (CC)))
+CSUM                  ?= sha1sum
 CSUM                  := $(if $(wildcard $(CSUM)),$(CSUM),$(shell which $(CSUM) 2>/dev/null))
+                         $(if $(CSUM),,$(error Unable to localte checksum command(CSUM)))
+CXX                   ?= g++
 CXX                   := $(if $(wildcard $(CXX)),$(CXX),$(shell which $(CXX) 2>/dev/null))
+                         $(if $(CXX),,$(error Unable to localte C++ compiler (CXX)))
+INSTALL               ?= install
 INSTALL               := $(if $(wildcard $(INSTALL)),$(INSTALL),$(shell which $(INSTALL) 2>/dev/null))
+                         $(if $(INSTALL),,$(error Unable to localte install command (INSTALL)))
+MAKEINFO              ?= makeinfo
 MAKEINFO              := $(if $(wildcard $(MAKEINFO)),$(MAKEINFO),$(shell which $(MAKEINFO) 2>/dev/null))
+                         $(if $(MAKEINFO),,$(error Unable to localte makeinfo command (MAKEINFO)))
+PKG_CONFIG            ?= pkg-config
 PKG_CONFIG            := $(if $(wildcard $(PKG_CONFIG)),$(PKG_CONFIG),$(shell which $(PKG_CONFIG) 2>/dev/null))
+                         $(if $(PKG_CONFIG),,$(error Unable to localte pkg_config command (PKG_CONFIG)))
+PRINTF                ?= printf
 PRINTF                := $(if $(wildcard $(PRINTF)),$(PRINTF),$(shell which $(PRINTF) 2>/dev/null))
-
-$(if $(AR),,$(error Unable to localte archiver (AR)))
-$(if $(CC),,$(error Unable to localte C compiler (CC)))
-$(if $(CSUM),,$(error Unable to localte checksum command(CSUM)))
-$(if $(CXX),,$(error Unable to localte C++ compiler (CXX)))
-$(if $(INSTALL),,$(error Unable to localte install command (INSTALL)))
-$(if $(MAKEINFO),,$(error Unable to localte makeinfo command (MAKEINFO)))
-$(if $(PKG_CONFIG),,$(error Unable to localte pkg_config command (PKG_CONFIG)))
-$(if $(PRINTF),,$(error Unable to localte printf command (PRINTF)))
+                         $(if $(PRINTF),,$(error Unable to localte printf command (PRINTF)))
 
 CC_SUFFIX             ?= .c
 CXX_SUFFIX            ?= .cc
