@@ -46,14 +46,16 @@ DEPS                  := # dependency files
 TARGETS               := # all executables/libraries
 TESTS                 := # tests
 
-# Standard GNU variables related to installation
 INSTALL_ALL           := # list of all files to install
 INSTALL_DEFAULT       := # binaries/libraries/data files to install
 INSTALL_MAN           := # man files to install
 UNINSTALL             := # things to uninstall
 
-BINDIR                ?= bin
 BUILDDIR              ?= $(abspath $(CURDIR))
+SRCDIR                := $(abspath $(CURDIR))
+
+# Installation directories
+BINDIR                ?= bin
 DATADIR               ?= share
 DATAROOTDIR           ?= share
 DOCDIR                ?= doc
@@ -65,7 +67,6 @@ MANDIR                ?= $(DATAROOTDIR)/man
 RUNSTATEDIR           ?= run
 SBINDIR               ?= sbin
 SHAREDSTATEDIR        ?= com
-SRCDIR                := $(abspath $(CURDIR))
 SYSCONFDIR            ?= etc
 
 # Default permissions when installing files
