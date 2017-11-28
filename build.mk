@@ -44,7 +44,6 @@ MAKEFLAGS += --no-builtin-variables
 CLEAN                 := # generated objects to be removed
 DEPS                  := # dependency files
 TARGETS               := # all executables/libraries
-TESTS                 := # tests
 
 INSTALL_ALL           := # list of all files to install
 INSTALL_DEFAULT       := # binaries/libraries/data files to install
@@ -417,7 +416,6 @@ $(LINK_CXX_CSUM_FILE): CSUM := $(LINK_CXX_CSUM)
 
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
-$(foreach test,$(TESTS),$(eval $(call test_rule,$(test))))
 $(foreach file,$(INSTALL_DEFAULT),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(INSTALL_MAN),$(eval $(call install_rule,$(file),install-man)))
 $(foreach file,$(wildcard $(INSTALL_ALL)),$(eval $(call uninstall_rule,$(file))))
