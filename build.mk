@@ -378,7 +378,6 @@ $(1): override LDFLAGS += $$($(1)_ldflags)
 $(1): private EXTRA_LDFLAGS := $$(link_with_$$($(1)_link_with)_ldflags)
 $(1): $$(link_with_$$($(1)_link_with)_dep)
 $(1): $$($(1)_module)
-$(1): $$(link_with_$$($(1)_link_with)_module)
 $(1): $$($(1)_link_checksum)
 $(1): $$($(1)_obj)
 endef
