@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016-2017, Mikael Nyström
+# Copyright (c) 2016-2018, Mikael Nyström
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
