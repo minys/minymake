@@ -56,73 +56,64 @@ test_step ()
 
 assert_equal ()
 {
-	set +o errexit
-	test ${1} -eq ${2}
-	result=$?
+	local result=0
+
+	test ${1} -eq ${2} || result=$?
 	if [ "${result}" -ne 0 ] && [ -n "${3}" ]; then
 		FAILURE="${3}"
 	else
 		FAILURE="assert_equal failed (${1} not equal to ${2})"
 	fi
-	set -o errexit
 
 	return ${result}
 }
 
 assert_exist ()
 {
+	local result=0
 	local object=$(readlink -m ${1})
 
-	set +o errexit
-	${test} -e ${object}
-	result=$?
+	${test} -e ${object} || result=$?
 	[ "${result}" -ne 0 ] &&
 		FAILURE="should exist but does not: ${object}"
-	set -o errexit
 
 	return ${result}
 }
 
 assert_not_exist ()
 {
+	local result=0
 	local object=$(readlink -m ${1})
 
-	set +o errexit
-	${test} ! -e ${object}
-	result=$?
+	${test} ! -e ${object} || result=$?
 	[ "${result}" -ne 0 ] &&
 		FAILURE="should not exist but does: ${object}"
-	set -o errexit
 
 	return ${result}
 }
 
 assert_newer_than ()
 {
+	local result=0
 	local file_a=$(readlink -m ${1})
 	local file_b=$(readlink -m ${2})
 
-	set +o errexit
-	${test} ${file_a} -nt ${file_b}
-	result=$?
+	${test} ${file_a} -nt ${file_b} || result=$?
 	[ "${result}" -ne 0 ] &&
 		FAILURE="${file_a} should be newer than ${file_b}"
-	set -o errexit
 
 	return ${result}
 }
 
 assert_older_than ()
 {
+	local result=0
 	local file_a=$(readlink -m ${1})
 	local file_b=$(readlink -m ${2})
 
-	set +o errexit
-	${test} ${file_a} -ot ${file_b}
-	result=$?
+	${test} ${file_a} -ot ${file_b} || result=$?
 	[ "${result}" -ne 0 ] &&
 		FAILURE="${file_a} should be newer than ${file_b}"
-	set -o errexit
 
 	return ${result}
 }
@@ -138,91 +129,53 @@ assert_clean ()
 {
 	test_step "Verify that build output was removed"
 
-	set +o errexit
 	for file in ${all}; do
-		${test} -e ${file}
-		result=$?
-		if [ "${result}" -eq 0 ]; then
-			FAILURE="should not exist but does: ${file}"
-			result=1
-			break
-		else
-			result=0
-		fi
+		assert_not_exist ${file} || return 1
 	done
-	set -o errexit
 
-	return ${result}
+	return 0
 }
 
 assert_full_build ()
 {
 	test_step "Verify build output"
 
-	set +o errexit
 	for file in ${all}; do
-		${test} -e ${file}
-		result=$?
-		if [ "${result}" -ne 0 ]; then
-			FAILURE="should exist but does not: ${file}"
-			break
-		fi
+		assert_exist ${file} || return 1
 	done
-	set -o errexit
 
-	return ${result}
+	return 0
 }
 
 assert_full_static_build ()
 {
 	test_step "Verify static build output"
 
-	set +o errexit
 	for file in ${all_static}; do
-		${test} -e ${file}
-		result=$?
-		if [ "${result}" -ne 0 ]; then
-			FAILURE="should exist but does not: ${file}"
-			break
-		fi
+		assert_exist ${file} || return 1
 	done
-	set -o errexit
 
-	return ${result}
+	return 0
 }
 
 assert_full_build_no_tests ()
 {
 	test_step "Verify build output"
 
-	set +o errexit
 	for file in ${all_no_tests}; do
-		${test} -e ${file}
-		result=$?
-		if [ "${result}" -ne 0 ]; then
-			FAILURE="should exist but does not: ${file}"
-			break
-		fi
+		assert_exist ${file} || return 1
 	done
-	set -o errexit
 
-	return ${result}
+	return 0
 }
 
 assert_full_build_coverage ()
 {
 	test_step "Verify build output (including coverage)"
 
-	set +o errexit
 	for file in ${all_coverage}; do
-		${test} -e ${file}
-		result=$?
-		if [ "${result}" -ne 0 ]; then
-			FAILURE="should exist but does not: ${file}"
-			break
-		fi
+		assert_exist ${file} || return 1
 	done
-	set -o errexit
 
-	return ${result}
+	return 0
 }
