@@ -57,16 +57,10 @@ SRCDIR                := $(abspath $(CURDIR))
 BINDIR                ?= bin
 DATADIR               ?= share
 DATAROOTDIR           ?= share
-DOCDIR                ?= doc
 INCLUDEDIR            ?= include
 LIBDIR                ?= lib
 LIBEXECDIR            ?= libexec
-LOCALSTATEDIR         ?= var
 MANDIR                ?= $(DATAROOTDIR)/man
-RUNSTATEDIR           ?= run
-SBINDIR               ?= sbin
-SHAREDSTATEDIR        ?= com
-SYSCONFDIR            ?= etc
 
 # Default permissions when installing files
 BIN_PERM              ?= 755
@@ -526,7 +520,6 @@ help:
 	@echo " install-man      : Install manual page(s)."
 	@echo " install-strip    : Install and strip binaries."
 	@echo " uninstall        : Uninstall project."
-	@echo " dist             : Create a distribution archive."
 	@echo
 	@echo "Please see the README for more information."
 	@echo
