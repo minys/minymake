@@ -33,28 +33,14 @@
      src      : Whitespace separated list of source files used to build
                 'target'. Mandatory if 'target' is defined.
 
-     test     : Test program that will be run whenever the module target is
-                rebuilt. Unless the test program is pre-compiled, a separate
-                module using the same path needs to declare a target matching
-                the test binary name. Example, module A declares:
-
-                  target := foo
-                  src    := foo.c
-                  test   := bar
-
-                where 'bar' is a shell script. Nothing else needs to be done in
-                order for tests to be run as target in module A is rebuilt. If
-                however, 'bar' is the name of a binary which is yet to be built,
-                a separate module needs to define 'bar' as a target:
-
-                  target := bar
-                  src    := bar.c
-
-                'bar' will then be marked as a dependency for 'foo' in module A.
      cflags   : Target specific CFLAGS.
+
      cxxflags : Target specific CXXFLAGS.
+
      ldflags  : Target specific LDFLAGS.
+
      data     : Target data.
+
      man      : Target documentation in man format.
 
  Note that targets, source files etc should be referenced through a relative
@@ -123,12 +109,7 @@
      INCLUDEDIR     : header files (default: include)
      LIBDIR         : libraries (default: lib)
      LIBEXECDIR     : libexec (default: libexec)
-     LOCALSTATEDIR  : logs (default: var)
      MANDIR         : manuals (default: DATAROOTDIR/man)
-     RUNSTATEDIR    : running state (default: run)
-     SBINDIR        : system binaries (default: sbin)
-     SHAREDSTATEDIR : shared state (default: com)
-     SYSCONFDIR     : configuration files (default: etc)
      
  Permissions used while installing:
 
@@ -158,8 +139,6 @@
      installcheck     : Run post-install checks.
      install-strip    : Install and strip binaries.
      uninstall        : Uninstall project.
-     dist             : Create a distribution archive.
-     check            : Run all tests, will build necessary dependencies.
 
 ## Example
 
