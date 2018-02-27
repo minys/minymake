@@ -81,8 +81,6 @@ INSTALL               ?= install
 INSTALL               := $(if $(wildcard $(INSTALL)),$(INSTALL),$(shell which $(INSTALL) 2>/dev/null))
 PKG_CONFIG            ?= pkg-config
 PKG_CONFIG            := $(if $(wildcard $(PKG_CONFIG)),$(PKG_CONFIG),$(shell which $(PKG_CONFIG) 2>/dev/null))
-PRINTF                ?= printf
-PRINTF                := $(if $(wildcard $(PRINTF)),$(PRINTF),$(shell which $(PRINTF) 2>/dev/null))
 
 CC_SUFFIX             ?= .c
 CXX_SUFFIX            ?= .cc
@@ -150,15 +148,15 @@ ifdef VERBOSE
     endef
 else
     define run_cmd
-        @$(PRINTF) ' %-8s \e[0;20m%s\e[0m\n' "$(1)" "$(2)"
+        @printf ' %-8s \e[0;20m%s\e[0m\n' "$(1)" "$(2)"
         @$(strip $(3))
     endef
     define run_cmd_red
-        @$(PRINTF)' %-8s \e[1;31m%s\e[0m\n' "$(1)" "$(2)"
+        @printf' %-8s \e[1;31m%s\e[0m\n' "$(1)" "$(2)"
         @$(strip $(3))
     endef
     define run_cmd_green
-        @$(PRINTF) ' %-8s \e[1;32m%s\e[0m\n' "$(1)" "$(2)"
+        @printf ' %-8s \e[1;32m%s\e[0m\n' "$(1)" "$(2)"
         @$(strip $(3))
     endef
     define run_cmd_silent
