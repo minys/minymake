@@ -70,26 +70,19 @@ MAN_PERM              ?= 644
 
 # External tools
 AR                    ?= ar
-AR                    := $(if $(wildcard $(AR)),$(AR),$(shell which $(AR)))
-                         $(if $(AR),,$(error Unable to localte archiver (AR)))
+AR                    := $(if $(wildcard $(AR)),$(AR),$(shell which $(AR) 2>/dev/null))
 CC                    ?= gcc
-CC                    := $(if $(wildcard $(CC)),$(CC),$(shell which $(CC)))
-                         $(if $(CC),,$(error Unable to localte C compiler (CC)))
+CC                    := $(if $(wildcard $(CC)),$(CC),$(shell which $(CC) 2>/dev/null))
 CSUM                  ?= sha1sum
 CSUM                  := $(if $(wildcard $(CSUM)),$(CSUM),$(shell which $(CSUM) 2>/dev/null))
-                         $(if $(CSUM),,$(error Unable to localte checksum command(CSUM)))
 CXX                   ?= g++
 CXX                   := $(if $(wildcard $(CXX)),$(CXX),$(shell which $(CXX) 2>/dev/null))
-                         $(if $(CXX),,$(error Unable to localte C++ compiler (CXX)))
 INSTALL               ?= install
 INSTALL               := $(if $(wildcard $(INSTALL)),$(INSTALL),$(shell which $(INSTALL) 2>/dev/null))
-                         $(if $(INSTALL),,$(error Unable to localte install command (INSTALL)))
 PKG_CONFIG            ?= pkg-config
 PKG_CONFIG            := $(if $(wildcard $(PKG_CONFIG)),$(PKG_CONFIG),$(shell which $(PKG_CONFIG) 2>/dev/null))
-                         $(if $(PKG_CONFIG),,$(error Unable to localte pkg_config command (PKG_CONFIG)))
 PRINTF                ?= printf
 PRINTF                := $(if $(wildcard $(PRINTF)),$(PRINTF),$(shell which $(PRINTF) 2>/dev/null))
-                         $(if $(PRINTF),,$(error Unable to localte printf command (PRINTF)))
 
 CC_SUFFIX             ?= .c
 CXX_SUFFIX            ?= .cc
@@ -110,30 +103,34 @@ STATIC_CFLAGS         ?= -static
 STATIC_CXXFLAGS       ?= -static
 STATIC_LDFLAGS        ?= -static
 
+IS_GOAL_STATIC        := $(filter static,$(MAKECMDGOALS))
+IS_GOAL_CLEAN         := $(filter clean,$(MAKECMDGOALS))
+IS_GOAL_HELP          := $(filter help,$(MAKECMDGOALS))
+
 # Input data is hashed and stored between builds in order to detect changes to
 # compiler and/or compiler flags passed on the command line. In case a change
 # is detected, affected targets will be rebuilt.
 #
-CC_CSUM               := $(shell $(CSUM) $(CC))
-CXX_CSUM              := $(shell $(CSUM) $(CXX))
-COMPILE_CC_CSUM       := $(shell echo $(CC_CSUM) $(CFLAGS) | $(CSUM))
-COMPILE_CXX_CSUM      := $(shell echo $(CXX_CSUM) $(CXXFLAGS) | $(CSUM))
-LINK_CC_CSUM          := $(shell echo $(CC_CSUM) $(LDFLAGS) | $(CSUM))
-LINK_CXX_CSUM         := $(shell echo $(CXX_CSUM) $(LDFLAGS) | $(CSUM))
-
-COMPILE_CC_CSUM_FILE  := $(BUILDDIR)/.compile.cc.checksum
-COMPILE_CXX_CSUM_FILE := $(BUILDDIR)/.compile.cxx.checksum
-LINK_CC_CSUM_FILE     := $(BUILDDIR)/.link.cc.checksum
-LINK_CXX_CSUM_FILE    := $(BUILDDIR)/.link.cxx.checksum
-
-CLEAN                 += $(COMPILE_CC_CSUM_FILE)
-CLEAN                 += $(COMPILE_CXX_CSUM_FILE)
-CLEAN                 += $(LINK_CC_CSUM_FILE)
-CLEAN                 += $(LINK_CXX_CSUM_FILE)
-
-IS_GOAL_STATIC        := $(filter static,$(MAKECMDGOALS))
-IS_GOAL_CLEAN         := $(filter clean,$(MAKECMDGOALS))
-IS_GOAL_HELP          := $(filter help,$(MAKECMDGOALS))
+ifneq ($(CSUM),)
+    ifneq ($(CC),)
+        CC_CSUM              := $(shell $(CSUM) $(CC))
+        COMPILE_CC_CSUM      := $(shell echo $(CC_CSUM) $(CFLAGS) | $(CSUM))
+        LINK_CC_CSUM         := $(shell echo $(CC_CSUM) $(LDFLAGS) | $(CSUM))
+        COMPILE_CC_CSUM_FILE := $(BUILDDIR)/.compile.cc.checksum
+        LINK_CC_CSUM_FILE    := $(BUILDDIR)/.link.cc.checksum
+        CLEAN                += $(COMPILE_CC_CSUM_FILE)
+        CLEAN                += $(LINK_CC_CSUM_FILE)
+    endif
+    ifneq ($(CXX),)
+        CXX_CSUM              := $(shell $(CSUM) $(CXX))
+        COMPILE_CXX_CSUM      := $(shell echo $(CXX_CSUM) $(CXXFLAGS) | $(CSUM))
+        LINK_CXX_CSUM         := $(shell echo $(CXX_CSUM) $(LDFLAGS) | $(CSUM))
+        COMPILE_CXX_CSUM_FILE := $(BUILDDIR)/.compile.cxx.checksum
+        LINK_CXX_CSUM_FILE    := $(BUILDDIR)/.link.cxx.checksum
+        CLEAN                 += $(COMPILE_CXX_CSUM_FILE)
+        CLEAN                 += $(LINK_CXX_CSUM_FILE)
+    endif
+endif
 
 
 # -- [ Macros ] ----------------------------------------------------------------
@@ -217,6 +214,7 @@ define include_module
         inc_dir := $$(abspath $$(path))
 
         ifneq (,$$(strip $$(IS_GOAL_STATIC)))
+            $$(if $$(AR),,$$(error Unable to locate archiver))
             target := $$(patsubst %$$(LIB_SUFFIX),%$$(ARCHIVE_SUFFIX),$$(target))
         endif
 
@@ -256,10 +254,12 @@ define include_module
     TARGETS += $$(target)
 
     ifeq ($$(CC_SUFFIX),$$(sort $$(suffix $$($$(target)_src))))
+        $$(if $$(CC),,$$(error Unable to locate C compiler))
         $$(target)_ld               := $$(CC)
         $$(target)_compile_checksum := $$(COMPILE_CC_CSUM_FILE)
         $$(target)_link_checksum    := $$(LINK_CC_CSUM_FILE)
     else
+        $$(if $$(CXX),,$$(error Unable to locate C++ compiler))
         $$(target)_ld               := $$(CXX)
         $$(target)_compile_checksum := $$(COMPILE_CXX_CSUM_FILE)
         $$(target)_link_checksum    := $$(LINK_CXX_CSUM_FILE)
@@ -292,9 +292,8 @@ define include_module
     endif
 
     ifneq (,$$(strip $$(link_with_external)))
-        ifeq (,$$(strip $$(PKG_CONFIG)))
-            $$(error 'link_with_external' keyword present in $(1) but 'pkg-config' tool is not installed or missing from PATH)
-        endif
+        $$(if $$(PKG_CONFIG),,$$(error Unable to locate pkg-config))
+
         ifeq (,$$(shell $$(PKG_CONFIG) --exists $$(link_with_external) && echo exists))
             $$(error $$(link_with_external) used in $(1) does not match any installed modules)
         endif
@@ -399,10 +398,15 @@ endef
 
 default: release
 
+ifdef COMPILE_CC_CSUM_FILE
 $(COMPILE_CC_CSUM_FILE): CSUM := $(COMPILE_CC_CSUM)
-$(COMPILE_CXX_CSUM_FILE): CSUM := $(COMPILE_CXX_CSUM)
 $(LINK_CC_CSUM_FILE): CSUM := $(LINK_CC_CSUM)
+endif
+
+ifdef COMPILE_CXX_CSUM_FILE
+$(COMPILE_CXX_CSUM_FILE): CSUM := $(COMPILE_CXX_CSUM)
 $(LINK_CXX_CSUM_FILE): CSUM := $(LINK_CXX_CSUM)
+endif
 
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
