@@ -128,6 +128,8 @@ ifneq ($(CSUM),)
         CLEAN                 += $(COMPILE_CXX_CSUM_FILE)
         CLEAN                 += $(LINK_CXX_CSUM_FILE)
     endif
+else
+    $(warning Disabling rebuilding when commandline input changes (no checksum tool available))
 endif
 
 
