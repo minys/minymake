@@ -148,15 +148,15 @@ ifdef VERBOSE
     endef
 else
     define run_cmd
-        @printf ' %-8s \e[0;20m%s\e[0m\n' "$(1)" "$(2)"
+        @printf ' %-8s \e[0;20m%s\e[0m\n' "$(1)" "$(subst $(SRCDIR)/,,$(2))"
         @$(strip $(3))
     endef
     define run_cmd_red
-        @printf' %-8s \e[1;31m%s\e[0m\n' "$(1)" "$(2)"
+        @printf' %-8s \e[1;31m%s\e[0m\n' "$(1)" "$(subst $(SRCDIR)/,,$(2))"
         @$(strip $(3))
     endef
     define run_cmd_green
-        @printf ' %-8s \e[1;32m%s\e[0m\n' "$(1)" "$(2)"
+        @printf ' %-8s \e[1;32m%s\e[0m\n' "$(1)" "$(subst $(SRCDIR)/,,$(2))"
         @$(strip $(3))
     endef
     define run_cmd_silent
