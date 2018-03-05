@@ -18,20 +18,31 @@ test_step 'Verify installation'
 for program in ${programs}; do
 	assert_exist ${tmpdir}/bin/$(basename ${program})
 done
+for system_program in ${system_programs}; do
+	assert_exist ${tmpdir}/sbin/$(basename ${system_program})
+done
 for library in ${libraries}; do
 	assert_exist ${tmpdir}/lib/$(basename ${library})
 done
 for data in ${data} ${libdata}; do
 	assert_exist ${tmpdir}/share/$(basename ${data})
 done
+
 echo ${programs} | tr ' ' '\n' | sort > ${tmpdir}/expected.programs
 ls -1 ${tmpdir}/bin/ | sort > ${tmpdir}/installed.programs
 built_programs=$(echo ${programs} | wc -w)
 installed_programs=$(ls -1 ${tmpdir}/bin/ | wc -l)
 diff -u ${tmpdir}/expected.programs ${tmpdir}/installed.programs > ${tmpdir}/diff.programs || true
 diff=$(sed -n '/^[+-][a-zA-Z]/p' < ${tmpdir}/diff.programs)
-
 assert_equal ${built_programs} ${installed_programs} "Difference compared to expected result: ${diff}"
+
+echo ${system_programs} | tr ' ' '\n' | sort > ${tmpdir}/expected.system_programs
+ls -1 ${tmpdir}/sbin/ | sort > ${tmpdir}/installed.system_programs
+built_system_programs=$(echo ${system_programs} | wc -w)
+installed_system_programs=$(ls -1 ${tmpdir}/sbin/ | wc -l)
+diff -u ${tmpdir}/expected.system_programs ${tmpdir}/installed.system_programs > ${tmpdir}/diff.system_programs || true
+diff=$(sed -n '/^[+-][a-zA-Z]/p' < ${tmpdir}/diff.system_programs)
+assert_equal ${built_system_programs} ${installed_system_programs} "Difference compared to expected result: ${diff}"
 
 test_step "make DESTDIR=${tmpdir} uninstall"
 make DESTDIR=${tmpdir} uninstall

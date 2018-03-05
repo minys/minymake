@@ -55,6 +55,7 @@ SRCDIR                := $(abspath $(CURDIR))
 
 # Installation directories
 BINDIR                ?= bin
+SBINDIR               ?= sbin
 DATADIR               ?= share
 DATAROOTDIR           ?= share
 INCLUDEDIR            ?= include
@@ -64,6 +65,7 @@ MANDIR                ?= $(DATAROOTDIR)/man
 
 # Default permissions when installing files
 BIN_PERM              ?= 755
+SBIN_PERM             ?= 755
 DATA_PERM             ?= 644
 LIB_PERM              ?= 644
 MAN_PERM              ?= 644
@@ -169,12 +171,13 @@ endif
 define include_module
 
     # Module keywords
-    bin                := # target binary (mandatory xor lib)
+    bin                := # target binary (mandatory xor sbin/lib)
+    sbin               := # target system binary (mandatory xor bin/lib)
     cflags             := # target specific CFLAGS (optional)
     cxxflags           := # target specific CXXFLAGS (optional)
     ldflags            := # target specific LDFLAGS (optional)
     data               := # data file(s) (optional)
-    lib                := # target library (mandatory xor bin)
+    lib                := # target library (mandatory xor bin/sbin)
     link_with          := # link target within the project
     link_with_external := # link with external package using pkg-config (optional)
     private_cflags     := # library private cflags
@@ -203,6 +206,13 @@ define include_module
             $$(error 'src' not defined by $(1))
         endif
         target := $$(bin)
+    endif
+
+    ifneq (,$$(strip $$(sbin)))
+        ifeq (,$$(strip $$(src)))
+            $$(error 'src' not defined by $(1))
+        endif
+        target := $$(sbin)
     endif
 
     ifneq (,$$(strip $$(lib)))
@@ -283,6 +293,17 @@ define include_module
     ifneq (,$$(strip $$(bin)))
         $$(target)_to   := $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$(target)))
         $$(target)_perm := $(BIN_PERM)
+        INSTALL_DEFAULT += $$(target)
+        INSTALL_ALL     += $$($$(target)_to)
+
+        ifneq (,$(filter $$($$(target)_to),$$(INSTALL_ALL)))
+            $$(error $$($$(target)_to) declared in $(1) will overwrite a file from another module during install)
+        endif
+    endif
+
+    ifneq (,$$(strip $$(sbin)))
+        $$(target)_to   := $$(abspath $(DESTDIR)/$(SBINDIR)/$$(notdir $$(target)))
+        $$(target)_perm := $(SBIN_PERM)
         INSTALL_DEFAULT += $$(target)
         INSTALL_ALL     += $$($$(target)_to)
 
