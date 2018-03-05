@@ -101,9 +101,9 @@ STATIC_CFLAGS         ?= -static
 STATIC_CXXFLAGS       ?= -static
 STATIC_LDFLAGS        ?= -static
 
-IS_GOAL_STATIC        := $(filter static,$(MAKECMDGOALS))
-IS_GOAL_CLEAN         := $(filter clean,$(MAKECMDGOALS))
-IS_GOAL_HELP          := $(filter help,$(MAKECMDGOALS))
+IS_GOAL_STATIC        := $(if $(filter static,$(MAKECMDGOALS)),true,false)
+IS_GOAL_CLEAN         := $(if $(filter clean,$(MAKECMDGOALS)),true,false)
+IS_GOAL_HELP          := $(if $(filter help,$(MAKECMDGOALS)),true,false)
 
 # Input data is hashed and stored between builds in order to detect changes to
 # compiler and/or compiler flags passed on the command line. In case a change
@@ -213,7 +213,7 @@ define include_module
         lib_dir := $$(abspath $$(output))
         inc_dir := $$(abspath $$(path))
 
-        ifneq (,$$(strip $$(IS_GOAL_STATIC)))
+        ifeq ($$(IS_GOAL_STATIC),true)
             $$(if $$(AR),,$$(error Unable to locate archiver))
             target := $$(patsubst %$$(LIB_SUFFIX),%$$(ARCHIVE_SUFFIX),$$(target))
         endif
@@ -524,6 +524,6 @@ help:
 	@echo "Please see the README for more information."
 	@echo
 
-ifeq (,$(or $(IS_GOAL_CLEAN),$(IS_GOAL_HELP)))
+ifeq ($(or $(IS_GOAL_CLEAN),$(IS_GOAL_HELP)),false)
     -include $(DEPS)
 endif
