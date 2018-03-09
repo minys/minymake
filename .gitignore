@@ -17,3 +17,4 @@ test/project/e/test_program
 test/project/program
 test/project/f/test_shared
 test/project/g/zlib_test
+test/project/h/test_sbin
