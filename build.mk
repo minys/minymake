@@ -94,9 +94,9 @@ ARCHIVE_SUFFIX        ?= .a
 # Default compiler/linker flags
 DEBUG_CFLAGS          ?= -g
 DEBUG_CXXFLAGS        ?= -g
-GCOV_CFLAGS           ?= -fprofile-arcs -ftest-coverage
-GCOV_CXXFLAGS         ?= -fprofile-arcs -ftest-coverage
-GCOV_LDFLAGS          ?= -fprofile-arcs
+COV_CFLAGS            ?= -fprofile-arcs -ftest-coverage
+COV_CXXFLAGS          ?= -fprofile-arcs -ftest-coverage
+COV_LDFLAGS           ?= -fprofile-arcs
 RELEASE_CFLAGS        ?= -O2
 RELEASE_CXXFLAGS      ?= -O2
 STATIC_CFLAGS         ?= -static
@@ -483,11 +483,11 @@ debug: CFLAGS += $(DEBUG_CFLAGS)
 debug: CXXFLAGS += $(DEBUG_CXXFLAGS)
 debug: all
 
-.PHONY: gcov
-gcov: CFLAGS += $(GCOV_CFLAGS)
-gcov: CXXFLAGS += $(GCOV_CXXFLAGS)
-gcov: LDFLAGS += $(GCOV_LDFLAGS)
-gcov: all
+.PHONY: coverage
+coverage: CFLAGS += $(COV_CFLAGS)
+coverage: CXXFLAGS += $(COV_CXXFLAGS)
+coverage: LDFLAGS += $(COV_LDFLAGS)
+coverage: all
 
 .PHONY: static
 static: CFLAGS += $(STATIC_CFLAGS)
@@ -532,8 +532,8 @@ help:
 	@echo "                    RELEASE_LDFLAGS."
 	@echo " debug            : Build all using DEBUG_CFLAGS, RELEASE_CXXFLAGS and"
 	@echo "                    DEBUG_LDFLAGS."
-	@echo " gcov             : Build all using GCOV_CFLAGS, GCOV_CXXFLAGS and"
-	@echo "                    GCOV_LDFLAGS."
+	@echo " coverage         : Build all using COV_CFLAGS, COV_CXXFLAGS and"
+	@echo "                    COV_LDFLAGS."
 	@echo " static           : Build all using STATIC_CFLAGS, STATIC_CXXFLAGS and"
 	@echo "                    STATIC_LDFLAGS."
 	@echo " clean            : Remove all generated objects."

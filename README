@@ -91,9 +91,9 @@
      LIB_SUFIX        : Library suffix (default: so).
      DEBUG_CFLAGS     : C compiler flags added when 'debug' target is invoked.
      DEBUG_CXXFLAGS   : C++ compiler flags added when 'debug' target is invoked.
-     GCOV_CFLAGS      : C compiler flags added when 'gcov' target is invoked.
-     GCOV_CXXFLAGS    : C++ compiler flags added when 'gcov' target is invoked.
-     GCOV_LDFLAGS     : Linker flags added when 'gcov' target is invoked.
+     COV_CFLAGS       : C compiler flags added when 'coverage' target is invoked.
+     COV_CXXFLAGS     : C++ compiler flags added when 'coverage' target is invoked.
+     COV_LDFLAGS      : Linker flags added when 'coverage' target is invoked.
      RELEASE_CFLAGS   : C compiler flags added when 'release' target is invoked.
      RELEASE_CXXFLAGS : C++ compiler flags added when 'release' target is invoked.
      STATIC_CFLAGS    : C compiler flags added when 'static' target is invoked.
@@ -130,8 +130,8 @@
                         RELEASE_LDFLAGS.
      debug            : Build all using DEBUG_CFLAGS, RELEASE_CXXFLAGS and
                         DEBUG_LDFLAGS.
-     gcov             : Build all using GCOV_CFLAGS, GCOV_CXXFLAGS and
-                        GCOV_LDFLAGS.
+     coverage         : Build all using COV_CFLAGS, COV_CXXFLAGS and
+                        COV_LDFLAGS.
      static           : Build all using STATIC_CFLAGS, STATIC_CXXFLAGS and
                         STATIC_LDFLAGS.
      clean            : Remove all generated objects.
