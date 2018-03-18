@@ -9,7 +9,7 @@ source ${CURDIR}/common
 test_start ${TEST}
 
 test_step 'make gcov'
-make gcov
+make coverage
 assert_full_build_coverage
 
 test_step 'make clean'
