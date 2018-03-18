@@ -1,4 +1,0 @@
-TODO default value of LIBDIR in order to install 64/32 bit libs into correct
-     location
-
-TODO do we support cross compilation?
