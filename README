@@ -3,10 +3,12 @@
  Small non-recursive build enginge inspired by Robert Miller's "Recursive Make
  Considered Harmful".
 
- minymake goals are to keep it reasonable fast and small, but above all try to
- make sure things are rebuilt when they should. By keeping track of changes to
- make files, compilers, linkers and options to those, minymake detects changes
- that could affect the build and rebuilds all affected targets.
+ minymake goals is to provide a simple mechanism to build and link programs and
+ libraries. Secondary goals are speed and robustness, which means non-recursive
+ implementation using some tricks to detect changes to parameters affecting the
+ process of compiling and linking programs and libraries. If you are looking
+ for something with more bells and whistles I would recommend CMake or
+ something similar.
 
  To start using minymake, copy build.mk into your project directory structure
  and add module files (make fragments). See the test/project for an example
@@ -16,19 +18,23 @@
 ## Modules
 
  A module is a make fragment that is responsible for declaring dependencies for
- one target (and only one). Modules cannot include other modules, so a bigger
- project needs to include all modules from one top level makefile (or several
- separate ones).
+ one target. A target is either a program or a library. Modules cannot include
+ other modules, so a bigger project needs to include all modules from one top
+ level makefile (or several separate ones).
 
  Modules are listed in a top level makefile in the MODULES variable.
 
- A module *might* declare the following variables:
+ A module *must* declare either of the following variables:
 
-     bin      : Name of the executable that this module is responsible for. Only
-                one executable is allowed per module file.
+     bin      : Name of the executable that this module is responsible for.
 
-     lib      : Name of the library that this module is responsible for. Only
-                one executable is allowed per module file.
+     sbin     : Name of the system executable that this module is responsible for.
+
+     lib      : Name of the library that this module is responsible for.
+
+ A module *must* declare the following varables
+
+and
 
      src      : Whitespace separated list of source files used to build
                 'target'. Mandatory if 'target' is defined.
