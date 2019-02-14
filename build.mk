@@ -45,8 +45,8 @@ CLEAN                 := # generated objects to be removed
 DEPS                  := # dependency files
 TARGETS               := # all executables/libraries
 
-INSTALL_ALL           := # list of all files to install
-INSTALL_DEFAULT       := # binaries/libraries/data files to install
+INSTALL_TO            := # target install path
+INSTALL_FROM          := # target to install
 UNINSTALL             := # things to uninstall
 
 BUILDDIR              ?= $(abspath $(CURDIR))
@@ -277,11 +277,11 @@ define include_module
         $$(target)_ldflags  += -fpic -shared
         $$(target)_to       := $$(abspath $(DESTDIR)/$(LIBDIR)/$$(notdir $$(target)))
         $$(target)_perm     := $(LIB_PERM)
-        INSTALL_DEFAULT     += $$(target)
-        INSTALL_ALL         += $$($$(target)_to)
+        INSTALL_FROM        += $$(target)
+        INSTALL_TO          += $$($$(target)_to)
         CLEAN               += $$(patsubst %$$(LIB_SUFFIX),%$$(ARCHIVE_SUFFIX),$$(target))
 
-        ifneq (,$(filter $$($$(target)_to),$$(INSTALL_ALL)))
+        ifneq (,$(filter $$($$(target)_to),$$(INSTALL_TO)))
             $$(error $$($$(target)_to) declared in $(1) will overwrite a file from another module during install)
         endif
     endif
@@ -289,10 +289,10 @@ define include_module
     ifneq (,$$(strip $$(bin)))
         $$(target)_to   := $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$(target)))
         $$(target)_perm := $(BIN_PERM)
-        INSTALL_DEFAULT += $$(target)
-        INSTALL_ALL     += $$($$(target)_to)
+        INSTALL_FROM    += $$(target)
+        INSTALL_TO      += $$($$(target)_to)
 
-        ifneq (,$(filter $$($$(target)_to),$$(INSTALL_ALL)))
+        ifneq (,$(filter $$($$(target)_to),$$(INSTALL_TO)))
             $$(error $$($$(target)_to) declared in $(1) will overwrite a file from another module during install)
         endif
     endif
@@ -300,10 +300,10 @@ define include_module
     ifneq (,$$(strip $$(sbin)))
         $$(target)_to   := $$(abspath $(DESTDIR)/$(SBINDIR)/$$(notdir $$(target)))
         $$(target)_perm := $(SBIN_PERM)
-        INSTALL_DEFAULT += $$(target)
-        INSTALL_ALL     += $$($$(target)_to)
+        INSTALL_FROM    += $$(target)
+        INSTALL_TO      += $$($$(target)_to)
 
-        ifneq (,$(filter $$($$(target)_to),$$(INSTALL_ALL)))
+        ifneq (,$(filter $$($$(target)_to),$$(INSTALL_TO)))
             $$(error $$($$(target)_to) declared in $(1) will overwrite a file from another module during install)
         endif
     endif
@@ -325,10 +325,10 @@ define include_module
         $$(target_data)_to      := $$(abspath $(DESTDIR)/$(DATADIR)/$$(data))
         $$(target_data)_perm    := $(DATA_PERM)
         $$(target_data)_nostrip := 1
-        INSTALL_DEFAULT         += $$(target_data)
-        INSTALL_ALL             += $$($$(target_data)_to)
+        INSTALL_FROM            += $$(target_data)
+        INSTALL_TO              += $$($$(target_data)_to)
 
-        ifneq (,$(filter $$($$(target_data)_to),$$(INSTALL_ALL)))
+        ifneq (,$(filter $$($$(target_data)_to),$$(INSTALL_TO)))
             $$(error $$($$(target_data)_to) declared in $(1) will overwrite a file from another module during install)
         endif
     endif
@@ -414,8 +414,8 @@ endif
 
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
-$(foreach file,$(INSTALL_DEFAULT),$(eval $(call install_rule,$(file),install)))
-$(foreach file,$(wildcard $(INSTALL_ALL)),$(eval $(call uninstall_rule,$(file))))
+$(foreach file,$(INSTALL_FROM),$(eval $(call install_rule,$(file),install)))
+$(foreach file,$(wildcard $(INSTALL_TO)),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
 $(BUILDDIR)/%.d: $(SRCDIR)/%$(CC_SUFFIX)
