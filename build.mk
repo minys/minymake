@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016-2018, Mikael Nyström
+# Copyright (c) 2016-2019, Mikael Nyström
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -44,10 +44,7 @@ MAKEFLAGS += --no-builtin-variables
 CLEAN                 := # generated objects to be removed
 DEPS                  := # dependency files
 TARGETS               := # all executables/libraries
-
 INSTALL_TO            := # target install path
-INSTALL_FROM          := # target to install
-UNINSTALL             := # things to uninstall
 
 BUILDDIR              ?= $(abspath $(CURDIR))
 SRCDIR                := $(abspath $(CURDIR))
@@ -55,16 +52,12 @@ SRCDIR                := $(abspath $(CURDIR))
 # Installation directories
 BINDIR                ?= bin
 SBINDIR               ?= sbin
-DATADIR               ?= share
-DATAROOTDIR           ?= share
 INCLUDEDIR            ?= include
 LIBDIR                ?= lib
-LIBEXECDIR            ?= libexec
 
 # Default permissions when installing files
 BIN_PERM              ?= 755
 SBIN_PERM             ?= 755
-DATA_PERM             ?= 644
 LIB_PERM              ?= 644
 
 # External tools
@@ -173,7 +166,6 @@ define include_module
     cflags             := # target specific CFLAGS (optional)
     cxxflags           := # target specific CXXFLAGS (optional)
     ldflags            := # target specific LDFLAGS (optional)
-    data               := # data file(s) (optional)
     lib                := # target library (mandatory xor bin/sbin)
     link_with          := # link target within the project
     link_with_external := # link with external package using pkg-config (optional)
@@ -189,8 +181,6 @@ define include_module
     inc_dir     :=
     lib_dir     :=
     target      :=
-    target_data :=
-    target_man  :=
 
     include $(1)
 
@@ -277,7 +267,6 @@ define include_module
         $$(target)_ldflags  += -fpic -shared
         $$(target)_to       := $$(abspath $(DESTDIR)/$(LIBDIR)/$$(notdir $$(target)))
         $$(target)_perm     := $(LIB_PERM)
-        INSTALL_FROM        += $$(target)
         INSTALL_TO          += $$($$(target)_to)
         CLEAN               += $$(patsubst %$$(LIB_SUFFIX),%$$(ARCHIVE_SUFFIX),$$(target))
 
@@ -289,7 +278,6 @@ define include_module
     ifneq (,$$(strip $$(bin)))
         $$(target)_to   := $$(abspath $(DESTDIR)/$(BINDIR)/$$(notdir $$(target)))
         $$(target)_perm := $(BIN_PERM)
-        INSTALL_FROM    += $$(target)
         INSTALL_TO      += $$($$(target)_to)
 
         ifneq (,$(filter $$($$(target)_to),$$(INSTALL_TO)))
@@ -300,7 +288,6 @@ define include_module
     ifneq (,$$(strip $$(sbin)))
         $$(target)_to   := $$(abspath $(DESTDIR)/$(SBINDIR)/$$(notdir $$(target)))
         $$(target)_perm := $(SBIN_PERM)
-        INSTALL_FROM    += $$(target)
         INSTALL_TO      += $$($$(target)_to)
 
         ifneq (,$(filter $$($$(target)_to),$$(INSTALL_TO)))
@@ -318,19 +305,6 @@ define include_module
         $$(target)_cflags   += $$(shell $$(PKG_CONFIG) --cflags $$(link_with_external))
         $$(target)_cxxflags += $$($$(target)_cflags)
         $$(target)_ldflags  += $$(shell $$(PKG_CONFIG) --libs $$(link_with_external))
-    endif
-
-    ifneq (,$$(strip $$(data)))
-        target_data             := $$(abspath $$(addprefix $$(path)/,$$(data)))
-        $$(target_data)_to      := $$(abspath $(DESTDIR)/$(DATADIR)/$$(data))
-        $$(target_data)_perm    := $(DATA_PERM)
-        $$(target_data)_nostrip := 1
-        INSTALL_FROM            += $$(target_data)
-        INSTALL_TO              += $$($$(target_data)_to)
-
-        ifneq (,$(filter $$($$(target_data)_to),$$(INSTALL_TO)))
-            $$(error $$($$(target_data)_to) declared in $(1) will overwrite a file from another module during install)
-        endif
     endif
 
 endef
@@ -414,7 +388,7 @@ endif
 
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
-$(foreach file,$(INSTALL_FROM),$(eval $(call install_rule,$(file),install)))
+$(foreach file,$(TARGETS),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(wildcard $(INSTALL_TO)),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 

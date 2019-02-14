@@ -45,8 +45,6 @@ and
 
      ldflags  : Target specific LDFLAGS.
 
-     data     : Target data.
-
  Note that targets, source files etc should be referenced through a relative
  path preferable from a module file reciding in the same location as the source
  or target file(s).
@@ -107,8 +105,6 @@ and
  Installation directories:
 
      BINDIR         : binaries (default: bin)
-     DATADIR        : data (default: share)
-     DATAROOTDIR    : data (default: share)
      INCLUDEDIR     : header files (default: include)
      LIBDIR         : libraries (default: lib)
      LIBEXECDIR     : libexec (default: libexec)
@@ -116,7 +112,6 @@ and
  Permissions used while installing:
 
      BIN_PERM       : binaries (default: 755)
-     DATA_PERM      : data (default: 644)
      LIB_PERM       : libraries (default: 644)
 
      FORCE_INSTALL  : If defined, 'install' target will install everything even
