@@ -47,8 +47,6 @@ and
 
      data     : Target data.
 
-     man      : Target documentation in man format.
-
  Note that targets, source files etc should be referenced through a relative
  path preferable from a module file reciding in the same location as the source
  or target file(s).
@@ -111,18 +109,15 @@ and
      BINDIR         : binaries (default: bin)
      DATADIR        : data (default: share)
      DATAROOTDIR    : data (default: share)
-     DOCDIR         : docs (default: doc)
      INCLUDEDIR     : header files (default: include)
      LIBDIR         : libraries (default: lib)
      LIBEXECDIR     : libexec (default: libexec)
-     MANDIR         : manuals (default: DATAROOTDIR/man)
      
  Permissions used while installing:
 
      BIN_PERM       : binaries (default: 755)
      DATA_PERM      : data (default: 644)
      LIB_PERM       : libraries (default: 644)
-     MAN_PERM       : manuals (default: 644)
 
      FORCE_INSTALL  : If defined, 'install' target will install everything even
                       if none or some of the files have not been rebuilt.
@@ -142,7 +137,6 @@ and
                         STATIC_LDFLAGS.
      clean            : Remove all generated objects.
      install          : Build and install to DESTDIR.
-     installcheck     : Run post-install checks.
      install-strip    : Install and strip binaries.
      uninstall        : Uninstall project.
 

@@ -47,7 +47,6 @@ TARGETS               := # all executables/libraries
 
 INSTALL_ALL           := # list of all files to install
 INSTALL_DEFAULT       := # binaries/libraries/data files to install
-INSTALL_MAN           := # man files to install
 UNINSTALL             := # things to uninstall
 
 BUILDDIR              ?= $(abspath $(CURDIR))
@@ -61,14 +60,12 @@ DATAROOTDIR           ?= share
 INCLUDEDIR            ?= include
 LIBDIR                ?= lib
 LIBEXECDIR            ?= libexec
-MANDIR                ?= $(DATAROOTDIR)/man
 
 # Default permissions when installing files
 BIN_PERM              ?= 755
 SBIN_PERM             ?= 755
 DATA_PERM             ?= 644
 LIB_PERM              ?= 644
-MAN_PERM              ?= 644
 
 # External tools
 AR                    ?= ar
@@ -183,7 +180,6 @@ define include_module
     private_cflags     := # library private cflags
     private_cxxflags   := # library private cxxflags
     private_ldflags    := # library private ldflags
-    man                := # target manual file(s) (optional)
     post               := # post build command (optional)
     pre                := # pre build command (optional)
     src                := # target executable/library source (mandatory)
@@ -337,19 +333,6 @@ define include_module
         endif
     endif
 
-    ifneq (,$$(strip $$(man)))
-        target_man             := $$(abspath $$(addprefix $$(path)/,$$(man)))
-        $$(target_man)_to      := $$(abspath $(DESTDIR)/$(MANDIR)/$$(man))
-        $$(target_man)_perm    := $(MAN_PERM)
-        $$(target_man)_nostrip := 1
-        INSTALL_MAN            += $$(target_man)
-        INSTALL_ALL            += $$($$(target_man)_to)
-
-        ifneq (,$(filter $$($$(target_man)_to),$$(INSTALL_ALL)))
-            $$(error $$($$(target_man)_to) declared in $(1) will overwrite a file from another module during install) 
-        endif
-    endif
-
 endef
 
 define clean_rule
@@ -432,7 +415,6 @@ endif
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 $(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
 $(foreach file,$(INSTALL_DEFAULT),$(eval $(call install_rule,$(file),install)))
-$(foreach file,$(INSTALL_MAN),$(eval $(call install_rule,$(file),install-man)))
 $(foreach file,$(wildcard $(INSTALL_ALL)),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
 
@@ -501,9 +483,6 @@ clean:
 .PHONY: install
 install:
 
-.PHONY: install-man
-install-man:
-
 .PHONY: install-strip
 install-strip: STRIP_FLAG := -s
 install-strip: install
@@ -538,7 +517,6 @@ help:
 	@echo "                    STATIC_LDFLAGS."
 	@echo " clean            : Remove all generated objects."
 	@echo " install          : Build and install to DESTDIR."
-	@echo " install-man      : Install manual page(s)."
 	@echo " install-strip    : Install and strip binaries."
 	@echo " uninstall        : Uninstall project."
 	@echo
