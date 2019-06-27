@@ -44,6 +44,8 @@ MAKEFLAGS += --no-builtin-variables
 CLEAN                 := # generated objects to be removed
 DEPS                  := # dependency files
 TARGETS               := # all executables/libraries
+C_TARGETS             := # C executables/libraries
+CXX_TARGETS           := # C++ executables/libraries
 INSTALL_TO            := # target install path
 
 BUILDDIR              ?= $(abspath $(CURDIR))
@@ -254,11 +256,13 @@ define include_module
         $$(target)_ld               := $$(CC)
         $$(target)_compile_checksum := $$(COMPILE_CC_CSUM_FILE)
         $$(target)_link_checksum    := $$(LINK_CC_CSUM_FILE)
+        C_TARGETS                   += $$(target)
     else
         $$(if $$(CXX),,$$(error Unable to locate C++ compiler))
         $$(target)_ld               := $$(CXX)
         $$(target)_compile_checksum := $$(COMPILE_CXX_CSUM_FILE)
         $$(target)_link_checksum    := $$(LINK_CXX_CSUM_FILE)
+        CXX_TARGETS                 += $$(target)
     endif
 
     ifeq ($$(LIB_SUFFIX),$$(suffix $$(target)))
@@ -337,17 +341,9 @@ $(1)_uninstall:
 	$$(call run_cmd,RM,$(1),$(RM) $(1))
 endef
 
-define target_rule
-$$($(1)_obj): override CFLAGS += $$($(1)_cflags)
-$$($(1)_obj): private EXTRA_CFLAGS := $$(link_with_$$($(1)_link_with)_cflags)
-$$($(1)_obj): override CXXFLAGS += $$($(1)_cxxflags)
-$$($(1)_obj): private EXTRA_CXXFLAGS += $$(link_with_$$($(1)_link_with)_cxxflags)
+define base_target_rule
 $$($(1)_obj): $$($(1)_module)
 $$($(1)_obj): $$($(1)_compile_checksum)
-$$($(1)_dep): override CFLAGS += $$($(1)_cflags)
-$$($(1)_dep): private EXTRA_CFLAGS := $$(link_with_$$($(1)_link_with)_cflags)
-$$($(1)_dep): override CXXFLAGS += $$($(1)_cxxflags)
-$$($(1)_dep): private EXTRA_CXXFLAGS := $$(link_with_$$($(1)_link_with)_cxxflags)
 $$($(1)_dep): $$($(1)_module)
 $$($(1)_dep): $$($(1)_compile_checksum)
 $(1): override LD := $$($(1)_ld)
@@ -357,6 +353,20 @@ $(1): $$(link_with_$$($(1)_link_with)_dep)
 $(1): $$($(1)_module)
 $(1): $$($(1)_link_checksum)
 $(1): $$($(1)_obj)
+endef
+
+define c_target_rule
+$$($(1)_obj): override CFLAGS += $$($(1)_cflags)
+$$($(1)_obj): private EXTRA_CFLAGS := $$(link_with_$$($(1)_link_with)_cflags)
+$$($(1)_dep): override CFLAGS += $$($(1)_cflags)
+$$($(1)_dep): private EXTRA_CFLAGS := $$(link_with_$$($(1)_link_with)_cflags)
+endef
+
+define cxx_target_rule
+$$($(1)_obj): override CXXFLAGS += $$($(1)_cxxflags)
+$$($(1)_obj): private EXTRA_CXXFLAGS += $$(link_with_$$($(1)_link_with)_cxxflags)
+$$($(1)_dep): override CXXFLAGS += $$($(1)_cxxflags)
+$$($(1)_dep): private EXTRA_CXXFLAGS := $$(link_with_$$($(1)_link_with)_cxxflags)
 endef
 
 define depends
@@ -387,7 +397,9 @@ $(LINK_CXX_CSUM_FILE): CSUM := $(LINK_CXX_CSUM)
 endif
 
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
-$(foreach target,$(TARGETS),$(eval $(call target_rule,$(target))))
+$(foreach target,$(TARGETS),$(eval $(call base_target_rule,$(target))))
+$(foreach target,$(C_TARGETS),$(eval $(call c_target_rule,$(target))))
+$(foreach target,$(CXX_TARGETS),$(eval $(call cxx_target_rule,$(target))))
 $(foreach file,$(TARGETS),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(wildcard $(INSTALL_TO)),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
