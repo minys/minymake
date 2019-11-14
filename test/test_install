@@ -12,7 +12,7 @@ test_start ${TEST}
 
 test_step "make DESTDIR=${tmpdir} install"
 make DESTDIR=${tmpdir} install
-assert_full_build_no_tests
+assert_full_build
 
 test_step 'Verify installation'
 for program in ${programs}; do

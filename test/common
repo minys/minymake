@@ -1,21 +1,31 @@
 #!/bin/bash
+#
+# Common utility functions and variables that are available to test scripts.
+#
 
-export obj="a/main.o b/c/c.o b/d/d.o b/main.o c/c.o d/shared.o e/main.o f/main.o g/main.o main.o"
-export test_obj="e/test.o"
-export dep="a/main.d b/c/c.d b/d/d.d b/main.d c/c.d d/shared.d e/main.d f/main.d g/main.d main.d"
-export test_dep="e/test.d"
-export notes="main.gcno a/main.gcno b/main.gcno b/c/c.gcno b/d/d.gcno c/c.gcno d/shared.gcno e/main.gcno f/main.gcno g/main.gcno"
-export test_notes="e/test.gcno"
+_c_source=$(find . -name \*.c)
+_c_obj=${_c_source//.c/.o}
+_c_dep=${_c_source//.c/.d}
+_c_not=${_c_source//.c/.gcno}
+
+_cxx_source=$(find . -name \*.cc)
+_cxx_obj=${_cxx_source//.cc/.o}
+_cxx_dep=${_cxx_source//.cc/.d}
+_cxx_not=${_cxx_source//.cc/.gcno}
+
+export obj="${_c_obj} ${_cxx_obj}"
+export dep="${_c_dep} ${_cxx_dep}"
+export notes="${_c_not} ${_cxx_not}"
+
 export checksum=".compile.cc.checksum .compile.cxx.checksum .link.cc.checksum .link.cxx.checksum"
-export targets="a/program_a a/test_dupl b/program_b c/test_cc d/libshared.so e/program_e f/test_shared g/zlib_test program h/test_sbin"
-export programs="program_a test_cc test_dupl program_b program_e test_shared zlib_test program"
+export targets="a/program_a b/program_b c/test_cc d/libshared.so e/program_e f/test_shared g/zlib_test program h/test_sbin"
+export programs="program_a test_cc program_b program_e test_shared zlib_test program"
 export system_programs="test_sbin"
 export libraries="libshared.so"
 export archives="libshared.a"
 export tests="e/test.o e/test_program"
-export all_no_tests="${obj} ${dep} ${checksum} ${targets}"
-export all="${all_no_tests} ${test_obj} ${test_dep} ${tests}"
-export all_coverage="${all} ${notes} ${test_notes}"
+export all="${obj} ${dep} ${checksum} ${targets}"
+export all_coverage="${all} ${notes}"
 export all_static="${all//.so/.a}"
 
 test=$(which test 2>/dev/null)
@@ -150,17 +160,6 @@ assert_full_static_build ()
 	test_step "Verify static build output"
 
 	for file in ${all_static}; do
-		assert_exist ${file} || return 1
-	done
-
-	return 0
-}
-
-assert_full_build_no_tests ()
-{
-	test_step "Verify build output"
-
-	for file in ${all_no_tests}; do
 		assert_exist ${file} || return 1
 	done
 
