@@ -174,8 +174,6 @@ define include_module
     private_cflags     := # library private cflags
     private_cxxflags   := # library private cxxflags
     private_ldflags    := # library private ldflags
-    post               := # post build command (optional)
-    pre                := # pre build command (optional)
     src                := # target executable/library source (mandatory)
     test               := # target executable/library test (optional)
 
@@ -234,7 +232,6 @@ define include_module
     $$(target)_src       := $$(abspath $$(addprefix $$(path)/,$$(src)))
     $$(target)_obj       := $$(addsuffix .o,$$(basename $$(src)))
     $$(target)_obj       := $$(abspath $$(addprefix $$(output)/,$$($$(target)_obj)))
-    $$(target)_post      := $$(abspath $$(addprefix $$(path)/,$$(post)))
     $$(target)_dep       := $$(patsubst %.o,%.d,$$($$(target)_obj))
     $$(target)_gcno      := $$(patsubst %.o,%.gcno,$$($$(target)_obj))
     $$(target)_gcno      += $$(addsuffix .gcno,$$(target))
@@ -423,17 +420,14 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%$(CXX_SUFFIX)
 $(BUILDDIR)/%$(LIB_SUFFIX):
 	$(call mkdir,$(dir $@))
 	$(call run_cmd_green,LD,$@,$(LD) -o $@ $($(@)_obj) $(LDFLAGS))
-	$(if $($(@)_post),$(call run_cmd,POST,$@,$($(@)_post) $@),)
 
 $(BUILDDIR)/%$(ARCHIVE_SUFFIX):
 	$(call mkdir,$(dir $@))
 	$(call run_cmd,AR,$@,$(AR) cr $@ $($(@)_obj))
-	$(if $($(@)_post),$(call run_cmd,POST,$@,$($(@)_post) $@),)
 
 $(BUILDDIR)/%:
 	$(call mkdir,$(dir $@))
 	$(call run_cmd_green,LD,$@,$(LD) -o $@ $($(@)_obj) $(LDFLAGS) $(EXTRA_LDFLAGS))
-	$(if $($(@)_post),$(call run_cmd,POST,$@,$($(@)_post) $@),)
 
 $(BUILDDIR)/%.checksum: FORCE
 	$(call verify_input,$@,$(CSUM))
