@@ -175,7 +175,6 @@ define include_module
     private_cxxflags   := # library private cxxflags
     private_ldflags    := # library private ldflags
     src                := # target executable/library source (mandatory)
-    test               := # target executable/library test (optional)
 
     # Internal variables related to keywords
     inc_dir     :=
@@ -219,13 +218,6 @@ define include_module
         link_with_$$(lib)_cxxflags := -I$$(inc_dir) $$(cxxflags)
         link_with_$$(lib)_ldflags  := -L$$(lib_dir) -l$$(lib)
         link_with_$$(lib)_module   := $$(abspath $(1))
-    endif
-
-    ifneq (,$$(strip $$(test)))
-        ifeq (,$$(strip $$(src)))
-            $$(error 'src' not defined by $(1))
-        endif
-        target := $$(test)
     endif
 
     target               := $$(abspath $$(output)/$$(target))

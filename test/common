@@ -23,7 +23,6 @@ export programs="program_a test_cc program_b program_e test_shared zlib_test pro
 export system_programs="test_sbin"
 export libraries="libshared.so"
 export archives="libshared.a"
-export tests="e/test.o e/test_program"
 export all="${obj} ${dep} ${checksum} ${targets}"
 export all_coverage="${all} ${notes}"
 export all_static="${all//.so/.a}"
