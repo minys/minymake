@@ -84,8 +84,8 @@ ARCHIVE_PREFIX        ?= lib
 ARCHIVE_SUFFIX        ?= .a
 
 # Default compiler/linker flags
-DEBUG_CFLAGS          ?= -g
-DEBUG_CXXFLAGS        ?= -g
+DEBUG_CFLAGS          ?= -g -O0
+DEBUG_CXXFLAGS        ?= -g -O0
 COV_CFLAGS            ?= -fprofile-arcs -ftest-coverage
 COV_CXXFLAGS          ?= -fprofile-arcs -ftest-coverage
 COV_LDFLAGS           ?= -fprofile-arcs
