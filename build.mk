@@ -235,6 +235,10 @@ define include_module
     DEPS    += $$($$(target)_dep)
     TARGETS += $$(target)
 
+    ifneq ($$($$(target)_src),$$(wildcard $$($$(target)_src)))
+        $$(error One or more source files listed in $(1) is missing)
+    endif
+
     ifeq ($$(CC_SUFFIX),$$(sort $$(suffix $$($$(target)_src))))
         $$(if $$(CC),,$$(error Unable to locate C compiler))
         ifneq ($$(CC_SUFFIX),$$(sort $$(suffix $$($$(target)_src))))
