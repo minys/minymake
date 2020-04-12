@@ -186,24 +186,19 @@ define include_module
     path   := $(dir $(1))
     output := $$(BUILDDIR)/$$(path)
 
+    ifeq (,$$(strip $$(src)))
+        $$(error 'src' not defined by $(1))
+    endif
+
     ifneq (,$$(strip $$(bin)))
-        ifeq (,$$(strip $$(src)))
-            $$(error 'src' not defined by $(1))
-        endif
         target := $$(bin)
     endif
 
     ifneq (,$$(strip $$(sbin)))
-        ifeq (,$$(strip $$(src)))
-            $$(error 'src' not defined by $(1))
-        endif
         target := $$(sbin)
     endif
 
     ifneq (,$$(strip $$(lib)))
-        ifeq (,$$(strip $$(src)))
-            $$(error 'src' not defined by $(1))
-        endif
         target  := $$(LIB_PREFIX)$$(lib)$$(LIB_SUFFIX)
         lib_dir := $$(abspath $$(output))
         inc_dir := $$(abspath $$(path))
@@ -242,12 +237,18 @@ define include_module
 
     ifeq ($$(CC_SUFFIX),$$(sort $$(suffix $$($$(target)_src))))
         $$(if $$(CC),,$$(error Unable to locate C compiler))
+        ifneq ($$(CC_SUFFIX),$$(sort $$(suffix $$($$(target)_src))))
+            $$(error Configured C suffix $$(CC_SUFFIX) does not match suffix of source files listed in $(1))
+        endif
         $$(target)_ld               := $$(CC)
         $$(target)_compile_checksum := $$(COMPILE_CC_CSUM_FILE)
         $$(target)_link_checksum    := $$(LINK_CC_CSUM_FILE)
         C_TARGETS                   += $$(target)
     else
         $$(if $$(CXX),,$$(error Unable to locate C++ compiler))
+        ifneq ($$(CXX_SUFFIX),$$(sort $$(suffix $$($$(target)_src))))
+            $$(error Configured C++ suffix $$(CXX_SUFFIX) does not match suffix of source files listed in $(1))
+        endif
         $$(target)_ld               := $$(CXX)
         $$(target)_compile_checksum := $$(COMPILE_CXX_CSUM_FILE)
         $$(target)_link_checksum    := $$(LINK_CXX_CSUM_FILE)
