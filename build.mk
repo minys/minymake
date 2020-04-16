@@ -130,32 +130,32 @@ endif
 # -- [ Macros ] ----------------------------------------------------------------
 
 ifdef VERBOSE
-    define run_cmd
+    define command
         $(strip $(3))
     endef
-    define run_cmd_red
+    define red_command
         $(strip $(3))
     endef
-    define run_cmd_green
+    define green_command
         $(strip $(3))
     endef
-    define run_cmd_silent
+    define silent_command
         @$(strip $(1))
     endef
 else
-    define run_cmd
+    define command
         @printf ' %-8s \e[0;20m%s\e[0m\n' "$(1)" "$(subst $(SRCDIR)/,,$(2))"
         @$(strip $(3))
     endef
-    define run_cmd_red
+    define red_command
         @printf' %-8s \e[1;31m%s\e[0m\n' "$(1)" "$(subst $(SRCDIR)/,,$(2))"
         @$(strip $(3))
     endef
-    define run_cmd_green
+    define green_command
         @printf ' %-8s \e[1;32m%s\e[0m\n' "$(1)" "$(subst $(SRCDIR)/,,$(2))"
         @$(strip $(3))
     endef
-    define run_cmd_silent
+    define silent_command
         @$(strip $(1))
     endef
 endif
@@ -311,7 +311,7 @@ define clean_rule
 clean: $(1)_clean
 .PHONY: $(1)_clean
 $(1)_clean:
-	$$(call run_cmd,RM,$(1),$(RM) $(1))
+	$$(call command,RM,$(1),$(RM) $(1))
 endef
 
 define install_rule
@@ -325,14 +325,14 @@ $$($(1)_to): INSTALL_FLAGS += $$(STRIP_FLAG)
 endif
 $$($(1)_to): $(1)
 	$$(call mkdir,$$(dir $$($(1)_to)))
-	$$(call run_cmd,INSTALL,$$($(1)_to),$(INSTALL) $$(INSTALL_FLAGS) -m $$($(1)_perm) $(1) $$($(1)_to))
+	$$(call command,INSTALL,$$($(1)_to),$(INSTALL) $$(INSTALL_FLAGS) -m $$($(1)_perm) $(1) $$($(1)_to))
 endef
 
 define uninstall_rule
 uninstall: $(1)_uninstall
 .PHONY: $(1)_uninstall
 $(1)_uninstall:
-	$$(call run_cmd,RM,$(1),$(RM) $(1))
+	$$(call command,RM,$(1),$(RM) $(1))
 endef
 
 define base_target_rule
@@ -364,11 +364,11 @@ $$($(1)_dep): private EXTRA_CXXFLAGS := $$(link_with_$$($(1)_link_with)_cxxflags
 endef
 
 define depends
-    $(call run_cmd_silent,$(strip $(2) $(3) $(4) -MT "$(patsubst %.d,%.o,$(1))" -M $(5) | sed 's,\(^.*.o:\),$@ \1,' > $(1)))
+    $(call silent_command,$(strip $(2) $(3) $(4) -MT "$(patsubst %.d,%.o,$(1))" -M $(5) | sed 's,\(^.*.o:\),$@ \1,' > $(1)))
 endef
 
 define mkdir
-    $(call run_cmd_silent,test -d $(1) || mkdir -p $(1))
+    $(call silent_command,test -d $(1) || mkdir -p $(1))
 endef
 
 define verify_input
@@ -404,7 +404,7 @@ $(BUILDDIR)/%.d: $(SRCDIR)/%$(CC_SUFFIX)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%$(CC_SUFFIX)
 	$(call mkdir,$(dir $@))
-	$(call run_cmd,CC,$@,$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -o $@ -c $<)
+	$(call command,CC,$@,$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -o $@ -c $<)
 
 $(BUILDDIR)/%.d: $(SRCDIR)/%$(CXX_SUFFIX)
 	$(call mkdir,$(dir $@))
@@ -412,19 +412,19 @@ $(BUILDDIR)/%.d: $(SRCDIR)/%$(CXX_SUFFIX)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%$(CXX_SUFFIX)
 	$(call mkdir,$(dir $@))
-	$(call run_cmd,CXX,$@,$(CXX) $(CXXFLAGS) $(EXTRA_CXXFLAGS) -o $@ -c $<)
+	$(call command,CXX,$@,$(CXX) $(CXXFLAGS) $(EXTRA_CXXFLAGS) -o $@ -c $<)
 
 $(BUILDDIR)/%$(LIB_SUFFIX):
 	$(call mkdir,$(dir $@))
-	$(call run_cmd_green,LD,$@,$(LD) -o $@ $($(@)_obj) $(LDFLAGS))
+	$(call green_command,LD,$@,$(LD) -o $@ $($(@)_obj) $(LDFLAGS))
 
 $(BUILDDIR)/%$(ARCHIVE_SUFFIX):
 	$(call mkdir,$(dir $@))
-	$(call run_cmd,AR,$@,$(AR) cr $@ $($(@)_obj))
+	$(call command,AR,$@,$(AR) cr $@ $($(@)_obj))
 
 $(BUILDDIR)/%:
 	$(call mkdir,$(dir $@))
-	$(call run_cmd_green,LD,$@,$(LD) -o $@ $($(@)_obj) $(LDFLAGS) $(EXTRA_LDFLAGS))
+	$(call green_command,LD,$@,$(LD) -o $@ $($(@)_obj) $(LDFLAGS) $(EXTRA_LDFLAGS))
 
 $(BUILDDIR)/%.checksum: FORCE
 	$(call verify_input,$@,$(CSUM))
