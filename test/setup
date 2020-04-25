@@ -48,10 +48,10 @@ trap "PASSED=false" ERR
 trap interrupted INT
 trap teardown EXIT
 
-cd ${CURDIR}/project
+cd ${CURDIR}/projects/function-test
 PASSED=true
 
-export MYCC=$(readlink -f ../mycc)
-export MYCXX=$(readlink -f ../mycxx)
+export MYCC=$(readlink -f ../../mycc)
+export MYCXX=$(readlink -f ../../mycxx)
 
 set -o errexit
