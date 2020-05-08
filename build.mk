@@ -508,6 +508,7 @@ help:
 	@echo " static           : Build all using STATIC_CFLAGS, STATIC_CXXFLAGS and"
 	@echo "                    STATIC_LDFLAGS."
 	@echo " clean            : Remove all generated objects."
+	@echo " realclean        : Remove all generated objects and files."
 	@echo " install          : Build and install to DESTDIR."
 	@echo " install-strip    : Install and strip binaries."
 	@echo " uninstall        : Uninstall project."
