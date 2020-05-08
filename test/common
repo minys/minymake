@@ -24,6 +24,8 @@ export system_programs="test_sbin"
 export libraries="libshared.so"
 export archives="libshared.a"
 export all="${obj} ${dep} ${checksum} ${targets}"
+export clean="${obj} ${dep} ${targets}"
+export realclean="${clean} ${checksum}"
 export all_coverage="${all} ${notes}"
 export all_static="${all//.so/.a}"
 
@@ -136,7 +138,21 @@ assert_clean ()
 {
 	test_step "Verify that build output was removed"
 
-	for file in ${all}; do
+	for file in ${clean}; do
+		assert_not_exist ${file} || return 1
+	done
+    for file in ${checksum}; do
+        assert_exist ${file} || return 1
+    done
+
+	return 0
+}
+
+assert_realclean ()
+{
+	test_step "Verify that build output was removed"
+
+	for file in ${realclean}; do
 		assert_not_exist ${file} || return 1
 	done
 

@@ -41,7 +41,8 @@ MAKEFLAGS += --no-builtin-variables
 
 # -- [ Variables ] -------------------------------------------------------------
 
-CLEAN                 := # generated objects to be removed
+CLEAN                 := # generated objects to be removed by 'clean' rule
+REALCLEAN             := # generated objects to be removed by 'realclean' rule
 DEPS                  := # dependency files
 TARGETS               := # all executables/libraries
 C_TARGETS             := # C executables/libraries
@@ -95,9 +96,11 @@ STATIC_CFLAGS         ?= -static
 STATIC_CXXFLAGS       ?= -static
 STATIC_LDFLAGS        ?= -static
 
-IS_GOAL_STATIC        := $(if $(filter static,$(MAKECMDGOALS)),true,false)
-IS_GOAL_CLEAN         := $(if $(filter clean,$(MAKECMDGOALS)),true,false)
-IS_GOAL_HELP          := $(if $(filter help,$(MAKECMDGOALS)),true,false)
+IS_GOAL_STATIC        := $(filter static,$(MAKECMDGOALS))
+IS_GOAL_CLEAN         := $(filter clean,$(MAKECMDGOALS))
+IS_GOAL_REALCLEAN     := $(filter realclean,$(MAKECMDGOALS))
+IS_GOAL_HELP          := $(filter help,$(MAKECMDGOALS))
+INCLUDE_DEPS          := $(if $(or $(IS_GOAL_CLEAN),$(IS_GOAL_REALCLEAN),$(IS_GOAL_HELP)),false,true)
 
 # Input data is hashed and stored between builds in order to detect changes to
 # compiler and/or compiler flags passed on the command line. In case a change
@@ -110,8 +113,8 @@ ifneq ($(CSUM),)
         LINK_CC_CSUM         := $(shell echo $(CC_CSUM) $(LDFLAGS) | $(CSUM))
         COMPILE_CC_CSUM_FILE := $(BUILDDIR)/.compile.cc.checksum
         LINK_CC_CSUM_FILE    := $(BUILDDIR)/.link.cc.checksum
-        CLEAN                += $(COMPILE_CC_CSUM_FILE)
-        CLEAN                += $(LINK_CC_CSUM_FILE)
+        REALCLEAN            += $(COMPILE_CC_CSUM_FILE)
+        REALCLEAN            += $(LINK_CC_CSUM_FILE)
     endif
     ifneq ($(CXX),)
         CXX_CSUM              := $(shell $(CSUM) $(CXX))
@@ -119,8 +122,8 @@ ifneq ($(CSUM),)
         LINK_CXX_CSUM         := $(shell echo $(CXX_CSUM) $(LDFLAGS) | $(CSUM))
         COMPILE_CXX_CSUM_FILE := $(BUILDDIR)/.compile.cxx.checksum
         LINK_CXX_CSUM_FILE    := $(BUILDDIR)/.link.cxx.checksum
-        CLEAN                 += $(COMPILE_CXX_CSUM_FILE)
-        CLEAN                 += $(LINK_CXX_CSUM_FILE)
+        REALCLEAN             += $(COMPILE_CXX_CSUM_FILE)
+        REALCLEAN             += $(LINK_CXX_CSUM_FILE)
     endif
 else
     $(warning Disabling rebuilding when commandline input changes (no checksum tool available))
@@ -314,6 +317,13 @@ $(1)_clean:
 	$$(call command,RM,$(1),$(RM) $(1))
 endef
 
+define realclean_rule
+realclean: $(1)_realclean
+.PHONY: $(1)_realclean
+$(1)_realclean:
+	$$(call command,RM,$(1),$(RM) $(1))
+endef
+
 define install_rule
 $(2): $$($(1)_to)
 $$($(1)_to): $(1)
@@ -390,6 +400,7 @@ $(COMPILE_CXX_CSUM_FILE): CSUM := $(COMPILE_CXX_CSUM)
 $(LINK_CXX_CSUM_FILE): CSUM := $(LINK_CXX_CSUM)
 endif
 
+
 $(foreach module,$(MODULES),$(eval $(call include_module,$(module))))
 $(foreach target,$(TARGETS),$(eval $(call base_target_rule,$(target))))
 $(foreach target,$(C_TARGETS),$(eval $(call c_target_rule,$(target))))
@@ -397,6 +408,7 @@ $(foreach target,$(CXX_TARGETS),$(eval $(call cxx_target_rule,$(target))))
 $(foreach file,$(TARGETS),$(eval $(call install_rule,$(file),install)))
 $(foreach file,$(wildcard $(INSTALL_TO)),$(eval $(call uninstall_rule,$(file))))
 $(foreach file,$(wildcard $(sort $(CLEAN))),$(eval $(call clean_rule,$(file))))
+$(foreach file,$(wildcard $(sort $(REALCLEAN))),$(eval $(call realclean_rule,$(file))))
 
 $(BUILDDIR)/%.d: $(SRCDIR)/%$(CC_SUFFIX)
 	$(call mkdir,$(dir $@))
@@ -457,6 +469,9 @@ static: all
 .PHONY: clean
 clean:
 
+.PHONY: realclean
+realclean: clean
+
 .PHONY: install
 install:
 
@@ -500,6 +515,6 @@ help:
 	@echo "Please see the README for more information."
 	@echo
 
-ifeq ($(or $(IS_GOAL_CLEAN),$(IS_GOAL_HELP)),false)
+ifeq ($(INCLUDE_DEPS),true)
     -include $(DEPS)
 endif

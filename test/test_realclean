@@ -1,0 +1,17 @@
+#!/bin/bash
+
+TEST=$(readlink -f ${BASH_SOURCE[0]})
+CURDIR=${CURDIR:-$(dirname ${TEST})}
+
+source ${CURDIR}/setup
+source ${CURDIR}/common
+
+test_start ${TEST}
+
+test_step 'make'
+make
+assert_full_build
+
+test_step 'make clean'
+make realclean
+assert_realclean
