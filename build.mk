@@ -206,7 +206,7 @@ define include_module
         lib_dir := $$(abspath $$(output))
         inc_dir := $$(abspath $$(path))
 
-        ifeq ($$(IS_GOAL_STATIC),true)
+        ifneq (,$$(IS_GOAL_STATIC))
             $$(if $$(AR),,$$(error Unable to locate archiver))
             target := $$(patsubst %$$(LIB_SUFFIX),%$$(ARCHIVE_SUFFIX),$$(target))
         endif
