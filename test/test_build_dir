@@ -24,6 +24,6 @@ test_step "make BUILDDIR=${tmpdir} clean"
 make BUILDDIR=${tmpdir} clean
 
 test_step 'Verify that all files were deleted'
-for file in ${all}; do
+for file in ${clean}; do
 	assert_not_exist ${tmpdir}/${file}
 done
