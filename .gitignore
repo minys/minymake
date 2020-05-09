@@ -8,13 +8,13 @@
 *.checksum
 *.run
 
-test/project/a/program_a
-test/project/a/test_dupl
-test/project/b/program_b
-test/project/c/test_cc
-test/project/e/program_e
-test/project/e/test_program
-test/project/program
-test/project/f/test_shared
-test/project/g/zlib_test
-test/project/h/test_sbin
+test/projects/function-test/a/program_a
+test/projects/function-test/a/test_dupl
+test/projects/function-test/b/program_b
+test/projects/function-test/c/test_cc
+test/projects/function-test/e/program_e
+test/projects/function-test/e/test_program
+test/projects/function-test/program
+test/projects/function-test/f/test_shared
+test/projects/function-test/g/zlib_test
+test/projects/function-test/h/test_sbin
